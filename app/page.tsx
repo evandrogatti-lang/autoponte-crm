@@ -79,8 +79,15 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 }
 
+const homeStorySlides = [
+  { step: "01", label: "ENTENDEMOS", title: "Tudo começa com uma conversa.", text: "Nosso atendimento inteligente entende orçamento, preferências, prazo, troca e a real necessidade de cada cliente." },
+  { step: "02", label: "ENCONTRAMOS", title: "A tecnologia procura a melhor combinação.", text: "A AutoPonte cruza o perfil do comprador com veículos do estoque, novas trocas e consignações compatíveis." },
+  { step: "03", label: "CONECTAMOS", title: "A loja recebe o contexto completo.", text: "Interesse, histórico, avaliação, simulação e próximos passos seguem juntos para que o cliente não precise recomeçar." },
+] as const;
+
 export default function Home() {
   const [type, setType] = useState("Todos");
+  const [homeStorySlide, setHomeStorySlide] = useState(0);
   const [selected, setSelected] = useState<(typeof vehicles)[number] | null>(null);
   const [matchScore, setMatchScore] = useState<number | null>(null);
   const [downPayment, setDownPayment] = useState(25000);
@@ -287,20 +294,24 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-story" id="quem-somos">
+      <section className={`home-story home-story-slide-${homeStorySlide + 1}`} id="quem-somos" aria-roledescription="carrossel" aria-label="Como a AutoPonte atua">
         <div className="home-story-art" role="img" aria-label="Ilustração em preto e branco conectando atendimento, veículos, cidade e loja" />
         <div className="home-story-wash" />
         <div className="home-story-brand"><strong>AutoPonte</strong><span>Conectando caminhos.</span></div>
-        <article className="home-story-copy">
-          <p>01 • ENTENDEMOS</p>
-          <h2>Tudo começa com uma conversa.</h2>
-          <span>Nosso atendimento inteligente entende orçamento, preferências, prazo, troca e a real necessidade de cada cliente.</span>
+        <article className="home-story-copy" key={homeStorySlide} aria-live="polite">
+          <p>{homeStorySlides[homeStorySlide].step} • {homeStorySlides[homeStorySlide].label}</p>
+          <h2>{homeStorySlides[homeStorySlide].title}</h2>
+          <span>{homeStorySlides[homeStorySlide].text}</span>
           <div className="home-story-actions"><a href="/quem-somos">Ver apresentação completa</a><a className="outline" href="/atendimento">Começar uma conversa</a></div>
         </article>
-        <div className="home-story-points" aria-label="Como a AutoPonte atua">
-          <div><b>01</b><strong>Entendemos</strong><span>Perfil, orçamento e momento de compra.</span></div>
-          <div><b>02</b><strong>Encontramos</strong><span>Veículos e oportunidades compatíveis.</span></div>
-          <div><b>03</b><strong>Conectamos</strong><span>Cliente e loja com todo o contexto.</span></div>
+        <div className="home-story-arrows" aria-label="Controles do carrossel">
+          <button type="button" onClick={() => setHomeStorySlide((current) => (current + homeStorySlides.length - 1) % homeStorySlides.length)} aria-label="Slide anterior">←</button>
+          <button type="button" onClick={() => setHomeStorySlide((current) => (current + 1) % homeStorySlides.length)} aria-label="Próximo slide">→</button>
+        </div>
+        <div className="home-story-points" role="tablist" aria-label="Etapas da AutoPonte">
+          <button type="button" role="tab" aria-selected={homeStorySlide === 0} className={homeStorySlide === 0 ? "active" : ""} onClick={() => setHomeStorySlide(0)}><b>01</b><strong>Entendemos</strong><span>Perfil, orçamento e momento de compra.</span></button>
+          <button type="button" role="tab" aria-selected={homeStorySlide === 1} className={homeStorySlide === 1 ? "active" : ""} onClick={() => setHomeStorySlide(1)}><b>02</b><strong>Encontramos</strong><span>Veículos e oportunidades compatíveis.</span></button>
+          <button type="button" role="tab" aria-selected={homeStorySlide === 2} className={homeStorySlide === 2 ? "active" : ""} onClick={() => setHomeStorySlide(2)}><b>03</b><strong>Conectamos</strong><span>Cliente e loja com todo o contexto.</span></button>
         </div>
       </section>
 
