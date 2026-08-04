@@ -1,0 +1,1 @@
+ALTER TABLE `trade_ins` ADD `desired_vehicle` text DEFAULT '' NOT NULL;
