@@ -1,0 +1,20 @@
+CREATE TABLE `trade_ins` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`whatsapp` text NOT NULL,
+	`email` text NOT NULL,
+	`city` text NOT NULL,
+	`brand` text NOT NULL,
+	`model` text NOT NULL,
+	`version` text NOT NULL,
+	`year` text NOT NULL,
+	`mileage` integer NOT NULL,
+	`condition` text NOT NULL,
+	`reference_price` integer NOT NULL,
+	`estimated_min` integer NOT NULL,
+	`estimated_max` integer NOT NULL,
+	`photo_keys` text NOT NULL,
+	`status` text DEFAULT 'pre_evaluated' NOT NULL,
+	`consent_at` text NOT NULL,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
+);

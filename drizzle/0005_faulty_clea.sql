@@ -1,0 +1,1 @@
+ALTER TABLE `consignments` ADD `photo_keys` text DEFAULT '[]' NOT NULL;
