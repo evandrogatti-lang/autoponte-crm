@@ -30,6 +30,7 @@ type Opportunity = {
   next: string;
   stage: string;
   source: string;
+  probability: number;
 };
 
 const brl = new Intl.NumberFormat("pt-BR", {
@@ -77,6 +78,8 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
     alert: <><path d="M10.3 2.9 1.8 17a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 2.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></>,
     dots: <><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></>,
     plus: <><path d="M12 5v14M5 12h14"/></>,
+    wallet: <><path d="M3 6h15a2 2 0 0 1 2 2v10H5a2 2 0 0 1-2-2z"/><path d="M3 6l12-3v3M16 11h5v4h-5a2 2 0 0 1 0-4z"/></>,
+    target: <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></>,
   };
   return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
@@ -97,6 +100,7 @@ function mapTradeIn(row: TradeIn): Opportunity {
     qualified: "qualified", sent_to_store: "store", proposal: "proposal",
     closed: "closed", lost: "closed",
   };
+  const priority = row.lead_category === "hot" ? "Alta" : row.lead_category === "warm" ? "Média" : "Normal";
   return {
     id: row.id,
     name: row.name,
@@ -104,20 +108,21 @@ function mapTradeIn(row: TradeIn): Opportunity {
     interest: row.desired_vehicle || "Veículo a definir",
     offered: `${row.brand} ${row.model} ${row.year}`,
     value: row.estimated_max || 0,
-    priority: row.lead_category === "hot" ? "Alta" : row.lead_category === "warm" ? "Média" : "Normal",
+    priority,
     next: relativeFollowUp(row.next_follow_up),
     stage: stageMap[row.status] ?? "new",
     source: "Avaliação online",
+    probability: priority === "Alta" ? 91 : priority === "Média" ? 76 : 58,
   };
 }
 
 const demoRows: Opportunity[] = [
-  { id: "1", name: "Mariana Souza", city: "São Bernardo do Campo", interest: "Jeep Compass", offered: "Honda City 2020", value: 119900, priority: "Alta", next: "Retorno hoje", stage: "qualified", source: "Instagram" },
-  { id: "2", name: "Carlos Henrique", city: "Santo André", interest: "Hatch automático", offered: "Toyota Corolla 2018", value: 89900, priority: "Média", next: "Fotos pendentes", stage: "contacted", source: "Portal" },
-  { id: "3", name: "Renata Lima", city: "São Paulo", interest: "Consignar SUV", offered: "Hyundai Creta 2021", value: 104900, priority: "Normal", next: "Em 2 dias", stage: "store", source: "Indicação" },
-  { id: "4", name: "Lucas Martins", city: "Diadema", interest: "Sedan até R$ 90 mil", offered: "Sem troca", value: 89900, priority: "Alta", next: "Proposta enviada", stage: "proposal", source: "Meta Ads" },
-  { id: "5", name: "Paulo Ferreira", city: "São Caetano", interest: "SUV compacto", offered: "VW T-Cross 2020", value: 112900, priority: "Alta", next: "Atrasado 1d", stage: "new", source: "WhatsApp" },
-  { id: "6", name: "Fernanda Alves", city: "São Paulo", interest: "Toyota Corolla", offered: "Chevrolet Onix 2019", value: 128900, priority: "Média", next: "Retorno hoje", stage: "closed", source: "Portal" },
+  { id: "1", name: "Mariana Souza", city: "São Bernardo do Campo", interest: "Jeep Compass", offered: "Honda City 2020", value: 119900, priority: "Alta", next: "Retorno hoje", stage: "qualified", source: "Instagram", probability: 94 },
+  { id: "2", name: "Carlos Henrique", city: "Santo André", interest: "Hatch automático", offered: "Toyota Corolla 2018", value: 89900, priority: "Média", next: "Fotos pendentes", stage: "contacted", source: "Portal", probability: 78 },
+  { id: "3", name: "Renata Lima", city: "São Paulo", interest: "Consignar SUV", offered: "Hyundai Creta 2021", value: 104900, priority: "Normal", next: "Em 2 dias", stage: "store", source: "Indicação", probability: 64 },
+  { id: "4", name: "Lucas Martins", city: "Diadema", interest: "Sedan até R$ 90 mil", offered: "Sem troca", value: 89900, priority: "Alta", next: "Proposta enviada", stage: "proposal", source: "Meta Ads", probability: 91 },
+  { id: "5", name: "Paulo Ferreira", city: "São Caetano", interest: "SUV compacto", offered: "VW T-Cross 2020", value: 112900, priority: "Alta", next: "Atrasado 1d", stage: "new", source: "WhatsApp", probability: 88 },
+  { id: "6", name: "Fernanda Alves", city: "São Paulo", interest: "Toyota Corolla", offered: "Chevrolet Onix 2019", value: 128900, priority: "Média", next: "Retorno hoje", stage: "closed", source: "Portal", probability: 100 },
 ];
 
 export default async function CrmPage() {
@@ -133,15 +138,23 @@ export default async function CrmPage() {
   const immediate = opportunities.filter((item) => item.next.includes("hoje") || item.next.includes("Atrasado")).length;
   const proposals = opportunities.filter((item) => item.stage === "proposal").length;
   const active = opportunities.filter((item) => item.stage !== "closed").length;
+  const closed = opportunities.filter((item) => item.stage === "closed").length;
   const pipelineValue = opportunities.reduce((sum, item) => sum + item.value, 0);
-  const conversion = opportunities.length ? Math.round((opportunities.filter((item) => item.stage === "closed").length / opportunities.length) * 100) : 0;
+  const activeValue = opportunities.filter((item) => item.stage !== "closed").reduce((sum, item) => sum + item.value, 0);
+  const conversion = opportunities.length ? Math.round((closed / opportunities.length) * 100) : 0;
+  const capitalNeeded = Math.round(activeValue * .36);
+  const projectedMargin = Math.round(activeValue * .086);
+  const avgTicket = opportunities.length ? Math.round(pipelineValue / opportunities.length) : 0;
+  const operationScore = Math.min(99, Math.max(72, 88 + closed - immediate));
 
   const kpis = [
-    { label: "Oportunidades ativas", value: active.toString(), meta: `${high} em alta prioridade`, trend: "+12%", tone: "lime" },
-    { label: "Retornos imediatos", value: immediate.toString(), meta: "Hoje ou atrasados", trend: immediate ? "Ação" : "Em dia", tone: "orange" },
-    { label: "Propostas abertas", value: proposals.toString(), meta: brl.format(pipelineValue), trend: "+8%", tone: "blue" },
-    { label: "Conversão", value: `${conversion}%`, meta: "Oportunidade → venda", trend: "+3,4%", tone: "purple" },
+    { label: "Oportunidades ativas", value: active.toString(), meta: `${high} em alta prioridade`, trend: "+12%", tone: "lime", icon: "target" },
+    { label: "Pipeline potencial", value: brl.format(activeValue), meta: `${proposals} propostas em aberto`, trend: "+8%", tone: "blue", icon: "trend" },
+    { label: "Capital necessário", value: brl.format(capitalNeeded), meta: "Para absorver trocas aprovadas", trend: "Planejar", tone: "orange", icon: "wallet" },
+    { label: "Conversão", value: `${conversion}%`, meta: `Ticket médio ${brl.format(avgTicket)}`, trend: "+3,4%", tone: "purple", icon: "chart" },
   ];
+
+  const topOpportunities = [...opportunities].sort((a, b) => b.probability - a.probability).slice(0, 4);
 
   return <main className="ap-crm">
     <aside className="ap-sidebar">
@@ -154,7 +167,7 @@ export default async function CrmPage() {
         {menu.map(([icon, label, href], index) => <a key={label} href={href} className={index === 0 ? "active" : ""}><Icon name={icon}/><span>{label}</span>{label === "Leads" && <b>{active}</b>}</a>)}
         <small>OPERAÇÃO</small>
         <a href="/matches"><Icon name="spark"/><span>Match IA</span><em>Novo</em></a>
-        <a href="#financeiro"><Icon name="trend"/><span>Financeiro</span></a>
+        <a href="#financeiro"><Icon name="wallet"/><span>Financeiro</span></a>
       </nav>
       <div className="ap-sidebar-bottom">
         <div className="ap-capacity"><div><span>Meta mensal</span><b>68%</b></div><i><span /></i><small>17 de 25 vendas concluídas</small></div>
@@ -164,7 +177,7 @@ export default async function CrmPage() {
 
     <section className="ap-main">
       <header className="ap-topbar">
-        <label className="ap-search"><Icon name="search"/><input aria-label="Busca universal" placeholder="Buscar cliente, placa, telefone, veículo..."/><kbd>⌘ K</kbd></label>
+        <label className="ap-search"><Icon name="search"/><input aria-label="Busca universal" placeholder="Buscar cliente, placa, telefone, veículo..."/><kbd>Ctrl K</kbd></label>
         <div className="ap-top-actions">
           <button className="ap-icon-button" aria-label="Notificações"><Icon name="bell"/><b>3</b></button>
           <a className="ap-primary-button" href="/oportunidades"><Icon name="plus"/>Nova oportunidade</a>
@@ -172,73 +185,100 @@ export default async function CrmPage() {
       </header>
 
       <div className="ap-content">
-        <section className="ap-welcome">
-          <div><p>TERÇA-FEIRA, 4 DE AGOSTO</p><h1>Bom dia, Evandro.</h1><span>Veja o que precisa da sua atenção para acelerar as vendas hoje.</span></div>
-          <div className="ap-filters"><button>Últimos 30 dias <span>⌄</span></button><button>Todas as lojas <span>⌄</span></button></div>
+        <section className="ap-welcome ap-welcome-premium">
+          <div><p>CENTRO DE COMANDO</p><h1>Bom dia, Evandro.</h1><span>O sistema encontrou {immediate} ações imediatas e {high} oportunidades de alta prioridade para hoje.</span></div>
+          <div className="ap-filters"><button>Hoje <span>⌄</span></button><button>Todas as lojas <span>⌄</span></button><button>Todos os vendedores <span>⌄</span></button></div>
         </section>
 
-        <section className="ap-kpi-grid" aria-label="Indicadores principais">
-          {kpis.map((kpi) => <article className={`ap-kpi tone-${kpi.tone}`} key={kpi.label}>
-            <div><span>{kpi.label}</span><button aria-label={`Opções de ${kpi.label}`}><Icon name="dots" size={18}/></button></div>
-            <strong>{kpi.value}</strong>
-            <footer><small>{kpi.meta}</small><b>{kpi.trend}</b></footer>
+        <section className="ap-command-hero">
+          <div className="ap-operation-score">
+            <span>RADAR DA OPERAÇÃO</span>
+            <strong>{operationScore}<small>/100</small></strong>
+            <p>Operação saudável, com atenção necessária aos retornos atrasados.</p>
+            <div className="ap-score-track"><i style={{ width: `${operationScore}%` }}/></div>
+          </div>
+          <div className="ap-command-actions">
+            <article><span>Comercial</span><b>97</b><small>Pipeline forte</small></article>
+            <article><span>Estoque</span><b>84</b><small>34 em preparação</small></article>
+            <article><span>Financeiro</span><b>90</b><small>Capital sob controle</small></article>
+            <article><span>Atendimento</span><b>88</b><small>{immediate} retornos imediatos</small></article>
+          </div>
+        </section>
+
+        <section className="ap-kpi-grid">
+          {kpis.map((item) => <article className={`ap-kpi tone-${item.tone}`} key={item.label}>
+            <div><span>{item.label}</span><span className="ap-kpi-icon"><Icon name={item.icon} size={18}/></span></div>
+            <strong>{item.value}</strong>
+            <footer><small>{item.meta}</small><b>{item.trend}</b></footer>
           </article>)}
         </section>
 
         <section className="ap-command-grid">
-          <article className="ap-panel ap-pipeline" id="pipeline">
-            <header><div><p>PIPELINE COMERCIAL</p><h2>Visão do funil</h2></div><a href="#pipeline">Ver pipeline completo <Icon name="arrow" size={16}/></a></header>
+          <article className="ap-panel" id="pipeline">
+            <header><div><p>PIPELINE COMERCIAL</p><h2>Fluxo de oportunidades</h2></div><a href="/oportunidades">Ver oportunidades <Icon name="arrow" size={15}/></a></header>
             <div className="ap-funnel">
               {stages.map((stage) => {
-                const count = opportunities.filter((item) => item.stage === stage.id).length;
-                const amount = opportunities.filter((item) => item.stage === stage.id).reduce((sum, item) => sum + item.value, 0);
-                return <a href={`#${stage.id}`} className="ap-funnel-step" key={stage.id}>
-                  <span>{stage.short}</span><strong>{count}</strong><small>{amount ? brl.format(amount) : "Sem valor"}</small><i style={{ "--fill": `${Math.max(12, Math.min(100, count * 22))}%` } as React.CSSProperties}><b /></i>
+                const list = opportunities.filter((item) => item.stage === stage.id);
+                const total = list.reduce((sum, item) => sum + item.value, 0);
+                const max = Math.max(...stages.map((item) => opportunities.filter((opp) => opp.stage === item.id).length), 1);
+                return <a href={`/oportunidades#${stage.id}`} className="ap-funnel-step" key={stage.id}>
+                  <span>{stage.label}</span><strong>{list.length}</strong><small>{stage.short} • {brl.format(total)}</small>
+                  <i><b style={{ "--fill": `${Math.max(12, (list.length / max) * 100)}%` } as React.CSSProperties}/></i>
                 </a>;
               })}
             </div>
           </article>
 
           <article className="ap-panel ap-ai-panel">
-            <header><div className="ap-ai-title"><span><Icon name="spark"/></span><div><p>ASSISTENTE AUTOPONTE</p><h2>Prioridades da IA</h2></div></div><button><Icon name="dots"/></button></header>
+            <header><div className="ap-ai-title"><span><Icon name="spark"/></span><div><p>COPILOTO AUTOPONTE</p><h2>Prioridades da IA</h2></div></div><a href="/matches">Abrir IA <Icon name="arrow" size={15}/></a></header>
             <div className="ap-ai-list">
-              <a href="#prioridade"><span className="critical"><Icon name="alert" size={17}/></span><div><b>{immediate || 2} clientes aguardam retorno</b><small>O contato mais antigo está há 27 horas sem resposta.</small></div><Icon name="arrow" size={17}/></a>
-              <a href="#match"><span className="positive"><Icon name="trend" size={17}/></span><div><b>Novo match com alta conversão</b><small>Compass Longitude compatível com Mariana Souza.</small></div><Icon name="arrow" size={17}/></a>
-              <a href="#estoque"><span className="info"><Icon name="car" size={17}/></span><div><b>Preço competitivo identificado</b><small>Corolla 2021 está 6% abaixo da média da rede.</small></div><Icon name="arrow" size={17}/></a>
+              <a href="/oportunidades"><span className="critical"><Icon name="alert" size={15}/></span><div><b>Contate Paulo Ferreira agora</b><small>Lead com 88% de chance e retorno atrasado.</small></div><Icon name="arrow" size={15}/></a>
+              <a href="/matches"><span className="positive"><Icon name="trend" size={15}/></span><div><b>Match de alta aderência disponível</b><small>Corolla com 94% de compatibilidade para Fernanda.</small></div><Icon name="arrow" size={15}/></a>
+              <a href="#financeiro"><span className="info"><Icon name="wallet" size={15}/></span><div><b>Capital de giro recomendado</b><small>Reserve {brl.format(capitalNeeded)} para as trocas em curso.</small></div><Icon name="arrow" size={15}/></a>
             </div>
-            <button className="ap-ai-cta"><Icon name="spark" size={17}/>Abrir central de inteligência</button>
+            <button className="ap-ai-cta"><Icon name="spark" size={15}/>Gerar plano de ação do dia</button>
           </article>
         </section>
 
         <section className="ap-lower-grid">
-          <article className="ap-panel ap-priorities" id="clientes">
-            <header><div><p>PRÓXIMAS AÇÕES</p><h2>O que fazer agora</h2></div><a href="#agenda">Ver agenda</a></header>
-            <div className="ap-action-list">
-              {opportunities.slice(0, 4).map((item, index) => <a href={`#lead-${item.id}`} key={item.id}>
-                <time><b>{["09:00", "10:30", "13:00", "15:30"][index]}</b><small>Hoje</small></time>
-                <span className={`ap-priority-dot priority-${item.priority.toLowerCase().replace("é", "e")}`} />
-                <div><b>{item.name}</b><small>{item.next} • {item.interest}</small></div>
-                <span className="ap-source">{item.source}</span><Icon name="arrow" size={17}/>
+          <article className="ap-panel ap-priorities">
+            <header><div><p>LEADS QUENTES</p><h2>Maior chance de fechamento</h2></div><a href="/oportunidades">Ver todos <Icon name="arrow" size={15}/></a></header>
+            <div className="ap-hot-list">
+              {topOpportunities.map((item) => <a href={`/oportunidades#${item.id}`} key={item.id}>
+                <span className={`ap-priority-dot priority-${item.priority.toLowerCase().replace("é", "e")}`}/>
+                <div className="ap-hot-main"><b>{item.name}</b><small>{item.interest} • {item.city}</small></div>
+                <div className="ap-hot-score"><b>{item.probability}%</b><small>Score IA</small></div>
+                <div className="ap-hot-value"><b>{brl.format(item.value)}</b><small>{item.next}</small></div>
+                <Icon name="arrow" size={17}/>
               </a>)}
             </div>
           </article>
 
           <article className="ap-panel ap-activity">
-            <header><div><p>ATIVIDADE DA EQUIPE</p><h2>Movimentações recentes</h2></div><button><Icon name="dots"/></button></header>
+            <header><div><p>AGENDA E ATIVIDADES</p><h2>Próximas ações</h2></div><button><Icon name="dots"/></button></header>
             <ol>
-              <li><span className="activity-blue">AM</span><div><b>Ana Martins enviou uma proposta</b><small>Jeep Compass • Mariana Souza</small></div><time>há 8 min</time></li>
-              <li><span className="activity-green">IA</span><div><b>Match de veículo identificado</b><small>Toyota Corolla • 94% de aderência</small></div><time>há 21 min</time></li>
-              <li><span className="activity-orange">BR</span><div><b>Bruno atualizou uma avaliação</b><small>Honda City 2020 • R$ 78.500</small></div><time>há 42 min</time></li>
-              <li><span className="activity-purple">AP</span><div><b>Financiamento pré-aprovado</b><small>Banco parceiro • Lucas Martins</small></div><time>há 1h</time></li>
+              <li><span className="activity-blue"><Icon name="phone" size={14}/></span><div><b>09:30 • Retornar Mariana Souza</b><small>Jeep Compass • proposta em preparação</small></div><time>Hoje</time></li>
+              <li><span className="activity-green"><Icon name="car" size={14}/></span><div><b>11:00 • Avaliação Honda City</b><small>Vistoria e conferência das fotos</small></div><time>Hoje</time></li>
+              <li><span className="activity-orange"><Icon name="file" size={14}/></span><div><b>14:30 • Revisar documentação</b><small>Lucas Martins • financiamento</small></div><time>Hoje</time></li>
+              <li><span className="activity-purple"><Icon name="store" size={14}/></span><div><b>16:00 • Follow-up loja parceira</b><small>Disponibilidade do veículo compatível</small></div><time>Hoje</time></li>
             </ol>
           </article>
+        </section>
+
+        <section className="ap-finance-grid" id="financeiro">
+          <article className="ap-panel ap-finance-card ap-finance-dark">
+            <span>CAIXA POTENCIAL • 30 DIAS</span><strong>{brl.format(activeValue + projectedMargin)}</strong><small>Pipeline ativo + margem projetada</small>
+            <div><span><b>{brl.format(activeValue)}</b><small>Vendas previstas</small></span><span><b>{brl.format(projectedMargin)}</b><small>Margem projetada</small></span></div>
+          </article>
+          <article className="ap-panel ap-finance-card"><span>CAPITAL EM TROCAS</span><strong>{brl.format(capitalNeeded)}</strong><small>Necessidade estimada de caixa</small><div className="ap-meter"><i style={{ width: "64%" }}/></div></article>
+          <article className="ap-panel ap-finance-card"><span>MARGEM PROJETADA</span><strong>{brl.format(projectedMargin)}</strong><small>8,6% sobre o pipeline ativo</small><div className="ap-meter ap-meter-lime"><i style={{ width: "86%" }}/></div></article>
         </section>
 
         <section className="ap-mini-grid" id="estoque">
           <article><div><span>ESTOQUE DISPONÍVEL</span><strong>1.241</strong><small>82 reservados • 34 em preparação</small></div><span className="mini-icon"><Icon name="car"/></span></article>
           <article><div><span>AVALIAÇÕES PENDENTES</span><strong>{Math.max(4, high)}</strong><small>2 aguardam novas fotos</small></div><span className="mini-icon"><Icon name="file"/></span></article>
           <article><div><span>MATCHES HOJE</span><strong>37</strong><small>18 com aderência excelente</small></div><span className="mini-icon"><Icon name="spark"/></span></article>
-          <article><div><span>MARGEM PROJETADA</span><strong>{brl.format(Math.round(pipelineValue * .086))}</strong><small>8,6% sobre o pipeline</small></div><span className="mini-icon"><Icon name="trend"/></span></article>
+          <article><div><span>RETORNOS IMEDIATOS</span><strong>{immediate}</strong><small>Hoje ou atrasados</small></div><span className="mini-icon"><Icon name="clock"/></span></article>
         </section>
       </div>
     </section>

@@ -770,3 +770,46 @@ footer p { margin: 0; }
 @media (max-width:1180px) { .ap-crm { grid-template-columns:82px minmax(0,1fr); }.ap-logo > span:last-child,.ap-nav a span,.ap-nav > small,.ap-nav a b,.ap-nav em,.ap-capacity,.ap-user div,.ap-user > svg { display:none; }.ap-logo { justify-content:center; padding-inline:0; }.ap-nav a { justify-content:center; padding:0; }.ap-sidebar { padding-inline:13px; }.ap-user { grid-template-columns:1fr; justify-items:center; }.ap-command-grid,.ap-lower-grid { grid-template-columns:1fr; }.ap-kpi-grid,.ap-mini-grid { grid-template-columns:repeat(2,1fr); } }
 @media (max-width:760px) { .ap-crm { display:block; }.ap-sidebar { position:fixed; z-index:40; left:0; right:0; top:auto; bottom:0; width:100%; height:66px; padding:7px 9px; display:block; overflow:visible; }.ap-logo,.ap-sidebar-bottom,.ap-nav > small,.ap-nav a:nth-of-type(n+6) { display:none; }.ap-nav { margin:0; grid-template-columns:repeat(5,1fr); gap:3px; }.ap-nav a { min-height:52px; display:flex; flex-direction:column; justify-content:center; gap:3px; font-size:8px; }.ap-nav a span { display:block; }.ap-main { padding-bottom:70px; }.ap-topbar { height:62px; padding:0 14px; }.ap-search { width:auto; flex:1; }.ap-search kbd,.ap-primary-button { display:none; }.ap-content { padding:20px 14px; }.ap-welcome { align-items:flex-start; flex-direction:column; }.ap-filters { width:100%; }.ap-filters button { flex:1; }.ap-kpi-grid,.ap-mini-grid { grid-template-columns:1fr 1fr; gap:10px; }.ap-kpi { min-height:130px; padding:14px; }.ap-command-grid,.ap-lower-grid { gap:12px; }.ap-funnel { overflow-x:auto; grid-template-columns:repeat(6,110px); }.ap-action-list > a { grid-template-columns:42px 8px minmax(0,1fr) 16px; }.ap-source { display:none; }.ap-mini-grid article { min-height:116px; }.ap-mini-grid .mini-icon { display:none; } }
 @media (max-width:430px) { .ap-kpi-grid,.ap-mini-grid { grid-template-columns:1fr; }.ap-welcome h1 { font-size:25px; }.ap-content { padding-inline:11px; }.ap-topbar { padding-inline:11px; } }
+
+/* AutoPonte CRM Premium V4 */
+.ap-welcome-premium { margin-bottom:18px; }
+.ap-command-hero { display:grid; grid-template-columns:minmax(280px,.42fr) minmax(0,1fr); gap:14px; margin-bottom:14px; }
+.ap-operation-score { min-height:176px; padding:22px; border-radius:14px; background:linear-gradient(145deg,#0f2b3f,#173e55); color:#fff; }
+.ap-operation-score > span,.ap-command-actions article span,.ap-finance-card > span { font-size:8px; font-weight:900; letter-spacing:.13em; opacity:.66; }
+.ap-operation-score > strong { display:block; margin:11px 0 7px; font-size:44px; letter-spacing:-.06em; }
+.ap-operation-score > strong small { font-size:14px; opacity:.55; }
+.ap-operation-score p { max-width:330px; margin:0 0 18px; color:#a8becb; font-size:9px; line-height:1.55; }
+.ap-score-track,.ap-meter { height:6px; overflow:hidden; border-radius:99px; background:rgba(255,255,255,.13); }
+.ap-score-track i,.ap-meter i { display:block; height:100%; border-radius:inherit; background:var(--ap-lime); }
+.ap-command-actions { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.ap-command-actions article { min-height:176px; padding:20px; border:1px solid var(--ap-line); border-radius:14px; background:#fff; display:flex; flex-direction:column; justify-content:flex-end; }
+.ap-command-actions article span { color:#667985; opacity:1; }
+.ap-command-actions article b { margin:17px 0 8px; font-size:31px; letter-spacing:-.04em; color:var(--ap-text); }
+.ap-command-actions article small { color:#8997a0; font-size:8px; }
+.ap-kpi-icon { width:31px; height:31px; display:grid; place-items:center; border-radius:8px; background:#f3f6f7; color:#557082!important; }
+.ap-hot-list { display:grid; }
+.ap-hot-list > a { min-height:72px; padding:0 18px; display:grid; grid-template-columns:10px minmax(0,1.3fr) 78px 112px 18px; align-items:center; gap:12px; color:inherit; text-decoration:none; border-bottom:1px solid #edf1f3; }
+.ap-hot-list > a:last-child { border-bottom:0; }
+.ap-hot-main,.ap-hot-score,.ap-hot-value { display:grid; gap:4px; min-width:0; }
+.ap-hot-main b,.ap-hot-score b,.ap-hot-value b { font-size:10px; }
+.ap-hot-main small,.ap-hot-score small,.ap-hot-value small { color:#87959e; font-size:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ap-hot-score b { color:#6d8f15; font-size:13px; }
+.ap-hot-value { text-align:right; }
+.ap-finance-grid { display:grid; grid-template-columns:1.2fr .9fr .9fr; gap:14px; margin-bottom:14px; }
+.ap-finance-card { min-height:160px; padding:22px; display:flex; flex-direction:column; justify-content:flex-end; }
+.ap-finance-card > span { color:#6c7f8b; opacity:1; }
+.ap-finance-card > strong { display:block; margin:13px 0 7px; font-size:28px; letter-spacing:-.045em; }
+.ap-finance-card > small { color:#8998a1; font-size:8px; }
+.ap-finance-card > div:not(.ap-meter) { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,.1); }
+.ap-finance-card > div span { display:grid; gap:4px; }
+.ap-finance-card > div b { font-size:11px; }
+.ap-finance-card > div small { font-size:8px; opacity:.64; }
+.ap-finance-dark { background:linear-gradient(145deg,#102c3f,#0b2130); color:#fff; border-color:#173b52; }
+.ap-finance-dark > span,.ap-finance-dark > small { color:#90a8b7; }
+.ap-meter { margin-top:25px; background:#edf1f2; }
+.ap-meter i { background:#4d8fca; }
+.ap-meter-lime i { background:#9fc82b; }
+@media (max-width:1180px) { .ap-command-hero { grid-template-columns:1fr; }.ap-command-actions article { min-height:130px; }.ap-finance-grid { grid-template-columns:1fr 1fr; }.ap-finance-dark { grid-column:1/-1; } }
+@media (max-width:760px) { .ap-command-actions { grid-template-columns:1fr 1fr; }.ap-command-actions article { min-height:118px; padding:15px; }.ap-operation-score { min-height:160px; }.ap-hot-list > a { grid-template-columns:10px minmax(0,1fr) 62px 16px; }.ap-hot-value { display:none; }.ap-finance-grid { grid-template-columns:1fr; }.ap-finance-dark { grid-column:auto; } }
+@media (max-width:430px) { .ap-command-actions { grid-template-columns:1fr; }.ap-command-actions article { min-height:98px; }.ap-hot-score { display:none; }.ap-hot-list > a { grid-template-columns:10px minmax(0,1fr) 16px; } }
+
