@@ -28,7 +28,7 @@ export function FlowEngineV2({ flow }: { flow: FlowEngineView }) {
     <article className={styles.panel}>
       <header className={styles.header}>
         <div className={styles.heading}>
-          <span className={styles.eyebrow}>FLOW ENGINE V2.2</span>
+          <span className={styles.eyebrow}>FLOW ENGINE V2.1</span>
           <h2>Pipeline vivo</h2>
           <p>{flow.health.summary}</p>
         </div>
@@ -51,7 +51,7 @@ export function FlowEngineV2({ flow }: { flow: FlowEngineView }) {
           <small>oportunidades</small>
         </div>
         <div>
-          <span>Chance calibrada</span>
+          <span>Chance ponderada</span>
           <strong>{flow.weightedProbability}%</strong>
           <small>pipeline ativo</small>
         </div>
@@ -80,12 +80,12 @@ export function FlowEngineV2({ flow }: { flow: FlowEngineView }) {
                 <span>{brl.format(stage.value)}</span>
               </div>
 
-              <div className={styles.probability} aria-label={`${stage.averageProbability}% de chance calibrada`}>
+              <div className={styles.probability} aria-label={`${stage.averageProbability}% de chance média`}>
                 <span style={{ width: `${stage.averageProbability}%` }} />
               </div>
 
               <div className={styles.stageMeta}>
-                <span>{stage.averageProbability}% chance calibrada</span>
+                <span>{stage.averageProbability}% chance média</span>
                 <span data-momentum={momentum}>{momentumLabel(momentum)}</span>
               </div>
 

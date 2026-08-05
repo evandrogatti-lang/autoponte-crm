@@ -24,7 +24,6 @@ const compile = spawnSync(command, [
   "lib/ade/types.ts",
   "lib/ade/utils.ts",
   "lib/ade/opportunity-dna.ts",
-  "lib/ade/probability-calibration.ts",
   "lib/ade/confidence.ts",
   "lib/ade/business-temperature.ts",
   "lib/ade/explainability.ts",

@@ -7,7 +7,7 @@ export function explainAssessment(signals: OpportunitySignals, dna: OpportunityD
     { score: dna.margin, text: dna.margin >= 70 ? "Margem potencial acima da média" : "Margem ainda precisa ser validada" },
     { score: dna.engagement, text: dna.engagement >= 72 ? "Engajamento comercial consistente" : "Engajamento ainda moderado" },
     { score: dna.timing, text: dna.timing >= 75 ? "Timing favorável para avançar a negociação" : "Timing comercial ainda em formação" },
-    { score: dna.chance, text: `Chance calibrada de fechamento em ${dna.chance}%` },
+    { score: dna.chance, text: `Chance determinística de fechamento em ${dna.chance}%` },
   ];
   const reasons = candidates.sort((a, b) => b.score - a.score).slice(0, 3).map((item) => item.text);
   const warnings: string[] = [];

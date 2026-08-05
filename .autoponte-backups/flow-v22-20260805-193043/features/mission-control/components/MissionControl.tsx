@@ -137,8 +137,8 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
               </div>
               <div className={styles.pulseCopy}>
                 <span className={styles.eyebrow}>Operação</span>
-                <strong>{model.businessTemperature.label.toUpperCase()}</strong>
-                <small>Saúde do fluxo {model.flow.health.score}/100</small>
+                <strong>{model.flow.health.label.toUpperCase()}</strong>
+                <small>Temperatura {model.businessTemperature.label} · {model.businessTemperature.score}/100</small>
               </div>
             </div>
 
@@ -210,7 +210,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                         <div className={styles.missionBody}>
                           <div className={styles.decisionValue}>
                             <strong>{index === 1 ? brl.format(item.marginPotential) : `${item.probability}%`}</strong>
-                            <span>{index === 1 ? "margem prevista" : "chance estimada"}</span>
+                            <span>{index === 1 ? "margem prevista" : "chance de fechamento"}</span>
                           </div>
 
                           <div className={styles.reasonBox}>

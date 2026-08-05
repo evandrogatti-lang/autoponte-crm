@@ -125,7 +125,7 @@ export function buildMissionControl(rows: TradeInRow[], now = new Date()): Missi
     greeting: "Bom dia, Evandro.",
     immediateActions: active.filter((item) => item.recommendation.urgency === "now" || item.recommendation.urgency === "today").length,
     highPriority: active.filter((item) => item.priority === "Alta").length,
-    operationScore: businessTemperature.score,
+    operationScore: flow.health.score,
     activeCount: active.length,
     proposalCount: active.filter((item) => item.stage === "proposal").length,
     activeValue,

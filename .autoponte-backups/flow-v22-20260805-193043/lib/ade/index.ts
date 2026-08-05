@@ -2,33 +2,20 @@ import { calculateBusinessTemperature, calculateMomentum } from "./business-temp
 import { assessConfidence } from "./confidence";
 import { explainAssessment } from "./explainability";
 import { buildOpportunityDNA } from "./opportunity-dna";
-import { calibrateClosingProbability } from "./probability-calibration";
 import { recommendNextAction } from "./recommendation";
 import { ageInDays, average, clamp, temperatureLabel } from "./utils";
 import type { BusinessTemperature, OpportunityAssessment, OpportunitySignals } from "./types";
 
 export * from "./types";
 export { buildFlowEngine } from "./flow-engine";
-export { calibrateClosingProbability } from "./probability-calibration";
 
 export function evaluateOpportunity(signals: OpportunitySignals, now = new Date()): OpportunityAssessment {
-  const rawDna = buildOpportunityDNA(signals, now);
-  const preliminaryConfidence = assessConfidence(signals, rawDna);
-  const momentum = calculateMomentum(signals, now);
-  const dna = {
-    ...rawDna,
-    chance: calibrateClosingProbability(
-      rawDna.chance,
-      signals.stage,
-      preliminaryConfidence.score,
-      momentum,
-    ),
-  };
+  const dna = buildOpportunityDNA(signals, now);
   const confidence = assessConfidence(signals, dna);
   const temperature = calculateBusinessTemperature(dna);
+  const momentum = calculateMomentum(signals, now);
   const explainability = explainAssessment(signals, dna, now);
   const recommendation = recommendNextAction(signals, momentum, explainability, now);
-
   return {
     dna,
     confidence,

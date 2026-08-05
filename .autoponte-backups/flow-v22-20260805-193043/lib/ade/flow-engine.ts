@@ -44,9 +44,7 @@ function stageView(
   const items = opportunities.filter((item) => item.stage === stage);
   const value = items.reduce((sum, item) => sum + item.value, 0);
   const stalled = items.filter(isStalled).length;
-  const averageProbability = clamp(average(items.map((item) =>
-    item.stage === "closed" ? 100 : Math.min(97, item.probability),
-  )));
+  const averageProbability = clamp(average(items.map((item) => item.probability)));
   const averagePriority = clamp(average(items.map((item) => item.priorityScore)));
   const maxAgeDays = items.reduce((max, item) => Math.max(max, item.ageDays), 0);
   const pressure = clamp(
@@ -80,7 +78,7 @@ export function buildFlowEngine(opportunities: FlowOpportunityInput[]): FlowEngi
   const activeValue = active.reduce((sum, item) => sum + item.value, 0);
   const stages = stageOrder.map((stage) => stageView(stage, opportunities, activeValue));
   const weightedProbability = activeValue > 0
-    ? clamp(active.reduce((sum, item) => sum + Math.min(97, item.probability) * item.value, 0) / activeValue)
+    ? clamp(active.reduce((sum, item) => sum + item.probability * item.value, 0) / activeValue)
     : clamp(average(active.map((item) => item.probability)));
 
   const atRisk = active.filter(isStalled);
