@@ -4,7 +4,7 @@ import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
 import { buildMissionControl } from "../../lib/mission-control/mapper";
 import type { TradeInRow } from "../../lib/mission-control/model";
-import { MissionControlV4 } from "../../components/mission-control/MissionControlV4";
+import { MissionControl } from "../../features/mission-control";
 
 export default async function CrmPage() {
   await requireChatGPTUser("/crm");
@@ -36,5 +36,5 @@ export default async function CrmPage() {
     rows = [];
   }
 
-  return <MissionControlV4 model={buildMissionControl(rows)} />;
+  return <MissionControl model={buildMissionControl(rows)} />;
 }
