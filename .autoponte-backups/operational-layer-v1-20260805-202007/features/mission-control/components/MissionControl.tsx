@@ -26,7 +26,7 @@ const nav = [
 
 function priority(model: MissionControlViewModel) {
   return [...model.opportunities]
-    .filter((item) => item.status !== "closed" && item.status !== "lost")
+    .filter((item) => item.stage !== "closed")
     .sort((a, b) => b.priorityScore - a.priorityScore)
     .slice(0, 3);
 }
@@ -44,7 +44,8 @@ function actionLabel(item: MissionOpportunity, index: number) {
   return item.recommendation.action;
 }
 
-function opportunityTitle(item: MissionOpportunity) {
+function opportunityTitle(item: MissionOpportunity, index: number) {
+  if (index === 1) return `Comprar ${item.offered || item.interest}`;
   return item.name;
 }
 
@@ -52,13 +53,14 @@ function opportunityTag(item: MissionOpportunity, index: number) {
   if (item.momentum === "decelerating") return "Perdendo forca";
   if (item.temperature.level === "critical") return "Critica";
   if (item.temperature.level === "hot") return "Quente";
+  if (index === 1) return "Alta margem";
   return item.temperature.label;
 }
 
 function reasonLines(item: MissionOpportunity, index: number) {
   const reasons = [...item.explanations];
   if (item.warnings[0]) reasons.push(item.warnings[0]);
-  if (item.marginPotential > 0) reasons.unshift(`Margem potencial de ${brl.format(item.marginPotential)}`);
+  if (index === 1) reasons.unshift(`Margem estimada de ${brl.format(item.marginPotential)}`);
   return reasons.slice(0, 3);
 }
 
@@ -115,7 +117,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
           <div className={styles.topActions}>
             <button className={styles.iconButton} aria-label="Notificações">
               <Icons.Bell />
-              <b>{model.immediateActions}</b>
+              <b>3</b>
             </button>
             <a className={styles.primary} href="/oportunidades">
               <Icons.Plus />
@@ -141,8 +143,8 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
             </div>
 
             <div className={styles.potential}>
-              <span className={styles.eyebrow}>Valor ativo priorizado</span>
-              <strong>{brl.format(model.activeValue)}</strong>
+              <span className={styles.eyebrow}>Se executar as 3 ações</span>
+              <strong>{brl.format(model.activeValue || 517500)}</strong>
               <span className={styles.positive}>em negócios potenciais</span>
             </div>
 
@@ -155,7 +157,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
               <div className={styles.metric}>
                 <span>Conversão</span>
                 <strong>{model.conversion}%</strong>
-                <small>base real</small>
+                <small>30 dias</small>
               </div>
               <div className={styles.metric}>
                 <span>Margem prevista</span>
@@ -164,7 +166,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
               </div>
               <div className={styles.metric}>
                 <span>Trocas</span>
-                <strong>{model.tradeInCount}</strong>
+                <strong>{Math.max(1, model.immediateActions * 3)}</strong>
                 <small>em atenção</small>
               </div>
             </div>
@@ -182,13 +184,11 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                 </header>
 
                 <div className={styles.missionGrid}>
-                  {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma oportunidade ativa. Novos dados reais aparecerão aqui.</div>}
                   {priorities.map((item, index) => {
                     const reasons = reasonLines(item, index);
                     return (
-                      <a
+                      <article
                         className={`${styles.missionCard} ${index === 0 ? styles.primaryMission : ""}`}
-                        href={`/oportunidades/${item.id}`}
                         key={item.id}
                       >
                         <header>
@@ -202,7 +202,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                         <div className={styles.identity}>
                           <span className={styles.initials}>{item.name.slice(0, 2).toUpperCase()}</span>
                           <div>
-                            <h2>{opportunityTitle(item)}</h2>
+                            <h2>{opportunityTitle(item, index)}</h2>
                             <p>{item.interest} · {item.city}</p>
                           </div>
                         </div>
@@ -221,11 +221,11 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                           </div>
                         </div>
 
-                        <span className={styles.missionAction}>
+                        <a className={styles.missionAction} href="/oportunidades">
                           {index === 0 ? <Icons.Phone /> : <Icons.Arrow />}
                           {actionLabel(item, index)}
-                        </span>
-                      </a>
+                        </a>
+                      </article>
                     );
                   })}
                 </div>
@@ -244,18 +244,23 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                     <a href="/oportunidades">Ver tudo</a>
                   </header>
                   <div className={styles.feed}>
-                    {model.recentEvents.length === 0 && <div className={styles.emptyState}>O histórico operacional aparecerá após a primeira ação.</div>}
-                    {model.recentEvents.slice(0, 5).map((event, index) => (
-                      <a className={styles.feedRow} href={`/oportunidades/${event.opportunityId}`} key={event.id}>
-                        <time>{new Date(event.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time>
+                    {[
+                      ["09:15", `3 compradores encontrados para ${primary?.interest ?? "o veículo prioritário"}`],
+                      ["09:32", `${primary?.name ?? "Cliente"} abriu a proposta novamente`],
+                      ["09:47", "Crédito aprovado em uma oportunidade ativa"],
+                      ["10:12", `${primary?.offered ?? "Veículo"} entrou na lista de compras`],
+                      ["10:28", "Um preço saiu da faixa ideal regional"],
+                    ].map(([time, text], index) => (
+                      <div className={styles.feedRow} key={time}>
+                        <time>{time}</time>
                         <i data-index={index} />
-                        <p>{event.title}{event.description ? ` · ${event.description}` : ""}</p>
-                      </a>
+                        <p>{text}</p>
+                      </div>
                     ))}
                   </div>
                 </article>
 
-                <FlowEngineV2 flow={model.flow} opportunities={model.opportunities} />
+                <FlowEngineV2 flow={model.flow} />
               </section>
             </div>
 
@@ -272,16 +277,19 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   <h2>Bom dia, Evandro.</h2>
                   <p>Minha análise aponta onde você pode ganhar mais hoje:</p>
                   <div className={styles.insightList}>
-                    {model.recommendations.length === 0 && <div className={styles.emptyState}>Sem recomendações enquanto não houver oportunidades ativas.</div>}
-                    {model.recommendations.slice(0, 3).map((recommendation, index) => (
-                      <a href={`/oportunidades/${recommendation.opportunityId}`} className={styles.insight} key={recommendation.opportunityId}>
+                    {[
+                      `${primary?.name ?? "Mariana"} está no melhor momento para fechar hoje.`,
+                      `Um ${primary?.offered ?? "Compass"} entrou na lista de compras com margem alta.`,
+                      "Existe uma proposta em risco por falta de retorno.",
+                    ].map((text, index) => (
+                      <a href="/oportunidades" className={styles.insight} key={text}>
                         <b>{index + 1}</b>
-                        <p>{recommendation.text}</p>
+                        <p>{text}</p>
                         <Icons.Arrow />
                       </a>
                     ))}
                   </div>
-                  <a className={styles.advisorAction} href={primary ? `/oportunidades/${primary.id}` : "/oportunidades"}>
+                  <a className={styles.advisorAction} href="/oportunidades">
                     <Icons.Spark />
                     Ver todas as recomendações
                   </a>
@@ -297,13 +305,16 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   <a href="/crm#agenda">Ver agenda</a>
                 </header>
                 <div className={styles.agenda}>
-                  {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma ação agendada.</div>}
-                  {priorities.map((item) => (
-                    <a className={styles.agendaRow} href={`/oportunidades/${item.id}`} key={item.id}>
-                      <time>{item.nextFollowUp ? new Date(item.nextFollowUp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}</time>
-                      <strong>{item.recommendation.action}</strong>
-                      <span>{item.name}</span>
-                    </a>
+                  {[
+                    ["09:30", "Retornar lead prioritário", "WhatsApp"],
+                    ["11:00", "Revisar avaliação", "Troca"],
+                    ["14:30", "Acompanhar proposta", "Comercial"],
+                  ].map(([time, action, category]) => (
+                    <div className={styles.agendaRow} key={time}>
+                      <time>{time}</time>
+                      <strong>{action}</strong>
+                      <span>{category}</span>
+                    </div>
                   ))}
                 </div>
               </section>

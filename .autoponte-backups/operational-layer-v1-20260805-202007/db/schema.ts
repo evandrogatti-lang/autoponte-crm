@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const tradeIns = pgTable("trade_ins", {
   id: text("id").primaryKey(),
@@ -25,34 +25,9 @@ export const tradeIns = pgTable("trade_ins", {
   nextFollowUp: text("next_follow_up").notNull().default(""),
   lastContactAt: text("last_contact_at").notNull().default(""),
   notes: text("notes").notNull().default(""),
-  nextAction: text("next_action").notNull().default(""),
-  probability: integer("probability").notNull().default(0),
-  confidenceScore: integer("confidence_score").notNull().default(0),
-  temperatureScore: integer("temperature_score").notNull().default(0),
-  momentum: text("momentum").notNull().default("stable"),
-  priorityScore: integer("priority_score").notNull().default(0),
-  recommendationAction: text("recommendation_action").notNull().default(""),
-  recommendationChannel: text("recommendation_channel").notNull().default(""),
-  recommendationUrgency: text("recommendation_urgency").notNull().default(""),
-  recommendationRationale: text("recommendation_rationale").notNull().default(""),
   consentAt: text("consent_at").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
-
-export const opportunityEvents = pgTable("opportunity_events", {
-  id: text("id").primaryKey(),
-  opportunityId: text("opportunity_id").notNull().references(() => tradeIns.id, { onDelete: "cascade" }),
-  eventType: text("event_type").notNull(),
-  title: text("title").notNull(),
-  description: text("description").notNull().default(""),
-  metadata: text("metadata").notNull().default("{}"),
-  actorName: text("actor_name").notNull().default("Sistema AutoPonte"),
-  actorEmail: text("actor_email").notNull().default(""),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [
-  index("opportunity_events_opportunity_created_idx").on(table.opportunityId, table.createdAt),
-]);
 
 export const consignments = pgTable("consignments", {
   id: text("id").primaryKey(),

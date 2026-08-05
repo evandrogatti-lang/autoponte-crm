@@ -33,10 +33,8 @@ export function calibrateClosingProbability(
   stage: OpportunityStage,
   confidenceScore: number,
   momentum: Momentum,
-  status?: string,
 ) {
-  if (status === "lost") return 0;
-  if (status === "closed" || (stage === "closed" && !status)) return 100;
+  if (stage === "closed") return 100;
 
   const confidenceWeight = Math.min(0.86, Math.max(0.22, confidenceScore / 100));
   const base = stageBaseRate[stage];

@@ -1,5 +1,4 @@
 import type { FlowEngineView, Momentum, TemperatureLevel } from "../../../lib/ade";
-import type { MissionOpportunity } from "../../../lib/mission-control/model";
 import styles from "./FlowEngineV2.module.css";
 
 const brl = new Intl.NumberFormat("pt-BR", {
@@ -24,13 +23,7 @@ function momentumLabel(momentum: Momentum) {
   return "Estável";
 }
 
-export function FlowEngineV2({ flow, opportunities }: { flow: FlowEngineView; opportunities: MissionOpportunity[] }) {
-  const stageLinks = new Map(flow.stages.map((stage) => {
-    const top = opportunities
-      .filter((item) => item.stage === stage.key && item.status !== "lost")
-      .sort((a, b) => b.priorityScore - a.priorityScore)[0];
-    return [stage.key, top ? `/oportunidades/${top.id}` : `/oportunidades?stage=${stage.key}`];
-  }));
+export function FlowEngineV2({ flow }: { flow: FlowEngineView }) {
   return (
     <article className={styles.panel}>
       <header className={styles.header}>
@@ -72,7 +65,7 @@ export function FlowEngineV2({ flow, opportunities }: { flow: FlowEngineView; op
             <a
               className={styles.stageCard}
               data-bottleneck={bottleneck || undefined}
-              href={stageLinks.get(stage.key)}
+              href={`/oportunidades?stage=${stage.key}`}
               key={stage.key}
             >
               <div className={styles.stageTop}>

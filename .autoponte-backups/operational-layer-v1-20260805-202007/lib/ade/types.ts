@@ -6,7 +6,6 @@ export type RecommendationUrgency = "now" | "today" | "soon" | "routine";
 export type OpportunitySignals = {
   id: string;
   stage: OpportunityStage;
-  status?: string;
   leadCategory?: string;
   estimatedMin: number;
   estimatedMax: number;

@@ -22,28 +22,8 @@ export function evaluateOpportunity(signals: OpportunitySignals, now = new Date(
       signals.stage,
       preliminaryConfidence.score,
       momentum,
-      signals.status,
     ),
   };
-
-  if (signals.status === "lost") {
-    const confidence = assessConfidence(signals, { ...dna, priorityScore: 0 });
-    return {
-      dna: { ...dna, chance: 0, priorityScore: 0 },
-      confidence,
-      temperature: { score: 0, level: "cold", label: "Fria" },
-      momentum: "stable",
-      explainability: { reasons: ["Oportunidade registrada como perdida"], warnings: [] },
-      recommendation: {
-        action: "Revisar motivo da perda",
-        channel: "CRM",
-        urgency: "routine",
-        rationale: "Registrar o aprendizado comercial antes de encerrar o ciclo.",
-      },
-      ageDays: ageInDays(signals.createdAt, now),
-    };
-  }
-
   const confidence = assessConfidence(signals, dna);
   const temperature = calculateBusinessTemperature(dna);
   const explainability = explainAssessment(signals, dna, now);

@@ -29,25 +29,8 @@ export type TradeInRow = {
   createdAt: Date;
 };
 
-export type MissionEventRow = {
-  id: string;
-  opportunityId: string;
-  title: string;
-  description: string;
-  createdAt: Date;
-};
-
-export type MissionEvent = {
-  id: string;
-  opportunityId: string;
-  title: string;
-  description: string;
-  createdAt: string;
-};
-
 export type MissionOpportunity = {
   id: string;
-  status: string;
   name: string;
   city: string;
   interest: string;
@@ -55,7 +38,6 @@ export type MissionOpportunity = {
   value: number;
   priority: "Alta" | "Média" | "Normal";
   next: string;
-  nextFollowUp: string;
   stage: OpportunityStage;
   source: string;
   probability: number;
@@ -87,7 +69,6 @@ export type MissionControlViewModel = {
   operationScore: number;
   activeCount: number;
   proposalCount: number;
-  tradeInCount: number;
   activeValue: number;
   capitalNeeded: number;
   projectedMargin: number;
@@ -97,5 +78,4 @@ export type MissionControlViewModel = {
   flow: FlowEngineView;
   recommendations: MissionRecommendation[];
   opportunities: MissionOpportunity[];
-  recentEvents: MissionEvent[];
 };

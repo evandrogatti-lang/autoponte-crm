@@ -14,8 +14,7 @@
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "test:ade": "node scripts/test-ade.mjs",
-    "test:operational": "node scripts/test-operational.mjs"
+    "test:ade": "node scripts/test-ade.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

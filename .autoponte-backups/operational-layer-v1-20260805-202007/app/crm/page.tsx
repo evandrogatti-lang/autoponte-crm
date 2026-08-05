@@ -1,17 +1,14 @@
 import { desc } from "drizzle-orm";
 import { requireChatGPTUser } from "../chatgpt-auth";
 import { getDb } from "../../db";
-import { opportunityEvents, tradeIns } from "../../db/schema";
+import { tradeIns } from "../../db/schema";
 import { buildMissionControl } from "../../lib/mission-control/mapper";
-import type { MissionEventRow, TradeInRow } from "../../lib/mission-control/model";
+import type { TradeInRow } from "../../lib/mission-control/model";
 import { MissionControl } from "../../features/mission-control";
-
-export const dynamic = "force-dynamic";
 
 export default async function CrmPage() {
   await requireChatGPTUser("/crm");
   let rows: TradeInRow[] = [];
-  let events: MissionEventRow[] = [];
   try {
     const live = await getDb()
       .select()
@@ -38,24 +35,8 @@ export default async function CrmPage() {
       notes: row.notes,
       createdAt: row.createdAt,
     }));
-  } catch (error) {
-    console.error("mission control opportunities unavailable", error);
+  } catch {
+    rows = [];
   }
-  try {
-    const liveEvents = await getDb()
-      .select()
-      .from(opportunityEvents)
-      .orderBy(desc(opportunityEvents.createdAt))
-      .limit(20);
-    events = liveEvents.map((event) => ({
-      id: event.id,
-      opportunityId: event.opportunityId,
-      title: event.title,
-      description: event.description,
-      createdAt: event.createdAt,
-    }));
-  } catch (error) {
-    console.error("mission control event feed unavailable", error);
-  }
-  return <MissionControl model={buildMissionControl(rows, new Date(), events)} />;
+  return <MissionControl model={buildMissionControl(rows)} />;
 }
