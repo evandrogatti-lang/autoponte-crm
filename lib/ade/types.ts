@@ -85,6 +85,11 @@ export type FlowStage = {
   averagePriority: number;
   accelerating: number;
   decelerating: number;
+  stalled: number;
+  highPriority: number;
+  maxAgeDays: number;
+  pressure: number;
+  valueShare: number;
   temperature: BusinessTemperature;
 };
 
@@ -98,8 +103,12 @@ export type FlowEngineView = {
     stage: OpportunityStage | null;
     label: string;
     reason: string;
+    nextAction: string;
   };
   stages: FlowStage[];
   activeValue: number;
   weightedProbability: number;
+  atRiskCount: number;
+  atRiskValue: number;
+  acceleratingCount: number;
 };
