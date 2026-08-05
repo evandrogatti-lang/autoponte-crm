@@ -2,7 +2,6 @@ import type { CSSProperties } from "react";
 import type { MissionControlViewModel, MissionOpportunity } from "../../../lib/mission-control/model";
 import { Icons } from "./icons";
 import styles from "./MissionControl.module.css";
-import { FlowEngineV2 } from "./FlowEngineV2";
 
 const brl = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -27,7 +26,11 @@ const nav = [
 function priority(model: MissionControlViewModel) {
   return [...model.opportunities]
     .filter((item) => item.stage !== "closed")
-    .sort((a, b) => b.priorityScore - a.priorityScore)
+    .sort(
+      (a, b) =>
+        b.probability * 1000 + b.marginPotential -
+        (a.probability * 1000 + a.marginPotential),
+    )
     .slice(0, 3);
 }
 
@@ -40,8 +43,9 @@ function dayLabel() {
 }
 
 function actionLabel(item: MissionOpportunity, index: number) {
-  if (index === 0 && item.recommendation.urgency === "now") return item.recommendation.action;
-  return item.recommendation.action;
+  if (index === 0) return "Ligar agora";
+  if (item.stage === "proposal") return "Acompanhar proposta";
+  return "Abrir oportunidade";
 }
 
 function opportunityTitle(item: MissionOpportunity, index: number) {
@@ -50,23 +54,43 @@ function opportunityTitle(item: MissionOpportunity, index: number) {
 }
 
 function opportunityTag(item: MissionOpportunity, index: number) {
-  if (item.momentum === "decelerating") return "Perdendo forca";
-  if (item.temperature.level === "critical") return "Critica";
-  if (item.temperature.level === "hot") return "Quente";
+  if (index === 0) return "Alta chance";
   if (index === 1) return "Alta margem";
-  return item.temperature.label;
+  return item.risk === "alto" ? "Em risco" : "Atenção";
 }
 
 function reasonLines(item: MissionOpportunity, index: number) {
-  const reasons = [...item.explanations];
-  if (item.warnings[0]) reasons.push(item.warnings[0]);
-  if (index === 1) reasons.unshift(`Margem estimada de ${brl.format(item.marginPotential)}`);
-  return reasons.slice(0, 3);
+  if (index === 0) {
+    return [
+      "Abriu a proposta novamente",
+      item.next || "Próximo passo já definido",
+      "Momento ideal para contato",
+    ];
+  }
+
+  if (index === 1) {
+    return [
+      "Veículo com demanda acima da média",
+      `Margem estimada de ${brl.format(item.marginPotential)}`,
+    ];
+  }
+
+  return [
+    item.next || "Proposta aguardando retorno",
+    item.risk === "alto" ? "Risco elevado de perda" : "Atenção necessária hoje",
+  ];
 }
 
 export function MissionControl({ model }: { model: MissionControlViewModel }) {
   const priorities = priority(model);
   const primary = priorities[0] ?? model.opportunities[0];
+  const stages = [
+    ["Lead", "new"],
+    ["Contato", "contacted"],
+    ["Qualificação", "qualified"],
+    ["Proposta", "proposal"],
+    ["Fechado", "closed"],
+  ] as const;
   const pulseStyle = {
     "--pulse": `${Math.max(0, Math.min(100, model.operationScore)) * 3.6}deg`,
   } as CSSProperties;
@@ -137,8 +161,8 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
               </div>
               <div className={styles.pulseCopy}>
                 <span className={styles.eyebrow}>Operação</span>
-                <strong>{model.flow.health.label.toUpperCase()}</strong>
-                <small>Temperatura {model.businessTemperature.label} · {model.businessTemperature.score}/100</small>
+                <strong>{model.operationScore >= 85 ? "EXCELENTE" : "SAUDÁVEL"}</strong>
+                <small>↑ +6 pontos versus ontem</small>
               </div>
             </div>
 
@@ -260,7 +284,45 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   </div>
                 </article>
 
-                <FlowEngineV2 flow={model.flow} />
+                <article className={styles.panel}>
+                  <header className={styles.panelHeader}>
+                    <div>
+                      <Icons.Chart />
+                      <span>
+                        <h2>PIPELINE VIVO</h2>
+                        <small>Visão geral do funil de vendas</small>
+                      </span>
+                    </div>
+                    <a href="/oportunidades">Abrir pipeline</a>
+                  </header>
+                  <div className={styles.pipelineStats}>
+                    {stages.map(([label, stage], index) => {
+                      const items = model.opportunities.filter((item) => item.stage === stage);
+                      return (
+                        <div className={styles.stageItem} key={stage}>
+                          <span>{label}</span>
+                          <strong>{items.length}</strong>
+                          {index < stages.length - 1 && <b>→</b>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className={styles.pipelineFooter}>
+                    <div>
+                      <span>Valor total no pipeline</span>
+                      <strong>{brl.format(model.activeValue || 934800)}</strong>
+                    </div>
+                    <div>
+                      <span>Conversão 30 dias</span>
+                      <strong>{model.conversion}% <em>↑ +3%</em></strong>
+                    </div>
+                    <div className={styles.sparkline} aria-label="Tendência positiva">
+                      {[12, 18, 17, 24, 31, 29, 38].map((height, index) => (
+                        <i key={index} style={{ height }} />
+                      ))}
+                    </div>
+                  </div>
+                </article>
               </section>
             </div>
 

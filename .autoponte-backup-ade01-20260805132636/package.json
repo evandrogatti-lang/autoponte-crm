@@ -13,8 +13,7 @@
     "validate:artifact": "bash scripts/validate-artifact.sh",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push",
-    "test:ade": "node scripts/test-ade.mjs"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

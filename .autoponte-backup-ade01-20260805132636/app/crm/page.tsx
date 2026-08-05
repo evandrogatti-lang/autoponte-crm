@@ -8,6 +8,7 @@ import { MissionControl } from "../../features/mission-control";
 
 export default async function CrmPage() {
   await requireChatGPTUser("/crm");
+
   let rows: TradeInRow[] = [];
   try {
     const live = await getDb()
@@ -15,6 +16,7 @@ export default async function CrmPage() {
       .from(tradeIns)
       .orderBy(desc(tradeIns.createdAt))
       .limit(100);
+
     rows = live.map((row) => ({
       id: row.id,
       name: row.name,
@@ -25,18 +27,14 @@ export default async function CrmPage() {
       desiredVehicle: row.desiredVehicle,
       estimatedMin: row.estimatedMin,
       estimatedMax: row.estimatedMax,
-      referencePrice: row.referencePrice,
-      mileage: row.mileage,
-      condition: row.condition,
       status: row.status,
       leadCategory: row.leadCategory,
       nextFollowUp: row.nextFollowUp,
-      lastContactAt: row.lastContactAt,
-      notes: row.notes,
       createdAt: row.createdAt,
     }));
   } catch {
     rows = [];
   }
+
   return <MissionControl model={buildMissionControl(rows)} />;
 }
