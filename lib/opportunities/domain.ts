@@ -1,5 +1,7 @@
 import type { OpportunitySignals, OpportunityStage } from "../ade";
+import { cleanContactText, normalizeInternationalPhone, normalizeEmail } from "../contact";
 import { opportunityStatuses } from "./types";
+import { parseDesiredVehicleProfileInput } from "../vehicles/fipe-validation";
 import type { OpportunityCommand, OpportunityStatus } from "./types";
 
 export const opportunityStatusLabels: Record<OpportunityStatus, string> = {
@@ -115,6 +117,33 @@ export function parseOpportunityCommand(input: unknown): OpportunityCommand {
   if (payload.action === "stage") {
     if (!isOpportunityStatus(payload.status)) throw new Error("Etapa inválida.");
     return { action: "stage", status: payload.status };
+  }
+
+  if (payload.action === "edit_client") {
+    const rawWhatsapp = cleanContactText(payload.whatsapp);
+    const whatsapp = normalizeInternationalPhone(rawWhatsapp, payload.whatsappDdi);
+    if (rawWhatsapp && !whatsapp) throw new Error("WhatsApp inválido. Informe DDI e número local.");
+
+    const rawEmail = cleanContactText(payload.email);
+    const email = normalizeEmail(rawEmail);
+    if (rawEmail && !email) throw new Error("E-mail inválido.");
+    if (!whatsapp && !email) throw new Error("Informe ao menos um canal de contato válido.");
+
+    return {
+      action: "edit_client",
+      name: requiredString(payload.name, "Nome", 160),
+      whatsapp,
+      email,
+      city: requiredString(payload.city, "Cidade", 120),
+    };
+  }
+
+
+  if (payload.action === "edit_demand") {
+    return {
+      action: "edit_demand",
+      desiredVehicle: parseDesiredVehicleProfileInput(payload.desiredVehicle),
+    };
   }
 
   if (payload.action === "contact") {

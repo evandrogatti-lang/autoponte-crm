@@ -1,0 +1,26 @@
+.clickableRow {
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.clickableRow:hover {
+  background: #f7faf9;
+}
+
+.rowLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rowLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.actionLink {
+  position: relative;
+  z-index: 3;
+}

@@ -1,0 +1,451 @@
+.shell{
+  --ap-navy:#071f31;
+  --ap-navy-2:#0b2a3c;
+  --ap-lime:#c8ff2e;
+  --ap-bg:#f5f7f8;
+  --ap-line:#dbe4e8;
+  --ap-text:#102f40;
+  --ap-muted:#68808c;
+  min-height:100vh;
+  background:var(--ap-bg);
+  color:var(--ap-text);
+  display:grid;
+  grid-template-columns:238px minmax(0,1fr);
+}
+
+.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  background:var(--ap-navy);
+  color:#eaf4f6;
+  padding:18px 12px 16px;
+  display:flex;
+  flex-direction:column;
+  z-index:90;
+  overflow-y:auto;
+  box-sizing:border-box;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:3px 8px 18px;
+  color:#fff;
+  text-decoration:none;
+}
+
+.brandMark{
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  background:var(--ap-lime);
+  color:#09283a;
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  font-weight:900;
+}
+
+.brand strong{display:block;font-size:15px;line-height:1.1}
+.brand small{display:block;font-size:7px;letter-spacing:.24em;color:#9cb2bd;margin-top:3px}
+
+.nav{display:grid;gap:10px}
+.group{display:grid;gap:3px}
+.groupTitle{
+  margin:8px 11px 4px;
+  color:#728d9a;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.16em;
+}
+
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  min-height:40px;
+  padding:0 10px;
+  border-radius:9px;
+  color:#cfdee4;
+  text-decoration:none;
+  font-size:12.5px;
+  font-weight:700;
+  border-left:3px solid transparent;
+  box-sizing:border-box;
+}
+
+.nav a:hover{background:#0d3042;color:#fff}
+.nav a.active{background:#14363d;color:#fff;border-left-color:var(--ap-lime)}
+.icon{width:22px;display:grid;place-items:center;color:#92aab5}
+.active .icon{color:var(--ap-lime)}
+
+.footer{
+  margin-top:auto;
+  padding:14px 9px 3px;
+  display:flex;
+  gap:9px;
+  align-items:center;
+  border-top:1px solid #173a4b;
+}
+.user{
+  width:32px;height:32px;border-radius:50%;
+  background:#102f40;display:grid;place-items:center;
+  color:var(--ap-lime);font-weight:900
+}
+.footer strong,.footer small{display:block}
+.footer strong{font-size:12px}
+.footer small{font-size:9px;color:#8da8b4;margin-top:2px}
+
+.stage{min-width:0}
+
+.topbar{
+  min-height:68px;
+  background:#fff;
+  border-bottom:1px solid var(--ap-line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+  position:sticky;
+  top:0;
+  z-index:70;
+  box-sizing:border-box;
+}
+
+.breadcrumb{
+  font-size:10px;
+  font-weight:800;
+  color:#78909b;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+.routeLabel{
+  margin-top:2px;
+  font-size:14px;
+  font-weight:850;
+  color:#123448;
+}
+
+.actions{display:flex;gap:10px;align-items:center}
+.actions a{
+  padding:9px 12px;
+  border-radius:9px;
+  text-decoration:none;
+  color:#0b3445;
+  font-size:12px;
+  font-weight:800;
+  border:1px solid #d1dde2;
+  background:#fff;
+}
+.actions .primary{
+  background:var(--ap-lime);
+  border-color:var(--ap-lime);
+  color:#0b2a38;
+}
+
+.content{min-width:0}
+
+/* Neutraliza shells laterais/cabecalhos antigos nas paginas gerenciadas. */
+.content :global(.mc-shell){
+  display:block!important;
+  grid-template-columns:1fr!important;
+  min-height:auto!important;
+  background:transparent!important;
+}
+.content :global(.mc-shell)>aside,
+.content :global(.mc-topbar),
+.content :global(.inventory-sidebar),
+.content :global(.crm-sidebar),
+.content :global(.client-sidebar){
+  display:none!important;
+}
+
+.content :global(.inventory-shell){
+  display:block!important;
+  min-height:auto!important;
+}
+.content :global(.client-dense-page),
+.content :global(.client-dense-shell){
+  background:transparent!important;
+}
+
+/* Cabeçalhos duplicados conhecidos */
+.content :global(.crm-header),
+.content :global(.client-topbar),
+.content :global(.inventory-topbar){
+  display:none!important;
+}
+
+/* Mantem conteudo amplo e coerente */
+.content>main{
+  min-height:calc(100vh - 68px)!important;
+  max-width:none!important;
+}
+
+/* Quando uma pagina antiga usa main > aside + section, elimina apenas o aside interno */
+.content>main:has(>aside){
+  display:block!important;
+  grid-template-columns:1fr!important;
+  background:transparent!important;
+}
+.content>main:has(>aside)>aside{
+  display:none!important;
+}
+
+/* Tipografia minima coerente sem sobrescrever componentes especificos */
+.content{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.content button,
+.content input,
+.content select,
+.content textarea{
+  font:inherit;
+}
+
+@media(max-width:1180px) and (min-width:761px){
+  .shell{
+    grid-template-columns:82px minmax(0,1fr);
+  }
+
+  .sidebar{
+    position:sticky;
+    top:0;
+    height:100vh;
+    padding:14px 10px;
+  }
+
+  .brand{
+    justify-content:center;
+    padding:4px 0 18px;
+  }
+
+  .brand > div:last-child,
+  .groupTitle,
+  .nav a span:last-child,
+  .footer{
+    display:none;
+  }
+
+  .nav{
+    gap:8px;
+  }
+
+  .group{
+    display:grid;
+    gap:5px;
+  }
+
+  .nav a{
+    justify-content:center;
+    padding:0;
+    min-height:44px;
+    border-left:0;
+  }
+
+  .icon{
+    width:auto;
+    font-size:18px;
+  }
+  .mobileSecondary{
+    display:none;
+}
+
+  .mobileMoreOpen .mobileSecondary{
+    display:flex;
+}
+
+  .nav a.active{
+    border-left:0;
+    box-shadow:inset 3px 0 0 var(--ap-lime);
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+  }
+}
+@media(max-width:760px){
+  .shell{
+    display:block;
+    min-height:100vh;
+  }
+
+  .sidebar{
+    position:fixed;
+    left:0;
+    right:0;
+    top:auto;
+    bottom:0;
+    width:100%;
+    height:68px;
+    padding:6px 8px;
+    display:block;
+    overflow:visible;
+    z-index:100;
+  }
+
+  .brand,
+  .groupTitle,
+  .footer{
+    display:none;
+  }
+
+  .nav{
+    display:flex;
+    align-items:stretch;
+    gap:3px;
+    height:100%;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+
+  .nav::-webkit-scrollbar{
+    display:none;
+  }
+
+  .group{
+    display:contents;
+  }
+
+  .nav a{
+    flex:1 1 0;
+    min-height:56px;
+    padding:5px 3px;
+    border-left:0;
+    border-radius:8px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:3px;
+    font-size:8px;
+    text-align:center;
+    line-height:1.1;
+  }
+   .mobileSecondary{
+     display:none;
+}
+
+   .mobileMoreOpen .mobileSecondary{
+     display:flex;
+}
+   .mobileMoreButton{
+     flex:1 1 0px;
+     min-height:56px;
+     padding:5px 3px;
+     border:0;
+     border-radius:8px;
+     background:transparent;
+     color:#eaf4f6;
+     display:flex;
+     flex-direction:column;
+     align-items:center;
+     justify-content:center;
+     gap:3px;
+     font:inherit;
+     font-size:8px;
+     line-height:1.1;
+     cursor:pointer;
+}
+
+  .nav a.active{
+    border-left:0;
+    background:#14363d;
+    box-shadow:inset 0 3px 0 var(--ap-lime);
+  }
+
+  .icon{
+    width:auto;
+    font-size:17px;
+  }
+
+  .stage{
+    min-width:0;
+    padding-bottom:72px;
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+    min-height:60px;
+    padding:0 12px;
+  }
+
+  .breadcrumb{
+    display:none;
+  }
+
+  .actions{
+    gap:6px;
+  }
+
+  .actions a:first-child{
+    display:none;
+  }
+
+  .actions .primary{
+    font-size:10px;
+    padding:8px 10px;
+  }
+}
+@media(max-width:900px) and (max-height:500px){
+  .shell{
+    display:block;
+    min-height:100vh;
+  }
+
+  .sidebar{
+    position:fixed;
+    left:0;
+    right:0;
+    top:auto;
+    bottom:0;
+    width:100%;
+    height:68px;
+    padding:6px 8px;
+    display:block;
+    overflow:visible;
+    z-index:100;
+  }
+
+  .brand,
+  .groupTitle,
+  .footer{
+    display:none;
+  }
+
+  .nav{
+    display:flex;
+    align-items:stretch;
+    gap:3px;
+    height:100%;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+
+  .group{
+    display:contents;
+  }
+
+  .stage{
+    min-width:0;
+    padding-bottom:72px;
+  }
+
+  .nav a,
+.mobileMoreButton{
+  flex:1 1 0;
+  min-width:0;
+}
+
+.mobileSecondary{
+  display:none;
+}
+
+.mobileMoreOpen .mobileSecondary{
+  display:flex;
+  
+ }
+}

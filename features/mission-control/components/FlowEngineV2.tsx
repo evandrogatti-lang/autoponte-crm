@@ -1,4 +1,4 @@
-import type { FlowEngineView, Momentum, TemperatureLevel } from "../../../lib/ade";
+﻿import type { FlowEngineView, Momentum, TemperatureLevel } from "../../../lib/ade";
 import type { MissionOpportunity } from "../../../lib/mission-control/model";
 import styles from "./FlowEngineV2.module.css";
 
@@ -36,7 +36,7 @@ export function FlowEngineV2({ flow, opportunities }: { flow: FlowEngineView; op
       <header className={styles.header}>
         <div className={styles.heading}>
           <span className={styles.eyebrow}>FLOW ENGINE V2.2</span>
-          <h2>Pipeline vivo</h2>
+          <h2>Funil comercial ativo</h2>
           <p>{flow.health.summary}</p>
         </div>
         <div className={styles.health} data-health={flow.health.label}>

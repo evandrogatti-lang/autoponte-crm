@@ -1,0 +1,55 @@
+.compactForm {
+  --compact-gap: 12px;
+}
+
+.compactForm :global(.form-section) {
+  padding: 18px 20px;
+}
+
+.compactForm :global(.form-section > header) {
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+
+.clientGrid {
+  grid-template-columns: minmax(220px, 1.15fr) minmax(170px, .85fr) minmax(220px, 1fr) minmax(190px, .9fr) !important;
+  gap: var(--compact-gap) !important;
+}
+
+.commercialGrid {
+  grid-template-columns: minmax(150px, .65fr) minmax(160px, .75fr) minmax(250px, 1.45fr) minmax(190px, .9fr) !important;
+  gap: var(--compact-gap) !important;
+  margin-top: 14px;
+}
+
+.actionField {
+  grid-column: span 2;
+}
+
+.notesField {
+  grid-column: 1 / -1;
+}
+
+.notesField textarea {
+  min-height: 74px !important;
+}
+
+.compactForm :global(.form-grid input),
+.compactForm :global(.form-grid select),
+.compactForm :global(.form-grid textarea) {
+  min-height: 42px;
+  padding: 9px 11px;
+}
+
+@media (max-width: 1180px) {
+  .clientGrid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .commercialGrid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .actionField { grid-column: 1 / -1; }
+}
+
+@media (max-width: 680px) {
+  .clientGrid,
+  .commercialGrid { grid-template-columns: 1fr !important; }
+  .actionField,
+  .notesField { grid-column: auto; }
+}

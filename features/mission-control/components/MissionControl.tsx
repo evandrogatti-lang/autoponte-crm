@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+﻿import type { CSSProperties } from "react";
 import type { MissionControlViewModel, MissionOpportunity } from "../../../lib/mission-control/model";
 import { Icons } from "./icons";
 import styles from "./MissionControl.module.css";
@@ -12,16 +12,16 @@ const brl = new Intl.NumberFormat("pt-BR", {
 
 const nav = [
   ["Mission Control", "/crm", Icons.Grid],
-  ["Clientes", "/crm#clientes", Icons.Users],
+  ["Clientes", "/clientes", Icons.Users],
   ["Leads", "/oportunidades", Icons.Target],
   ["Oportunidades", "/oportunidades", Icons.Target],
-  ["Estoque", "/crm#estoque", Icons.Car],
+  ["Estoque", "/veiculos", Icons.Car],
   ["Trocas", "/oportunidades", Icons.Swap],
-  ["Propostas", "/crm#propostas", Icons.File],
-  ["Parceiros", "/crm#parceiros", Icons.Store],
-  ["Financeiro", "/crm#financeiro", Icons.Wallet],
-  ["Relatórios", "/crm#relatorios", Icons.Chart],
-  ["Configurações", "/crm#configuracoes", Icons.Settings],
+  ["Propostas", "/propostas", Icons.File],
+  ["Parceiros", "/parceiros", Icons.Store],
+  ["Financeiro", "/financeiro", Icons.Wallet],
+  ["Relatórios", "/relatorios", Icons.Chart],
+  ["Configurações", "/configuracoes", Icons.Settings],
 ] as const;
 
 function priority(model: MissionControlViewModel) {
@@ -71,58 +71,10 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
 
   return (
     <main className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <a className={styles.brand} href="/crm">
-          <span className={styles.mark}>A</span>
-          <span className={styles.brandText}>
-            <strong>AutoPonte</strong>
-            <span>VEÍCULOS</span>
-          </span>
-        </a>
-
-        <nav className={styles.nav}>
-          {nav.map(([label, href, Icon], index) => (
-            <a key={label} href={href} className={index === 0 ? styles.active : ""}>
-              <Icon />
-              {label === "Leads" && <b className={styles.badge}>{model.activeCount}</b>}
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <div className={styles.sidebarBottom}>
-          <div className={styles.operation}>
-            <small>Operação ativa</small>
-            <strong>AutoPonte Motors</strong>
-          </div>
-          <div className={styles.user}>
-            <span className={styles.avatar}>EG</span>
-            <div>
-              <strong>Evandro Gatti</strong>
-              <small>Gestor · online</small>
-            </div>
-          </div>
-        </div>
-      </aside>
+      
 
       <section className={styles.stage}>
-        <header className={styles.topbar}>
-          <label className={styles.search}>
-            <Icons.Search />
-            <input aria-label="Busca universal" placeholder="Buscar cliente, placa, telefone, veículo..." />
-            <kbd>Ctrl K</kbd>
-          </label>
-          <div className={styles.topActions}>
-            <button className={styles.iconButton} aria-label="Notificações">
-              <Icons.Bell />
-              <b>{model.immediateActions}</b>
-            </button>
-            <a className={styles.primary} href="/oportunidades">
-              <Icons.Plus />
-              <span>Nova oportunidade</span>
-            </a>
-          </div>
-        </header>
+       
 
         <div className={styles.content}>
           <section className={styles.summaryRow} aria-label="Resumo da operação">
@@ -281,7 +233,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                       </a>
                     ))}
                   </div>
-                  <a className={styles.advisorAction} href={primary ? `/oportunidades/${primary.id}` : "/oportunidades"}>
+                  <a className={styles.advisorAction} href="/recomendacoes">
                     <Icons.Spark />
                     Ver todas as recomendações
                   </a>
@@ -312,14 +264,14 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                 <header className={styles.panelHeader}>
                   <div>
                     <Icons.Plus />
-                    <span><h2>AÇÕES RÁPIDAS</h2></span>
+          <span><h2>AÇÕES RÁPIDAS</h2></span>
                   </div>
                 </header>
                 <div className={styles.quick}>
                   <a href="/oportunidades"><Icons.Target />Novo lead</a>
                   <a href="/oportunidades"><Icons.Swap />Avaliar troca</a>
                   <a href="/matches"><Icons.Search />Buscar veículo</a>
-                  <a href="/crm#propostas"><Icons.File />Nova proposta</a>
+                  <a href="/propostas"><Icons.File />Nova proposta</a>
                 </div>
               </section>
             </aside>
@@ -327,13 +279,11 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
         </div>
       </section>
 
-      <nav className={styles.mobileNav}>
-        <a href="/crm"><Icons.Grid />Início</a>
-        <a href="/oportunidades"><Icons.Target />Leads</a>
-        <a href="/crm#estoque"><Icons.Car />Estoque</a>
-        <a href="/matches"><Icons.Search />Match</a>
-        <a href="/crm#configuracoes"><Icons.Settings />Ajustes</a>
-      </nav>
+      
     </main>
   );
 }
+
+
+
+

@@ -1,11 +1,16 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import type { OpportunityStatus, OpportunityWorkspaceData } from "../../../lib/opportunities";
+import { buildGmailComposeUrl, buildMailtoUrl, buildWhatsAppUrl, formatInternationalPhone, splitInternationalPhone } from "../../../lib/contact";
 import { opportunityStatusLabels, opportunityStatuses } from "../../../lib/opportunities";
 import styles from "./OpportunityWorkspace.module.css";
+import { DesiredVehicleSelector } from "../../vehicle-demand";
+import { InternationalPhoneField } from "../../contact";
+import { emptyDesiredVehicleProfile } from "../../../lib/vehicles/desired-profile";
+import type { DesiredVehicleProfileInput } from "../../../lib/vehicles/desired-profile";
 
 const brl = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -48,15 +53,43 @@ function conditionLabel(condition: string) {
 
 type ActionPayload =
   | { action: "stage"; status: OpportunityStatus }
+  | { action: "edit_client"; name: string; whatsapp: string; whatsappDdi?: string; email: string; city: string }
+  | { action: "edit_demand"; desiredVehicle: DesiredVehicleProfileInput }
   | { action: "contact"; channel: string; summary: string }
   | { action: "note"; note: string }
   | { action: "next_action"; label: string; dueAt: string };
+
+
+function recommendationContext(data: OpportunityWorkspaceData) {
+  const reasons = data.assessment.explainability.reasons.filter(Boolean);
+  const evidence = reasons[0] || data.assessment.recommendation.rationale || "A recomendação foi calculada a partir dos dados atuais da oportunidade.";
+  const impact = data.assessment.dna.chance >= 70
+    ? "Aproveitar o momento de alta aderência e reduzir o risco de perda por demora."
+    : data.assessment.dna.chance >= 40
+      ? "Aumentar a qualidade do próximo contato e obter dados que permitam avançar a negociação."
+      : "Completar informações essenciais antes de investir esforço comercial ou apresentar proposta.";
+  const urgency = data.assessment.recommendation.urgency || (data.assessment.temperature.score >= 70 ? "alta" : data.assessment.temperature.score >= 40 ? "média" : "baixa");
+  return { evidence, impact, urgency };
+}
+
+function demandValue(data: OpportunityWorkspaceData): DesiredVehicleProfileInput {
+  if (data.desiredVehicleProfile.searchScope === "legacy") return emptyDesiredVehicleProfile();
+  const { searchScope: _, ...profile } = data.desiredVehicleProfile;
+  return profile;
+}
 
 export function OpportunityWorkspace({ initialData }: { initialData: OpportunityWorkspaceData }) {
   const router = useRouter();
   const [data, setData] = useState(initialData);
   const [stage, setStage] = useState<OpportunityStatus>(initialData.status);
-  const [channel, setChannel] = useState("WhatsApp");
+  const [clientName, setClientName] = useState(initialData.client.name);
+  const initialPhone = splitInternationalPhone(initialData.client.whatsapp);
+  const [clientPhoneDdi, setClientPhoneDdi] = useState(initialPhone.ddi);
+  const [clientPhoneNational, setClientPhoneNational] = useState(initialPhone.nationalNumber);
+  const [clientEmail, setClientEmail] = useState(initialData.client.email);
+  const [clientCity, setClientCity] = useState(initialData.client.city);
+  const [desiredVehicleProfile, setDesiredVehicleProfile] = useState<DesiredVehicleProfileInput>(demandValue(initialData));
+  const [channel, setChannel] = useState(buildWhatsAppUrl(initialData.client.whatsapp) ? "WhatsApp" : buildMailtoUrl(initialData.client.email) ? "E-mail" : "Presencial");
   const [contactSummary, setContactSummary] = useState("");
   const [note, setNote] = useState("");
   const [nextAction, setNextAction] = useState(initialData.commercial.nextAction);
@@ -65,11 +98,11 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const whatsapp = useMemo(() => {
-    const digits = data.client.whatsapp.replace(/\D/g, "");
-    return digits.startsWith("55") ? digits : `55${digits}`;
-  }, [data.client.whatsapp]);
+  const whatsappUrl = useMemo(() => buildWhatsAppUrl(data.client.whatsapp), [data.client.whatsapp]);
+  const emailUrl = useMemo(() => buildGmailComposeUrl(data.client.email, `AutoPonte · ${data.desiredVehicle || "oportunidade"}`), [data.client.email, data.desiredVehicle]);
+  const whatsappDisplay = useMemo(() => formatInternationalPhone(data.client.whatsapp), [data.client.whatsapp]);
   const photo = data.tradeIn.photoKeys[0];
+  const recommendation = recommendationContext(data);
 
   async function mutate(label: string, payload: ActionPayload) {
     setPending(label);
@@ -87,6 +120,15 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
       }
       setData(result);
       setStage(result.status);
+      setClientName(result.client.name);
+      const nextPhone = splitInternationalPhone(result.client.whatsapp);
+      setClientPhoneDdi(nextPhone.ddi);
+      setClientPhoneNational(nextPhone.nationalNumber);
+      setClientEmail(result.client.email);
+      setClientCity(result.client.city);
+      setDesiredVehicleProfile(demandValue(result));
+      if (channel === "WhatsApp" && !buildWhatsAppUrl(result.client.whatsapp)) setChannel(buildMailtoUrl(result.client.email) ? "E-mail" : "Presencial");
+      if (channel === "E-mail" && !buildMailtoUrl(result.client.email)) setChannel(buildWhatsAppUrl(result.client.whatsapp) ? "WhatsApp" : "Presencial");
       setNextAction(result.commercial.nextAction);
       setNextDue(inputDateTime(result.commercial.nextFollowUp));
       setMessage("Alteração salva e inteligência recalculada.");
@@ -102,11 +144,8 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
 
   return (
     <main className={styles.shell}>
-      <header className={styles.topbar}>
-        <a className={styles.brand} href="/crm"><b>A</b><span><strong>AutoPonte</strong><small>OPPORTUNITY WORKSPACE</small></span></a>
-        <nav><a href="/crm">Mission Control</a><a href="/oportunidades">Todas as oportunidades</a></nav>
-      </header>
-
+      
+     
       <section className={styles.hero}>
         <div>
           <span className={styles.eyebrow}>OPORTUNIDADE · {data.id.slice(0, 8).toUpperCase()}</span>
@@ -114,9 +153,9 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
           <p>{data.desiredVehicle || "Veículo desejado ainda não definido"} · {data.client.city}</p>
         </div>
         <div className={styles.heroActions}>
-          <span className={styles.status} data-status={data.status}>{data.statusLabel}</span>
-          <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer">Abrir WhatsApp</a>
-          <a href={`mailto:${data.client.email}`}>Enviar e-mail</a>
+          <span className={styles.status} data-status={data.status}>Etapa: {data.statusLabel}</span>
+          {whatsappUrl ? <a className={styles.whatsappAction} href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Abrir conversa no WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.8a8 8 0 0 1-11.8 7l-4.1 1.1 1.1-4A8 8 0 1 1 20 11.8Zm-8-6.2a6.2 6.2 0 0 0-5.3 9.5l.2.4-.6 2.1 2.2-.6.4.2A6.2 6.2 0 1 0 12 5.6Zm3.5 8.7c-.2.5-1.1 1-1.6 1.1-.4.1-1 .2-2.9-.6-2.4-1-3.9-3.4-4-3.6-.1-.2-1-1.3-1-2.5 0-1.2.6-1.8.9-2 .2-.2.5-.3.8-.3h.5c.2 0 .4 0 .6.5l.7 1.7c.1.2.1.4 0 .6l-.4.6-.5.5c-.2.2-.3.4-.1.7.2.4.8 1.3 1.8 2 .9.8 1.7 1 2.1 1.2.3.1.5.1.7-.1l.9-1.1c.2-.3.4-.3.7-.2l1.8.8c.3.1.5.2.5.4 0 .1 0 .5-.2 1Z"/></svg><span>WhatsApp</span></a> : <span className={styles.contactUnavailable}>WhatsApp não informado</span>}
+          {emailUrl ? <a className={styles.emailAction} href={emailUrl} target="_blank" rel="noreferrer" aria-label="Escrever e-mail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3V5Zm9 7.2L5.4 7h13.2L12 12.2ZM5 17h14V9.1l-7 5.5-7-5.5V17Z"/></svg><span>E-mail</span></a> : <span className={styles.contactUnavailable}>E-mail não informado</span>}
         </div>
       </section>
 
@@ -132,12 +171,17 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
 
       <div className={styles.layout}>
         <div className={styles.mainColumn}>
-          <section className={styles.panel}>
-            <header className={styles.panelHeader}><div><span>RECOMENDAÇÃO ADE</span><h2>{data.assessment.recommendation.action}</h2></div><b>{data.assessment.recommendation.channel}</b></header>
-            <p className={styles.recommendation}>{data.assessment.recommendation.rationale}</p>
-            <div className={styles.reasonGrid}>
-              <div><span>Por que agora</span>{data.assessment.explainability.reasons.map((reason) => <p key={reason}>✓ {reason}</p>)}</div>
-              <div><span>Pontos de atenção</span>{data.assessment.explainability.warnings.length ? data.assessment.explainability.warnings.map((warning) => <p key={warning}>! {warning}</p>) : <p>Sem alertas críticos.</p>}</div>
+          <section className={`${styles.panel} ${styles.explainedRecommendation}`}>
+            <header className={styles.panelHeader}><div><span>RECOMENDAÇÃO EXPLICADA</span><h2>{data.assessment.recommendation.action || "Sem recomendação acionável no momento"}</h2></div><b>{data.assessment.recommendation.channel || "Análise"}</b></header>
+            <div className={styles.recommendationLead}>
+              <p className={styles.recommendation}>{data.assessment.recommendation.rationale || "Dados insuficientes para uma recomendação específica."}</p>
+              <span className={styles.urgencyBadge} data-urgency={recommendation.urgency}>Urgência: {recommendation.urgency}</span>
+            </div>
+            <div className={styles.recommendationContextGrid}>
+              <article><span>POR QUE AGORA?</span><p>{recommendation.evidence}</p></article>
+              <article><span>IMPACTO ESPERADO</span><p>{recommendation.impact}</p></article>
+              <article><span>EVIDÊNCIAS</span>{data.assessment.explainability.reasons.length ? data.assessment.explainability.reasons.slice(0, 3).map((reason) => <p key={reason}>✓ {reason}</p>) : <p>Nenhum evento verificável adicional foi identificado.</p>}</article>
+              <article><span>PONTOS DE ATENÇÃO</span>{data.assessment.explainability.warnings.length ? data.assessment.explainability.warnings.slice(0, 3).map((warning) => <p key={warning}>! {warning}</p>) : <p>Sem alertas críticos.</p>}</article>
             </div>
           </section>
 
@@ -146,20 +190,20 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
               <header className={styles.simpleHeader}><span>CLIENTE</span><h2>Contato e interesse</h2></header>
               <dl className={styles.details}>
                 <div><dt>Nome</dt><dd>{data.client.name}</dd></div>
-                <div><dt>WhatsApp</dt><dd>{data.client.whatsapp}</dd></div>
-                <div><dt>E-mail</dt><dd>{data.client.email}</dd></div>
+                <div><dt>WhatsApp</dt><dd>{whatsappDisplay || "Não informado"}</dd></div>
+                <div><dt>E-mail</dt><dd>{data.client.email || "Não informado"}</dd></div>
                 <div><dt>Cidade</dt><dd>{data.client.city}</dd></div>
                 <div className={styles.full}><dt>Veículo desejado</dt><dd>{data.desiredVehicle || "A definir"}</dd></div>
               </dl>
             </article>
 
             <article className={styles.panel}>
-              <header className={styles.simpleHeader}><span>TROCA</span><h2>{data.tradeIn.brand} {data.tradeIn.model}</h2></header>
+              <header className={styles.simpleHeader}><span>TROCA</span><h2>{data.tradeIn.brand && data.tradeIn.model ? `${data.tradeIn.brand} ${data.tradeIn.model}` : "Sem veículo de troca"}</h2></header>
               <div className={styles.vehicleBlock}>
-                {photo ? <img src={`/api/opportunities/photo?key=${encodeURIComponent(photo)}`} alt={`${data.tradeIn.brand} ${data.tradeIn.model}`} /> : <div className={styles.noPhoto}>Sem foto</div>}
+                {photo ? <img src={`/api/opportunities/photo?key=${encodeURIComponent(photo)}`} alt={`${data.tradeIn.brand} ${data.tradeIn.model}`} /> : <div className={styles.noPhoto}>{data.tradeIn.brand ? "Sem foto" : "Compra direta"}</div>}
                 <dl className={styles.details}>
-                  <div><dt>Ano</dt><dd>{data.tradeIn.year}</dd></div>
-                  <div><dt>Quilometragem</dt><dd>{number.format(data.tradeIn.mileage)} km</dd></div>
+                  <div><dt>Ano</dt><dd>{data.tradeIn.year || "Não se aplica"}</dd></div>
+                  <div><dt>Quilometragem</dt><dd>{data.tradeIn.brand ? `${number.format(data.tradeIn.mileage)} km` : "Não se aplica"}</dd></div>
                   <div><dt>Condição</dt><dd>{conditionLabel(data.tradeIn.condition)}</dd></div>
                   <div><dt>Versão</dt><dd>{data.tradeIn.version || "Não informada"}</dd></div>
                 </dl>
@@ -186,6 +230,23 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
 
         <aside className={styles.actionsColumn}>
           <section className={styles.actionPanel}>
+            <header><span>CLIENTE</span><h2>Corrigir dados e contato</h2></header>
+            <input value={clientName} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientName(event.target.value)} placeholder="Nome completo" />
+            <InternationalPhoneField ddi={clientPhoneDdi} nationalNumber={clientPhoneNational} onDdiChange={setClientPhoneDdi} onNationalNumberChange={setClientPhoneNational} disabled={pending !== null} />
+            <input type="email" value={clientEmail} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientEmail(event.target.value)} placeholder="E-mail" />
+            <input value={clientCity} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientCity(event.target.value)} placeholder="Cidade" />
+            <button disabled={pending !== null || !clientName.trim() || !clientCity.trim() || (!clientPhoneNational.trim() && !clientEmail.trim())} onClick={() => mutate("edit_client", { action: "edit_client", name: clientName, whatsapp: clientPhoneNational, whatsappDdi: clientPhoneDdi, email: clientEmail, city: clientCity })}>{pending === "edit_client" ? "Salvando..." : "Salvar dados do cliente"}</button>
+            <small>É obrigatório manter ao menos um canal válido: WhatsApp ou e-mail.</small>
+          </section>
+
+          <section className={styles.actionPanel}>
+            <header><span>DEMANDA</span><h2>Veículo desejado</h2></header>
+            {data.desiredVehicleProfile.searchScope === "legacy" && <small>Cadastro legado: selecione a demanda no catálogo FIPE para eliminar o texto livre.</small>}
+            <DesiredVehicleSelector value={desiredVehicleProfile} onChange={setDesiredVehicleProfile} disabled={pending !== null} compact idPrefix={`workspace-demand-${data.id}`} />
+            <button disabled={pending !== null || !desiredVehicleProfile.brandCode || !desiredVehicleProfile.yearMin || !desiredVehicleProfile.yearMax || !desiredVehicleProfile.priceMax} onClick={() => mutate("edit_demand", { action: "edit_demand", desiredVehicle: desiredVehicleProfile })}>{pending === "edit_demand" ? "Validando FIPE..." : "Salvar demanda"}</button>
+          </section>
+
+          <section className={styles.actionPanel}>
             <header><span>ETAPA</span><h2>Alterar pipeline</h2></header>
             <select value={stage} onChange={(event: ChangeEvent<HTMLSelectElement>) => setStage(event.target.value as OpportunityStatus)}>
               {opportunityStatuses.map((status) => <option value={status} key={status}>{opportunityStatusLabels[status]}</option>)}
@@ -197,7 +258,7 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
             <header><span>CONTATO</span><h2>Registrar interação</h2></header>
             <select value={channel} onChange={(event: ChangeEvent<HTMLSelectElement>) => setChannel(event.target.value)}><option>WhatsApp</option><option>Telefone</option><option>E-mail</option><option>Presencial</option><option>Outro</option></select>
             <textarea value={contactSummary} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setContactSummary(event.target.value)} placeholder="Resumo do contato, objeções e sinais do cliente..." rows={4} />
-            <button disabled={pending !== null} onClick={async () => { if (await mutate("contact", { action: "contact", channel, summary: contactSummary })) setContactSummary(""); }}>{pending === "contact" ? "Registrando..." : "Registrar contato"}</button>
+            <button disabled={pending !== null || !contactSummary.trim()} onClick={async () => { if (await mutate("contact", { action: "contact", channel, summary: contactSummary })) setContactSummary(""); }}>{pending === "contact" ? "Registrando..." : "Registrar contato"}</button>
           </section>
 
           <section className={styles.actionPanel}>
@@ -224,3 +285,5 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
     </main>
   );
 }
+
+

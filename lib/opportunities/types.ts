@@ -1,4 +1,5 @@
 import type { OpportunityAssessment, OpportunityStage } from "../ade";
+import type { DesiredVehicleProfileInput } from "../vehicles/desired-profile";
 
 export const opportunityStatuses = [
   "pre_evaluated",
@@ -37,6 +38,7 @@ export type OpportunityWorkspaceData = {
     city: string;
   };
   desiredVehicle: string;
+  desiredVehicleProfile: DesiredVehicleProfileInput & { searchScope: "brand" | "model" | "version" | "legacy" };
   tradeIn: {
     brand: string;
     model: string;
@@ -67,6 +69,8 @@ export type OpportunityWorkspaceData = {
 
 export type OpportunityCommand =
   | { action: "stage"; status: OpportunityStatus }
+  | { action: "edit_client"; name: string; whatsapp: string; email: string; city: string }
+  | { action: "edit_demand"; desiredVehicle: DesiredVehicleProfileInput }
   | { action: "contact"; channel: string; summary: string }
   | { action: "note"; note: string }
   | { action: "next_action"; label: string; dueAt: string };

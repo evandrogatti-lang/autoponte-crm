@@ -1,0 +1,65 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": [
+      "node",
+      "react",
+      "react-dom"
+    ],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "files": [
+    "validation-assets.d.ts",
+    "db/index.ts",
+    "db/schema.ts",
+    "lib/ade/types.ts",
+    "lib/ade/index.ts",
+    "lib/ade/probability-calibration.ts",
+    "lib/opportunities/types.ts",
+    "lib/opportunities/domain.ts",
+    "lib/opportunities/service.ts",
+    "lib/mission-control/model.ts",
+    "lib/mission-control/mapper.ts",
+    "app/chatgpt-auth.ts",
+    "app/crm/page.tsx",
+    "app/oportunidades/page.tsx",
+    "app/oportunidades/[id]/page.tsx",
+    "app/api/opportunities/[id]/route.ts",
+    "app/api/trade-in/route.ts",
+    "features/opportunity-workspace/components/OpportunityWorkspace.tsx",
+    "features/opportunity-workspace/index.ts",
+    "features/mission-control/components/MissionControl.tsx",
+    "features/mission-control/components/FlowEngineV2.tsx",
+    "features/mission-control/components/icons.tsx",
+    "features/mission-control/index.ts",
+    "lib/contact.ts",
+    "lib/opportunities/create.ts",
+    "app/api/opportunities/route.ts",
+    "app/clientes/page.tsx",
+    "app/matches/page.tsx",
+    "app/oportunidades/nova/page.tsx",
+    "features/opportunity-create/components/OpportunityCreateForm.tsx",
+    "features/opportunity-create/index.ts",
+    "lib/vehicles/desired-profile.ts",
+    "lib/vehicles/fipe-validation.ts",
+    "features/vehicle-demand/components/DesiredVehicleSelector.tsx",
+    "features/vehicle-demand/index.ts"
+  ]
+}

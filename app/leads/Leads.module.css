@@ -1,0 +1,22 @@
+.clickableRow {
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.clickableRow:hover {
+  background: #f7faf9;
+}
+
+.rowLink {
+  color: #0e2938;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.rowLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}

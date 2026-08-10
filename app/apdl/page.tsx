@@ -1,4 +1,4 @@
-import {
+﻿import {
   AIInsightCard, APButton, APPanel, CashFlowWidget, CommandPalette, DecisionPanel,
   EnterpriseSidebar, HeatMap, KPICard, MissionCard, MissionControlHeader,
   NotificationCenter, OpportunityScore, PipelineCard, PulseIndicator, Radar,
@@ -7,7 +7,7 @@ import {
 
 export default function APDLShowcasePage() {
   return <main className="ap-showcase-shell">
-    <EnterpriseSidebar items={[{label:"Mission Control",href:"/crm",active:true},{label:"Clientes",href:"#"},{label:"Estoque",href:"#"},{label:"Trocas",href:"/oportunidades"},{label:"Match IA",href:"/matches"}]}/>
+    <EnterpriseSidebar items={[{label:"Mission Control",href:"/crm",active:true},{label:"Clientes",href:"#"},{label:"Estoque",href:"#"},{label:"Trocas",href:"/oportunidades"},{label:"Correspondências IA",href:"/matches"}]}/>
     <div className="ap-showcase-main">
       <MissionControlHeader title="APDL Foundation" subtitle="Biblioteca operacional, intuitiva e preparada para IA com custo controlado." actions={<APButton>Nova oportunidade</APButton>}/>
       <CommandPalette/>
@@ -26,7 +26,7 @@ export default function APDLShowcasePage() {
               <MissionCard title="Revisar avaliação do Compass" description="A margem projetada está acima da média, mas a vistoria exige revisão." impact="Margem estimada: R$ 13,2 mil" tone="warning" action={<APButton variant="secondary">Revisar</APButton>}/>
             </div>
           </APPanel>
-          <APPanel title="Pipeline vivo">
+          <APPanel title="Funil comercial ativo">
             <WorkspaceGrid columns={3}>
               <PipelineCard customer="João Silva" vehicle="Corolla Cross 2024" nextAction="Ligar hoje" score={96} age="18h sem contato"/>
               <PipelineCard customer="Maria Costa" vehicle="Jeep Compass 2023" nextAction="Enviar proposta" score={88} age="2h desde resposta"/>

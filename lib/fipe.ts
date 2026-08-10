@@ -69,7 +69,7 @@ export async function getFipeQuote(brandCode: string, modelCode: string, yearCod
     Combustivel: string;
     CodigoFipe: string;
     MesReferencia: string;
-  }>(`/marcas/${code(brandCode)}/modelos/${code(modelCode)}/anos/${code(yearCode, /^[0-9]{4}-[0-9]+$/)}`);
+  }>(`/marcas/${code(brandCode)}/modelos/${code(modelCode)}/anos/${code(yearCode, /^[0-9]{4,5}-[0-9]+$/)}`);
   const price = Number(result.Valor.replace(/[^0-9,]/g, "").replace(",", "."));
   if (!Number.isFinite(price) || price <= 0) throw new Error("Valor FIPE inválido.");
   return {

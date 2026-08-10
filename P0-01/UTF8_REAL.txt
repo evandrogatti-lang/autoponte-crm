@@ -1,0 +1,198 @@
+﻿C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:142
+<header><div><span>RECOMENDAÇÃO EXPLICADA</span><h3>{primaryOpportunity ? "Continuar acompanhamento comercial" : "Estruturar primeira demanda"}</h3></div></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\configuracoes\page.tsx:10
+<section className={styles.card}><h2>Operação</h2><div className={styles.list}><a href="/parceiros"><span>Parceiros</span><small>cadastro e integração</small></a><a href="/veiculos"><span>Estoque</span><small>AutoPonte e parceiros</small></a><a href="/matches"><span>CorrespondÃªncias IA</span><small>motor de compatibilidade</small></a><a href="/recomendacoes"><span>Recomendações</span><small>ações explicadas</small></a></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:82
+<article className="active-stage"><div className="stage-label"><span>Etapa {current + 1} de 8</span><b>{stage.area}</b></div><h2>{stage.title}</h2><p className="event-copy">{stage.event}</p><div className="integration-grid"><section><span className="integration-icon client">CL</span><div><small>VISÃO DO CLIENTE</small><p>{stage.clientView}</p></div></section><section><span className="integration-icon ai">IA</span><div><small>REGISTRO E AUTOMAÇÃO</small><p>{stage.crm}</p></div></section></div><div className="demo-actions"><button className="demo-back" onClick={back} disabled={current === 0}>← Etapa anterior</button><button className="demo-next" onClick={advance} disabled={current === 7}>{current === 7 ? "Jornada concluída" : "Avançar simulação →"}</button></div></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:85
+<aside className="demo-side"><section><span className="live-dot">● SIMULAÇÃO ATIVA</span><h3>Resumo da oportunidade</h3><dl><div><dt>Cliente</dt><dd>{journey.client}</dd></div><div><dt>Operação</dt><dd>{journey.label}</dd></div><div><dt>Veículo</dt><dd>{journey.vehicle}</dd></div><div><dt>Valor</dt><dd>{journey.value}</dd></div><div><dt>Responsável atual</dt><dd>{stage.area}</dd></div><div><dt>Status</dt><dd>{current === 7 ? "Concluído" : stage.title}</dd></div></dl></section><section className="demo-safety"><strong>Teste seguro</strong><p>Dados fictícios, sem mensagens, e-mails, reservas, contratos ou movimentações financeiras reais.</p><button onClick={resetAll}>Reiniciar as três jornadas</button></section><section className="demo-flow"><strong>Módulos conectados</strong><span>Portal e anúncios</span><i>↓</i><span>Atendimento IA</span><i>↓</i><span>Match, Fotos e FIPE</span><i>↓</i><span>CRM e loja parceira</span><i>↓</i><span>Acompanhamento e fechamento</span></section></aside>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\leads\page.tsx:8
+<p>Ãrea destinada Ã  qualificaÃ§Ã£o de potenciais clientes antes da criaÃ§Ã£o ou evoluÃ§Ã£o de uma oportunidade.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\leads\page.tsx:9
+<p><Link href="/crm">Voltar Ã  Central de OperaÃ§Ãµes</Link></p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:48
+<div className="crm-title"><div><p className="eyebrow dark">ÃREA DE OPORTUNIDADES</p><h1>{selectedStage ? `${opportunityStageLabels[selectedStage]} · ${rows.length}` : "Oportunidades operacionais"}</h1></div><p>Clique em qualquer card para abrir dados, inteligência, ações e histórico persistente.</p></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:31
+<section className={styles.card}><header><div><span>IDENTIFICAÇÃO</span><h2>Dados do veículo</h2></div></header><div className={styles.kv}><div><span>Placa</span><strong>{vehicle.plate || "Não informada"}</strong></div><div><span>RENAVAM</span><strong>{vehicle.renavam || "Não informado"}</strong></div><div><span>Chassi</span><strong>{vehicle.chassis || "Não informado"}</strong></div><div><span>Código interno</span><strong>{vehicle.stockCode || "Não informado"}</strong></div><div><span>Quilometragem</span><strong>{vehicle.mileage.toLocaleString("pt-BR")} km</strong></div><div><span>Cor</span><strong>{vehicle.color || "Não informada"}</strong></div><div><span>Câmbio</span><strong>{vehicle.transmission || "Não informado"}</strong></div><div><span>Carroceria</span><strong>{vehicle.bodyType || "Não informada"}</strong></div><div><span>Motor / potência</span><strong>{[vehicle.engine, vehicle.power].filter(Boolean).join(" · ") || "Não informado"}</strong></div></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:32
+<section className={styles.card}><header><div><span>CONDIÇÃO</span><h2>Documentação e preparação</h2></div></header><div className={styles.kv}><div><span>Condição</span><strong>{vehicle.vehicleCondition || "Não informada"}</strong></div><div><span>Documentação</span><strong>{vehicle.documentStatus || "Não informada"}</strong></div><div><span>Vistoria</span><strong>{vehicle.inspectionStatus || "Não informada"}</strong></div><div><span>Aquisição</span><strong>{vehicle.acquisitionDate || "Não informada"}</strong></div><div><span>Anúncio</span><strong>{vehicle.listingDate || "Não informado"}</strong></div><div><span>Opcionais</span><strong>{vehicle.optionalItems || "Não informados"}</strong></div></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:36
+<section className={styles.recommendationCard}><span>RECOMENDAÇÃO EXPLICADA</span><h3>Aguardar dados de demanda compatível</h3><p><strong>Por que agora:</strong> o cadastro do veículo está ativo, mas o motor de matches ainda não está conectado a esta página.</p><p><strong>Impacto esperado:</strong> após a integração, esta área mostrará compradores compatíveis, urgência e ação recomendada com evidência.</p></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CoreShell.tsx:16
+{ label: "CorrespondÃªncias IA", href: "/matches" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:49
+title: "GESTÃO",
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:91
+["SCORE", "PONTUAÇÃO"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:105
+["RelatÃ³rios", "Relatórios"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:106
+["ConfiguraÃ§Ãµes", "Configurações"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:107
+["CatÃ¡logo", "Catálogo"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:108
+["OperaÃ§Ã£o", "Operação"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:109
+["RecomendaÃ§Ãµes", "Recomendações"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\MissionBrief.tsx:20
+<span>MISSÃO DO DIA</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\OperationOverview.tsx:9
+<div><span>SAÚDE DA OPERAÇÃO</span><h2>Operação saudável</h2><p>O principal ponto de atenção são retornos vencidos e oportunidades sem próxima ação.</p></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:13
+{ label: "RelatÃ³rios", href: "/relatorios" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:14
+{ label: "ConfiguraÃ§Ãµes", href: "/configuracoes" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:15
+{ label: "CorrespondÃªncias IA", href: "/matches" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:16
+{ label: "CatÃ¡logo APDL", href: "/apdl" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:26
+<a className="ap-button ap-button--secondary" href="/matches">CorrespondÃªncias IA</a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:23
+["RelatÃ³rios", "/crm#relatorios", Icons.Chart],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:24
+["ConfiguraÃ§Ãµes", "/crm#configuracoes", Icons.Settings],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:79
+<span>VEÃCULOS</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:95
+<small>OperaÃ§Ã£o ativa</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:102
+<small>Gestor Â· online</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:112
+<input aria-label="Busca universal" placeholder="Buscar cliente, placa, telefone, veÃ­culo..." />
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:116
+<button className={styles.iconButton} aria-label="NotificaÃ§Ãµes">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:128
+<section className={styles.summaryRow} aria-label="Resumo da operaÃ§Ã£o">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:137
+<span className={styles.eyebrow}>OperaÃ§Ã£o</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:139
+<small>SaÃºde do fluxo {model.flow.health.score}/100</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:146
+<span className={styles.positive}>em negÃ³cios potenciais</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:151
+<span>NegociaÃ§Ãµes</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:156
+<span>ConversÃ£o</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:168
+<small>em atenÃ§Ã£o</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:179
+<h1>MISSÃƒO DO DIA</h1>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:180
+<span>As 3 decisÃµes que mais impactam hoje</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:185
+{priorities.length === 0 && <div className={styles.emptyState}>Nenhuma oportunidade ativa. Novos dados reais aparecerÃ£o aqui.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:206
+<p>{item.interest} Â· {item.city}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:247
+{model.recentEvents.length === 0 && <div className={styles.emptyState}>O histÃ³rico operacional aparecerÃ¡ apÃ³s a primeira aÃ§Ã£o.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:252
+<p>{event.title}{event.description ? ` Â· ${event.description}` : ""}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:273
+<p>Minha anÃ¡lise aponta onde vocÃª pode ganhar mais hoje:</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:275
+{model.recommendations.length === 0 && <div className={styles.emptyState}>Sem recomendaÃ§Ãµes enquanto nÃ£o houver oportunidades ativas.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:286
+Ver todas as recomendaÃ§Ãµes
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:300
+{priorities.length === 0 && <div className={styles.emptyState}>Nenhuma aÃ§Ã£o agendada.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:315
+<span><h2>AÃ‡Ã•ES RÃPIDAS</h2></span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:321
+<a href="/matches"><Icons.Search />Buscar veÃ­culo</a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:331
+<a href="/crm"><Icons.Grid />InÃ­cio</a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:178
+<header className={styles.panelHeader}><div><span>RECOMENDAÇÃO EXPLICADA</span><h2>{data.assessment.recommendation.action || "Sem recomendação acionável no momento"}</h2></div><b>{data.assessment.recommendation.channel || "Análise"}</b></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:187
+<article><span>PONTOS DE ATENÇÃO</span>{data.assessment.explainability.warnings.length ? data.assessment.explainability.warnings.slice(0, 3).map((warning) => <p key={warning}>! {warning}</p>) : <p>Sem alertas críticos.</p>}</article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:268
+<header><span>PRÓXIMA AÇÃO</span><h2>Definir compromisso</h2></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:276
+<header><span>OBSERVAÇÃO</span><h2>Adicionar nota</h2></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:20
+["RelatÃ³rios", "/crm#relatorios", "â–¥"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:21
+["ConfiguraÃ§Ãµes", "/crm#configuracoes", "âš™"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:32
+<nav className={styles.sidebarNav} aria-label="NavegaÃ§Ã£o principal">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:39
+<small>Sua operaÃ§Ã£o</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:49
+<div className={styles.breadcrumb}>{breadcrumb ?? <><a href="/crm">Mission Control</a><b>â€º</b><span>Estoque</span></>}</div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:50
+<div className={styles.globalSearch}><span>âŒ•</span><input aria-label="Busca global" placeholder="Buscar clientes, veÃ­culos, placas..."/><kbd>Ctrl + K</kbd></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:51
+<div className={styles.headerIcons}><a href="/crm" title="NotificaÃ§Ãµes">â—</a><a href="/crm" title="Ajuda">?</a><span className={styles.avatar}>EG</span></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleCreateForm.tsx:5
+return <form className={styles.form} action={submit}>{error&&<div className={styles.error} role="alert">{error}</div>}<section className={styles.card}><header><div><span>CLASSIFICAÇÃO DO ESTOQUE</span><h2>AutoPonte ou parceiro</h2></div></header><div className={styles.grid4}><label><span>Estoque *</span><select name="inventoryScope" value={scope} onChange={e=>setScope(e.target.value as "autoponte"|"partner")}><option value="autoponte">Estoque AutoPonte</option><option value="partner">Estoque de parceiro</option></select></label>{scope==="partner"&&<label><span>Parceiro *</span><select name="partnerId" value={partnerId} required onChange={e=>setPartnerId(e.target.value)}><option value="">Selecionar parceiro</option>{partners.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>}<label><span>Origem *</span><select key={sourceDefault} name="sourceType" defaultValue={sourceDefault}><option value="autoponte_inventory">Estoque AutoPonte</option><option value="dealer_inventory">Estoque de loja própria</option><option value="partner_inventory">Estoque parceiro</option><option value="consignment">Consignação</option><option value="trade_in">Veículo de troca</option><option value="new_vehicle">Veículo 0 km</option></select></label><label><span>Status *</span><select name="status" defaultValue="available"><option value="available">Disponível</option><option value="evaluation">Em avaliação</option><option value="reserved">Reservado</option><option value="sold">Vendido</option><option value="unavailable">Indisponível</option></select></label></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleCreateForm.tsx:6
+<section className={styles.card}><header><div><span>IDENTIFICAÇÃO</span><h2>Dados oficiais do veículo</h2></div></header><VehicleFipeSelector value={fipe} onChange={setFipe} disabled={saving}/><div className={styles.grid4}><label><span>Placa</span><input name="plate" placeholder="ABC1D23" maxLength={8}/></label><label><span>Chassi</span><input name="chassis" maxLength={24}/></label><label><span>Código interno</span><input name="stockCode" placeholder="AP-00125"/></label><label><span>Quilometragem</span><input name="mileage" type="number" min="0" defaultValue="0"/></label><label><span>Cor</span><input name="color"/></label><label><span>Câmbio</span><select name="transmission" defaultValue=""><option value="">Selecionar</option><option>Automático</option><option>Manual</option><option>CVT</option><option>Automatizado</option></select></label><label><span>Carroceria</span><input name="bodyType"/></label><label><span>Portas</span><input name="doors" type="number" min="0" max="8"/></label><label><span>Motor</span><input name="engine"/></label><label><span>Potência</span><input name="power"/></label><label><span>RENAVAM</span><input name="renavam" inputMode="numeric"/></label><label><span>UF</span><input name="registrationState" maxLength={2}/></label><label><span>Cidade</span><input name="city"/></label></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleCreateForm.tsx:7
+<section className={styles.card}><header><div><span>CONDIÇÃO E DOCUMENTAÇÃO</span><h2>Estado operacional</h2></div></header><div className={styles.grid4}><label><span>Condição</span><select name="vehicleCondition" defaultValue="good"><option value="excellent">Excelente</option><option value="good">Boa</option><option value="regular">Regular</option><option value="needs_repair">Necessita reparos</option></select></label><label><span>Documentação</span><select name="documentStatus" defaultValue="regular"><option value="regular">Regular</option><option value="pending">Com pendência</option><option value="financed">Financiado</option><option value="blocked">Bloqueado</option></select></label><label><span>Vistoria</span><select name="inspectionStatus" defaultValue="pending"><option value="pending">Pendente</option><option value="approved">Aprovada</option><option value="approved_notes">Aprovada com apontamentos</option><option value="rejected">Reprovada</option></select></label><label><span>Data de aquisição</span><input name="acquisitionDate" type="date"/></label><label><span>Data de anúncio</span><input name="listingDate" type="date"/></label></div><label className={styles.full}><span>Opcionais e equipamentos</span><textarea name="optionalItems" rows={2}/></label></section>
+-----

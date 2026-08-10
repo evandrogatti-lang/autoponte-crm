@@ -1,11 +1,11 @@
-import { HeatMap, KPICard, PulseIndicator, Radar, WorkspaceGrid } from "../apdl";
+﻿import { HeatMap, KPICard, PulseIndicator, Radar, WorkspaceGrid } from "../apdl";
 import type { MissionControlViewModel } from "../../lib/mission-control/model";
 import { brl } from "./format";
 
 export function OperationOverview({ model }: { model: MissionControlViewModel }) {
   return <section className="mc-overview">
     <div className="mc-pulse-panel">
-      <PulseIndicator value={model.operationScore} label="Pulse"/>
+      <PulseIndicator value={model.operationScore} label="Pulso"/>
       <div><span>SAÚDE DA OPERAÇÃO</span><h2>Operação saudável</h2><p>O principal ponto de atenção são retornos vencidos e oportunidades sem próxima ação.</p></div>
     </div>
     <Radar items={[
@@ -22,7 +22,7 @@ export function OperationOverview({ model }: { model: MissionControlViewModel })
     ]}/>
     <WorkspaceGrid columns={4}>
       <KPICard label="Oportunidades ativas" value={String(model.activeCount)} trend={`${model.highPriority} prioritárias`} tone="success"/>
-      <KPICard label="Pipeline potencial" value={brl.format(model.activeValue)} trend={`${model.proposalCount} propostas`} tone="neutral"/>
+      <KPICard label="Potencial do funil" value={brl.format(model.activeValue)} trend={`${model.proposalCount} propostas`} tone="neutral"/>
       <KPICard label="Capital necessário" value={brl.format(model.capitalNeeded)} trend="Trocas em curso" tone="warning"/>
       <KPICard label="Conversão" value={`${model.conversion}%`} trend={`Ticket ${brl.format(model.averageTicket)}`} tone="ai"/>
     </WorkspaceGrid>

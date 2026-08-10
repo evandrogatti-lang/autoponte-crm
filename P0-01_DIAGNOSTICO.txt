@@ -1,0 +1,1500 @@
+﻿C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:4
+NotificationCenter, OpportunityScore, PipelineCard, PulseIndicator, Radar,
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:10
+<EnterpriseSidebar items={[{label:"Mission Control",href:"/crm",active:true},{label:"Clientes",href:"#"},{label:"Estoque",href:"#"},{label:"Trocas",href:"/oportunidades"},{label:"Match IA",href:"/matches"}]}/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:17
+<KPICard label="Conversão" value="24,8%" trend="+2,1 p.p."/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:23
+<APPanel title="Missão do dia" action={<APButton variant="ghost">Ver todas</APButton>}>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:25
+<MissionCard title="Retornar João Silva" description="Financiamento aprovado e veículo disponível. Sem contato há 18 horas." impact="Potencial: R$ 168 mil" tone="success" action={<APButton>WhatsApp</APButton>}/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:26
+<MissionCard title="Revisar avaliação do Compass" description="A margem projetada está acima da média, mas a vistoria exige revisão." impact="Margem estimada: R$ 13,2 mil" tone="warning" action={<APButton variant="secondary">Revisar</APButton>}/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:29
+<APPanel title="Pipeline vivo">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:31
+<PipelineCard customer="João Silva" vehicle="Corolla Cross 2024" nextAction="Ligar hoje" score={96} age="18h sem contato"/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:32
+<PipelineCard customer="Maria Costa" vehicle="Jeep Compass 2023" nextAction="Enviar proposta" score={88} age="2h desde resposta"/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:33
+<PipelineCard customer="Carlos Lima" vehicle="Civic Touring 2022" nextAction="Agendar vistoria" score={81} age="1 dia na etapa"/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:38
+<VehicleCard vehicle="Toyota Corolla Cross XRX" price="R$ 169.900" meta="2024 · 18.400 km · SBC" score={92}/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:39
+<VehicleCard vehicle="Jeep Compass Limited" price="R$ 142.500" meta="2023 · 31.200 km · Santo André" score={84}/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:46
+<APPanel title="Três decisões"><DecisionPanel decisions={[{title:"Ligar para João",detail:"Maior probabilidade de fechamento"},{title:"Revisar Compass",detail:"Margem acima da média"},{title:"Ajustar Civic",detail:"Preço 3,1% acima do mercado"}]}/></APPanel>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\apdl\page.tsx:49
+<APPanel title="Alertas"><NotificationCenter items={[{title:"2 reservas vencem hoje",tone:"warning"},{title:"1 documentação atrasada",tone:"danger"},{title:"7 oportunidades com score > 90",tone:"success"}]}/></APPanel>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\buyer-profiles\route.ts:4
+import { createMatchesForBuyer, scoreBuyerVehicle, type BuyerProfile } from "../../../lib/match-engine";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\buyer-profiles\route.ts:20
+const consentAt = new Date().toISOString();
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\buyer-profiles\route.ts:38
+const match = scoreBuyerVehicle(profile, {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\buyer-profiles\route.ts:44
+}).filter((item) => item.score >= 40).sort((a, b) => b.score - a.score).slice(0, 3);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\buyer-profiles\route.ts:49
+return Response.json({ error: "Não foi possível concluir a busca agora. Tente novamente." }, { status: 500 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:6
+async function tokenHash(token: string) { const bytes = new TextEncoder().encode(token); const digest = await crypto.subtle.digest("SHA-256", bytes); return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join(""); }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:14
+if (text(payload, "consent") !== "yes") return Response.json({ error: "O consentimento é necessário para registrar a solicitação." }, { status: 400 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:15
+const photos = payload.getAll("photos").filter((item): item is File => item instanceof File); const accepted = new Set(["image/jpeg", "image/png", "image/webp"]);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:16
+if (photos.length < 4 || photos.length > 8) return Response.json({ error: "Envie entre 4 e 8 fotos para a pré-avaliação." }, { status: 400 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:22
+await getDb().insert(consignments).values({ id, accessTokenHash: await tokenHash(token), ownerName: text(payload, "ownerName"), whatsapp: text(payload, "whatsapp"), email: text(payload, "email"), city: text(payload, "city"), vehicleName: text(payload, "vehicleName"), year: text(payload, "year"), mileage, plate: text(payload, "plate").toUpperCase(), askingPrice, minimumPrice, photoKeys: JSON.stringify(photoKeys), consentAt: new Date().toISOString() });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:24
+return Response.json({ protocol: id.slice(0, 8).toUpperCase(), portalUrl: `/consignacao?protocolo=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`, potentialBuyers, nextStep: `Solicitação e ${photoKeys.length} fotos recebidas.` }, { status: 201 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:25
+} catch (error) { console.error("consignment intake failed", error); return Response.json({ error: "Não foi possível registrar a consignação agora." }, { status: 500 }); }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:28
+try { const url = new URL(request.url), id = url.searchParams.get("id")?.trim() ?? "", token = url.searchParams.get("token")?.trim() ?? ""; if (!id || !token) return Response.json({ error: "Acesso incompleto." }, { status: 400 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\consignments\route.ts:31
+} catch (error) { console.error("consignment lookup failed", error); return Response.json({ error: "Não foi possível carregar o acompanhamento." }, { status: 500 }); }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\fipe\route.ts:5
+const params = new URL(request.url).searchParams;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\fipe\route.ts:24
+const message = error instanceof Error ? error.message : "Não foi possível consultar a FIPE.";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\photo\route.ts:4
+const user = await getChatGPTUser(); if (!user) return new Response("Não autorizado", { status: 401 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\photo\route.ts:5
+const key = new URL(request.url).searchParams.get("key") ?? "";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\photo\route.ts:6
+if ((!key.startsWith("trade-ins/") && !key.startsWith("consignments/")) || key.includes("..")) return new Response("Imagem inválida", { status: 400 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\photo\route.ts:7
+const object = await downloadVehiclePhoto(key); if (!object.ok || !object.body) return new Response("Imagem não encontrada", { status: 404 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\photo\route.ts:8
+return new Response(object.body, { headers: { "Content-Type": object.headers.get("content-type") ?? "image/jpeg", "Cache-Control": "private, max-age=300" } });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:18
+if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:23
+if (!opportunity) return Response.json({ error: "Oportunidade não encontrada." }, { status: 404 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:26
+console.error("opportunity workspace read failed", error);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:27
+return Response.json({ error: "Não foi possível carregar a oportunidade do Supabase." }, { status: 500 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:33
+if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:39
+return Response.json({ error: error instanceof Error ? error.message : "Ação inválida." }, { status: 400 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:45
+if (!opportunity) return Response.json({ error: "Oportunidade não encontrada." }, { status: 404 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:56
+return Response.json({ error: "Oportunidade não encontrada." }, { status: 404 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:58
+console.error("opportunity workspace update failed", error);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\[id]\route.ts:59
+return Response.json({ error: "Não foi possível salvar a alteração no Supabase." }, { status: 500 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\route.ts:10
+if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\opportunities\route.ts:30
+return Response.json({ error: "Não foi possível salvar a oportunidade no Supabase." }, { status: 500 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\partners\route.ts:9
+export async function GET(){const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});return Response.json(await getDb().select().from(partners).orderBy(desc(partners.updatedAt)).limit(500));}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\partners\route.ts:11
+const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\partners\route.ts:14
+const name=clean(raw.name,160);if(!name)throw new Error("Informe o nome do parceiro.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\partners\route.ts:18
+await getDb().insert(partners).values({id,name,legalName:clean(raw.legalName,180),document,partnerType:clean(raw.partnerType,40)||"dealer",status:clean(raw.status,40)||"active",contactName:clean(raw.contactName,160),phoneDdi:ddi,phoneLocal:local,phoneE164:local?`${ddi}${local}`:"",email:clean(raw.email,180).toLowerCase(),city:clean(raw.city,100),state:clean(raw.state,2).toUpperCase(),integrationMode:clean(raw.integrationMode,40)||"manual",externalSystem:clean(raw.externalSystem,120),notes:clean(raw.notes,2000),updatedAt:new Date()});
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\partners\route.ts:20
+}catch(error){return Response.json({error:error instanceof Error?error.message:"Não foi possível cadastrar o parceiro."},{status:400});}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:11
+const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:25
+if (value(form, "consent") !== "yes") return Response.json({ error: "O consentimento é necessário para enviar a avaliação." }, { status: 400 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:38
+const nextFollowUp = new Date(Date.now() + 3 * 86400000).toISOString();
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:39
+const createdAt = new Date();
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:46
+confidenceScore: assessment.confidence.score,
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:47
+temperatureScore: assessment.temperature.score,
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:49
+priorityScore: assessment.dna.priorityScore,
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:55
+await tx.insert(opportunityEvents).values({ id: crypto.randomUUID(), opportunityId: id, eventType: "created", title: "Oportunidade criada", description: `Avaliação online recebida para ${fipe.brand} ${fipe.model}.`, metadata: JSON.stringify({ source: "trade_in_form" }), actorName: "Sistema AutoPonte", actorEmail: "", createdAt });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\trade-in\route.ts:60
+} catch (error) { console.error("trade-in submission failed", error); return Response.json({ error: "Não foi possível salvar a avaliação agora. Verifique a configuração do banco e do Storage." }, { status: 500 }); }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\vehicles\route.ts:8
+export async function GET(){const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});return Response.json(await getDb().select().from(vehicles).orderBy(desc(vehicles.updatedAt)).limit(500));}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\vehicles\route.ts:10
+const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\vehicles\route.ts:13
+if(input.partnerId){const [partner]=await getDb().select({id:partners.id,status:partners.status}).from(partners).where(eq(partners.id,input.partnerId)).limit(1);if(!partner||partner.status!=="active")throw new Error("Parceiro inválido ou inativo.");}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\vehicles\route.ts:14
+const id=crypto.randomUUID();await getDb().insert(vehicles).values({id,inventoryScope:input.inventoryScope,partnerId:input.partnerId,sourceType:input.sourceType,status:input.status,plate:input.plate,chassis:input.chassis,stockCode:input.stockCode,brandCode:input.brandCode,modelCode:input.modelCode,yearCode:input.yearCode,brand:resolved.quote.brand,model:resolved.quote.model,modelYear:resolved.quote.modelYear,fuel:resolved.quote.fuel,fipeCode:resolved.quote.fipeCode,fipeReferenceMonth:resolved.quote.referenceMonth,fipeValue:resolved.quote.price,mileage:input.mileage,color:input.color,transmission:input.transmission,bodyType:input.bodyType,doors:input.doors,engine:input.engine,power:input.power,renavam:input.renavam,registrationState:input.registrationState,documentStatus:input.documentStatus,vehicleCondition:input.vehicleCondition,inspectionStatus:input.inspectionStatus,acquisitionDate:input.acquisitionDate,listingDate:input.listingDate,optionalItems:input.optionalItems,city:input.city,ownerName:input.ownerName,askingPrice:input.askingPrice,acquisitionCost:input.acquisitionCost,notes:input.notes,updatedAt:new Date()});
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\api\vehicles\route.ts:16
+}catch(error){console.error("vehicle registration failed",error);return Response.json({error:error instanceof Error?error.message:"Não foi possível cadastrar o veículo."},{status:400});}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:5
+type Result = { existingMatches: number; recommendations: Array<{ score: number; reasons: string[]; vehicle: { id: number; name: string; year: string; km: string; price: number; city: string; image: string } }> };
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:6
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:17
+const form = new FormData(event.currentTarget);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:26
+if (!response.ok) throw new Error(data.error || "Não foi possível concluir a busca.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:28
+} catch (issue) { setError(issue instanceof Error ? issue.message : "Não foi possível concluir a busca."); setStatus("error"); }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:33
+<aside className="assistant-intro"><p className="eyebrow">AutoPonte Match</p><h1>Conte o que precisa. A gente encontra os melhores caminhos.</h1><p>Suas respostas viram um perfil de compra. O sistema compara orçamento, categoria, ano, quilometragem e uso para explicar cada recomendação.</p><ol><li><span>1</span>Preferências e orçamento</li><li><span>2</span>Recomendações explicadas</li><li><span>3</span>Novas oportunidades, com sua autorização</li></ol></aside>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:36
+<fieldset className="purchase-path"><legend>Como você pretende comprar?</legend><div className="purchase-path-grid"><button type="button" className={purchaseMode === "direct" ? "selected" : ""} onClick={() => setPurchaseMode("direct")}><span>01</span><div><b>Comprar sem troca</b><small>Quero escolher e simular um veículo.</small></div></button><button type="button" className={purchaseMode === "trade" ? "selected" : ""} onClick={() => setPurchaseMode("trade")}><span>02</span><div><b>Tenho um carro na troca</b><small>Quero usar meu veículo como entrada.</small></div></button></div><input className="sr-only" name="purchaseMode" value={purchaseMode ?? ""} readOnly required aria-label="Modalidade de compra" />{!purchaseMode && <p className="path-help">Escolha uma opção para personalizarmos o atendimento.</p>}{purchaseMode === "direct" && <div className="path-confirmation"><strong>Compra direta selecionada</strong><span>Vamos recomendar veículos e preparar uma simulação orientativa.</span></div>}{purchaseMode === "trade" && <div className="trade-quick-intake"><div><strong>Cadastro rápido do veículo usado</strong><span>Agora bastam informações básicas. As fotos, FIPE e avaliação detalhada serão solicitadas depois que você escolher o veículo de interesse.</span></div><div className="form-grid two"><label>Marca e modelo<input name="tradeVehicle" required placeholder="Ex.: Honda Fit" /></label><label>Ano<input name="tradeYear" required type="number" min="1990" max="2030" placeholder="Ex.: 2018" /></label><label>Quilometragem aproximada<input name="tradeMileage" required type="number" min="0" max="900000" placeholder="Ex.: 65000" /></label><label>Situação financeira<select name="tradeFinance"><option>Quitado</option><option>Financiado</option><option>Possui débitos</option><option>Não sei informar</option></select></label></div><p>Após as recomendações, você poderá iniciar o AutoPonte Fotos para consultar a FIPE e enviar as imagens orientadas.</p></div>}</fieldset>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:39
+<fieldset><legend>Quais características são importantes?</legend><div className="form-grid two"><label>Ano mínimo<input name="minYear" type="number" min="1990" max="2030" defaultValue="2020" /></label><label>Quilometragem máxima<input name="maxMileage" type="number" min="0" defaultValue="80000" /></label><label>Câmbio<select name="transmission"><option>Indiferente</option><option>Automático</option><option>Manual</option></select></label><label>Combustível<select name="fuel"><option>Indiferente</option><option>Flex</option><option>Gasolina</option><option>Diesel</option><option>Elétrico</option><option>Híbrido</option></select></label><label>Uso principal<select name="useCase"><option>Cidade</option><option>Família</option><option>Trabalho</option><option>Aplicativo</option><option>Viagens</option></select></label><label>Cidade<input name="city" required defaultValue="São Bernardo do Campo" /></label></div></fieldset>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:40
+<fieldset><legend>Como podemos continuar o atendimento?</legend><div className="form-grid two"><label>Nome<input name="name" required autoComplete="name" /></label><label>WhatsApp<input name="whatsapp" required type="tel" autoComplete="tel" placeholder="(11) 99999-9999" /></label><label>E-mail<input name="email" required type="email" autoComplete="email" /></label></div><label className="consent"><input name="alertsConsent" value="yes" type="checkbox" /><span>Quero receber alertas quando surgir um veículo compatível. Nenhuma mensagem será enviada sem esta autorização.</span></label><label className="consent"><input name="consent" value="yes" type="checkbox" required /><span>Autorizo o tratamento dos meus dados para recomendação, atendimento e contato relacionado à minha busca.</span></label></fieldset>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\atendimento\page.tsx:42
+{result && <section className="recommendation-result" aria-live="polite"><div><p className="eyebrow">Resultado personalizado</p><h2>Melhores combinações do estoque atual</h2><p className="recommendation-hint">Escolha uma oferta para ver os detalhes e simular as condições.</p></div>{result.recommendations.length ? <div className="recommendation-grid">{result.recommendations.map(({ vehicle, score, reasons }) => <article key={vehicle.id}><img src={vehicle.image} alt={vehicle.name} /><div><span className="match-score">{score}% compatível</span><h3>{vehicle.name}</h3><p>{vehicle.year} • {vehicle.km} • {vehicle.city}</p><strong>{brl.format(vehicle.price)}</strong><ul>{reasons.slice(0, 4).map((reason) => <li key={reason}>✓ {reason}</li>)}</ul><a className="offer-action" href={`/?vehicle=${vehicle.id}&match=${score}#estoque`} aria-label={`Ver oferta e simular ${vehicle.name}`}>Ver oferta e simular <span>→</span></a>{purchaseMode === "trade" && <a className="trade-photo-action" href={`/?vehicle=${vehicle.id}&match=${score}#troca`}>Avaliar meu carro para esta troca →</a>}</div></article>)}</div> : <p className="assistant-empty">Ainda não há um carro suficientemente compatível no estoque demonstrativo. Seu perfil ficou salvo para novos cruzamentos.</p>}<p className="match-followup">Perfil salvo. Encontramos {result.existingMatches} possível(is) correspondência(s) entre avaliações e consignações já recebidas; a equipe revisará cada uma antes de qualquer contato.</p></section>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:42
+const labels: Record<string, string> = { new: "Novo", contacted: "Contato", qualified: "Qualificação", store: "Loja", proposal: "Proposta", closed: "Fechado", lost: "Perdido" };
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:54
+const clients = new Map<string, ClientSummary>();
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:98
+<span><strong>{client.name}</strong><small>{client.city || "Cidade não informada"} · {client.opportunities.length} oportunidade{client.opportunities.length === 1 ? "" : "s"}</small></span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:113
+<div className="client-identity-main"><span className="client-avatar large">{initials(selected.name)}</span><div><div className="client-name-row"><h2>{selected.name}</h2><span>Cliente ativo</span></div><p>{formatBrazilianPhone(selected.whatsapp) || "WhatsApp não informado"} · {email || "E-mail não informado"} · {selected.city || "Cidade não informada"}</p></div></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:126
+<span><strong>{item.desiredVehicle || "Veículo a definir"}</strong><small>{item.nextAction || "Próxima ação não definida"}</small></span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:134
+<div><span>Canal preferencial</span><strong>{whatsappUrl ? "WhatsApp" : email ? "E-mail" : "Não definido"}</strong></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:135
+<div><span>Demanda principal</span><strong>{primaryOpportunity?.desiredVehicle || "Ainda não definida"}</strong></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:136
+<div><span>Próxima ação</span><strong>{primaryOpportunity?.nextAction || "Sem compromisso agendado"}</strong></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:142
+<header><div><span>RECOMENDAÇÃO EXPLICADA</span><h3>{primaryOpportunity ? "Continuar acompanhamento comercial" : "Estruturar primeira demanda"}</h3></div></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:143
+<p><b>Por que agora:</b> {primaryOpportunity ? `A oportunidade está em ${statusLabel(primaryOpportunity.status).toLowerCase()} e a última atividade ocorreu em ${selected.latestAt.toLocaleDateString("pt-BR")}.` : "O cliente ainda não possui oportunidade vinculada, portanto não há contexto suficiente para uma ação comercial específica."}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\clientes\page.tsx:144
+<p><b>Impacto esperado:</b> {primaryOpportunity ? "Manter o contexto atualizado, reduzir perda por demora e avançar a próxima ação registrada." : "Criar uma demanda estruturada para permitir matching e recomendações relevantes."}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\configuracoes\page.tsx:8
+return <CoreShell activeHref="/configuracoes" title="Configurações" subtitle="Central de administração e futuras integrações da operação AutoPonte.">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\configuracoes\page.tsx:10
+<section className={styles.card}><h2>Operação</h2><div className={styles.list}><a href="/parceiros"><span>Parceiros</span><small>cadastro e integração</small></a><a href="/veiculos"><span>Estoque</span><small>AutoPonte e parceiros</small></a><a href="/matches"><span>CorrespondÃªncias IA</span><small>motor de compatibilidade</small></a><a href="/recomendacoes"><span>Recomendações</span><small>ações explicadas</small></a></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\configuracoes\page.tsx:11
+<section className={styles.card}><h2>Status da fundação</h2><div className={styles.statusLine}><span className={styles.dot}/><span>Supabase / PostgreSQL</span></div><div className={styles.statusLine}><span className={styles.dot}/><span>FIPE integrada</span></div><div className={styles.statusLine}><span className={styles.dot}/><span>Veículos e parceiros canônicos</span></div><p className={styles.muted}>Perfis, permissões, WhatsApp Cloud API, DMS/ERP connectors e parâmetros de negócio terão telas próprias nas próximas sprints.</p></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:18
+if (file.size > 8 * 1024 * 1024) throw new Error(`${file.name} ultrapassa o limite de 8 MB.`);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:25
+if (!context) throw new Error("Não foi possível preparar a imagem.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:28
+const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((item) => item ? resolve(item) : reject(new Error("Não foi possível preparar a imagem.")), "image/jpeg", .78));
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:29
+return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:40
+if (prepared.length > 0 && prepared.length < 4) setError("Envie pelo menos 4 fotos para a pré-avaliação.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:44
+setError(problem instanceof Error ? problem.message : "Não foi possível preparar as fotos.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:54
+const form = new FormData(event.currentTarget);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:55
+if (photos.length < 4) { setStatus("error"); setError("Envie pelo menos 4 fotos para a pré-avaliação."); return; }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:63
+if (!response.ok) throw new Error(data.error || "Não foi possível enviar a solicitação.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:68
+setError(problem instanceof Error ? problem.message : "Não foi possível enviar a solicitação.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:73
+<header className="consignment-header"><a className="brand" href="/"><span>AutoPonte</span> Consigna</a><a className="request-back" href="/consignacao">Ver demonstração do portal</a></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:75
+<div className="request-intro"><p className="eyebrow">Consignação acompanhada</p><h1>Comece com uma solicitação simples.</h1><p>As fotos enviadas agora servem para a pré-avaliação. Se o veículo avançar, a vistoria presencial e o AutoPonte Fotos produzirão o material definitivo do anúncio.</p><ol><li><span>01</span>Dados e fotos preliminares do carro</li><li><span>02</span>Pré-análise e contato da AutoPonte</li><li><span>03</span>Contrato, vistoria e AutoPonte Fotos</li><li><span>04</span>Anúncio e acompanhamento pelo portal</li></ol></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:77
+<div className="form-heading"><span>Solicitar consignação</span><strong>Sem compromisso</strong></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:78
+<fieldset><legend>Proprietário</legend><div className="form-grid two"><label>Nome completo<input name="ownerName" required autoComplete="name" /></label><label>WhatsApp<input name="whatsapp" required type="tel" autoComplete="tel" placeholder="(11) 99999-9999" /></label><label>E-mail<input name="email" required type="email" autoComplete="email" /></label><label>Cidade<input name="city" required defaultValue="São Bernardo do Campo" /></label></div></fieldset>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:79
+<fieldset><legend>Veículo</legend><div className="form-grid two"><label>Marca, modelo e versão<input name="vehicleName" required placeholder="Ex.: Honda Civic EXL 2.0" /></label><label>Ano/modelo<input name="year" required placeholder="Ex.: 2022/2023" /></label><label>Quilometragem<input name="mileage" required type="number" min="0" max="900000" /></label><label>Placa <small>Opcional nesta etapa</small><input name="plate" maxLength={7} placeholder="ABC1D23" /></label><label>Preço pretendido para anúncio<input name="askingPrice" required type="number" min="1000" step="100" /></label><label>Menor valor que deseja analisar<input name="minimumPrice" required type="number" min="1000" step="100" /></label></div></fieldset>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:80
+<fieldset><legend>Fotos para pré-avaliação</legend><p className="photo-guidance">Envie de 4 a 8 imagens: frente, traseira, duas laterais, interior e painel. Mostre também eventuais avarias. Elas não serão usadas no anúncio sem revisão.</p><label className="upload-zone consignment-upload"><input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => selectPhotos(event.target.files)} /><span className="upload-icon">＋</span><strong>Fotografar ou escolher imagens</strong><small>JPG, PNG ou WebP • redução automática • até 8 MB por arquivo</small></label>{previews.length > 0 && <div className="photo-previews" aria-label="Fotos preliminares selecionadas">{previews.map((preview, index) => <figure key={preview}><img src={preview} alt={`Foto preliminar ${index + 1}`} /><figcaption>{index + 1}</figcaption></figure>)}</div>}<div className="preliminary-photo-note"><strong>Pré-avaliação remota</strong><span>A aprovação para consignação, o estado do veículo e as fotos de publicação dependem da vistoria presencial.</span></div></fieldset>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:81
+<div className="request-info"><strong>Importante</strong><p>O cadastro não publica o veículo automaticamente. Preços, responsabilidades, despesas, retirada e autorização de venda serão definidos no contrato de consignação.</p></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:82
+<label className="consent"><input name="consent" type="checkbox" value="yes" required /><span>Autorizo o tratamento dos dados para análise da consignação, contato e criação do acompanhamento, conforme a política de privacidade.</span></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:84
+<button className="trade-submit" disabled={status === "sending" || photosProcessing}>{photosProcessing ? "Preparando fotos…" : status === "sending" ? "Registrando…" : "Enviar solicitação e fotos"}</button>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\solicitar\page.tsx:85
+{result && <div className="request-result"><span>Protocolo {result.protocol}</span><strong>Solicitação recebida</strong><p>{result.nextStep}</p><a href={result.portalUrl}>Abrir meu acompanhamento</a><small>Guarde este link. Na operação definitiva, ele será enviado pelo WhatsApp e e-mail após confirmação de identidade.</small></div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:5
+const brl = new Intl.NumberFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:17
+{ title: "Anúncio publicado", detail: "Divulgação ativa no AutoPonte Veículos", date: "29 jul. • 09:10", done: true },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:18
+{ title: "Proposta aguardando você", detail: "Validade até amanhã, às 18h", date: "Hoje • 11:32", done: false },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:34
+const params = new URLSearchParams(window.location.search);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:42
+if (!response.ok) throw new Error(data.error || "Não foi possível abrir o acompanhamento.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:47
+.catch((problem) => setAccessError(problem instanceof Error ? problem.message : "Não foi possível abrir o acompanhamento."));
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:51
+pending: "Aguardando sua decisão",
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:76
+<h1>Seu carro em consignação, sem ficar no escuro.</h1>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:87
+["visao-geral", "Visão geral"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:89
+["manutencao", "Manutenção", liveProfile ? "" : "1"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:100
+{accessError && <p className="portal-access-error" role="alert">{accessError} Você ainda pode navegar pela demonstração abaixo.</p>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:101
+{liveProfile && <div className="live-profile-note"><strong>Solicitação registrada</strong><span>Este acompanhamento foi criado com os dados enviados. Propostas, documentos e desempenho serão liberados conforme o avanço da consignação.</span></div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:106
+<article><span>Desempenho</span><strong>{liveProfile ? "Ainda não publicado" : "482 visualizações"}</strong><small>{liveProfile ? "Métricas após aprovação" : "17 contatos • 3 visitas"}</small></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:107
+<article><span>Próxima ação</span><strong>{liveProfile ? "Confirmar vistoria" : "Responder proposta"}</strong><small>{liveProfile ? "A equipe fará o contato" : "Validade: amanhã, 18h"}</small></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:130
+{activeTab === "propostas" && liveProfile && <div className="owner-panel crm-empty">Nenhuma proposta disponível. Você será avisado por WhatsApp e e-mail quando houver uma decisão a tomar.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:136
+<div><span>Preparação autorizada</span><strong>− {brl.format(480)}</strong></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:139
+<p className="proposal-note">Pagamento à vista. Sem veículo na troca. Proposta válida até amanhã, às 18h. A aceitação inicia a conferência documental, mas não substitui a assinatura dos documentos da venda.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:149
+{offerDecision !== "pending" && <button className="reset-demo" onClick={() => setOfferDecision("pending")}>Restaurar demonstração</button>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:151
+<aside className="owner-panel security-note"><strong>Decisão registrada</strong><p>Na versão operacional, cada aceite exigirá confirmação de identidade e produzirá registro de data, hora, conteúdo e versão da proposta.</p></aside>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:154
+{activeTab === "manutencao" && liveProfile && <div className="owner-panel crm-empty">Nenhuma manutenção solicitada. Qualquer orçamento dependerá de sua autorização registrada.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:157
+<div className="panel-heading"><div><p className="eyebrow dark">Autorização necessária</p><h2>Polimento técnico localizado</h2></div><span className={`maintenance-status ${maintenanceDecision}`}>{maintenanceDecision === "pending" ? "Pendente" : maintenanceDecision === "approved" ? "Autorizado" : "Recusado"}</span></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:158
+<div className="maintenance-content"><img src="/vehicle-sedan.png" alt="Detalhe ilustrativo do veículo" /><div><p>Foram identificados riscos leves na porta traseira direita. O serviço melhora a apresentação sem intervenção de pintura.</p><dl><div><dt>Orçamento</dt><dd>{brl.format(480)}</dd></div><div><dt>Prazo</dt><dd>1 dia útil</dd></div><div><dt>Pagamento</dt><dd>Desconto somente após a venda</dd></div></dl></div></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:159
+{maintenanceDecision === "pending" ? <div className="decision-actions"><button className="accept" onClick={() => setMaintenanceDecision("approved")}>Autorizar serviço</button><button className="quiet" onClick={() => setMaintenanceDecision("declined")}>Não autorizar</button></div> : <button className="reset-demo" onClick={() => setMaintenanceDecision("pending")}>Rever decisão</button>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:161
+<aside className="owner-panel security-note"><strong>Nenhuma surpresa</strong><p>Nenhuma despesa é executada sem autorização registrada, salvo situações previstas expressamente no contrato de consignação.</p></aside>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:167
+<article><i>PDF</i><div><strong>Contrato de consignação</strong><small>Assinado em 28 jul. • versão 1</small></div><button>Visualizar</button></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:169
+<article className="pending-doc"><i>—</i><div><strong>Autorização de venda</strong><small>Disponível após o aceite de uma proposta</small></div><span>Pendente</span></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:170
+<article className="pending-doc"><i>—</i><div><strong>Transferência do veículo</strong><small>Integração oficial prevista para etapa posterior</small></div><span>Futura</span></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:184
+<p>A solicitação passa por conferência de propostas, reservas, serviços e condições previstas no contrato.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\consignacao\page.tsx:185
+{withdrawalRequested ? <div className="withdrawal-confirmation"><strong>Solicitação registrada</strong><span>A equipe entrará em contato para conferir as condições e combinar a entrega.</span></div> : <button onClick={() => setWithdrawalRequested(true)}>Solicitar retirada do veículo</button>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\crm\page.tsx:60
+return <MissionControl model={buildMissionControl(rows, new Date(), events)} />;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:20
+{ title: "Cadastro", area: "Portal", event: "Marina chega por um anúncio e informa nome, WhatsApp, e-mail, cidade e consentimentos.", clientView: "Cadastro confirmado e protocolo AP-1001 criado.", crm: "Lead novo • origem Instagram • autorização de contato registrada." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:22
+{ title: "Recomendação", area: "AutoPonte Match", event: "O SUV Urban recebe 92% de compatibilidade por preço, categoria, ano, câmbio e localização.", clientView: "Oferta explicada com botão para detalhes e simulação.", crm: "Correspondência aprovada para contato • estoque da Loja Avenida." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:23
+{ title: "Simulação", area: "Crédito", event: "Entrada de R$ 30 mil e saldo simulado em 48 meses. A condição é marcada como orientativa.", clientView: "Parcela estimada e documentos necessários apresentados.", crm: "Simulação anexada • interesse confirmado • sem promessa de aprovação." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:24
+{ title: "Encaminhamento", area: "CRM da loja", event: "A Loja Avenida recebe perfil, veículo, simulação, origem e histórico completo do atendimento.", clientView: "Marina é apresentada ao consultor Rafael pelo canal oficial.", crm: "SLA iniciado • responsável Rafael • visita agendada para sábado, 10h." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:25
+{ title: "Acompanhamento", area: "AutoPonte", event: "Lembrete da visita, confirmação de disponibilidade e pesquisa após o test-drive.", clientView: "Linha do tempo mostra visita confirmada e proposta em análise.", crm: "Test-drive realizado • proposta enviada • retorno agendado para o mesmo dia." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:27
+{ title: "Pós-venda", area: "Relacionamento", event: "Marina recebe pesquisa de satisfação e lembretes de documentação e revisão.", clientView: "Canal permanece disponível para suporte pós-entrega.", crm: "Entrega concluída • NPS solicitado • oportunidade encerrada como ganha." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:33
+{ title: "Cadastro", area: "Portal", event: "Carlos escolhe o Sedan Executive e informa que usará um Honda Fit 2018 como parte do pagamento.", clientView: "Compra e avaliação ficam vinculadas ao mesmo protocolo AP-2001.", crm: "Lead de compra com troca • consentimento e veículo desejado registrados." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:35
+{ title: "Fotos e FIPE", area: "AutoPonte Fotos", event: "Fotos externas, internas e avarias são enviadas. A FIPE é consultada automaticamente.", clientView: "Referência FIPE de R$ 64.300 e análise visual preliminar exibidas.", crm: "8 fotos armazenadas • enquadramento aprovado • pequena avaria no para-choque sinalizada." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:36
+{ title: "Pré-avaliação", area: "Avaliação IA", event: "Faixa preliminar de R$ 54 mil a R$ 57 mil, condicionada à compra, documentos e vistoria cautelar.", clientView: "Diferença para a FIPE e critérios da oferta são explicados.", crm: "Lead classificado como quente • vistoria presencial solicitada." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:37
+{ title: "Vistoria e proposta", area: "Operação", event: "Vistoria totalmente aprovada, sem apontamento grave, leilão ou dano estrutural. Oferta final: R$ 56.500.", clientView: "Carlos aceita a avaliação e autoriza usar o Fit na negociação.", crm: "Oferta aceita • laudo anexado • saldo do novo veículo recalculado." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:38
+{ title: "Ponte comercial", area: "CRM da loja", event: "A loja recebe compra, troca, fotos, FIPE, laudo, oferta aceita e simulação do saldo.", clientView: "Um único consultor conduz a etapa comercial e contratual.", crm: "Sedan reservado • Fit marcado para entrada • documentação em conferência." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:39
+{ title: "Fechamento", area: "Loja + AutoPonte", event: "Contrato do Sedan é assinado; o Fit entra por R$ 56.500 e o saldo é liquidado conforme aprovação.", clientView: "Carlos acompanha aprovação, assinatura e data de retirada.", crm: "Venda concluída • troca adquirida • rastreabilidade financeira registrada." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:40
+{ title: "Novo estoque", area: "AutoPonte Match", event: "O Fit aprovado entra na preparação para revenda e é cruzado com compradores compatíveis.", clientView: "Carlos recebe comprovante de entrega e encerra sua participação no veículo.", crm: "Novo ativo em preparação • potenciais compradores encontrados • contato sujeito a revisão." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:44
+id: "consigna", label: "Consignação", client: "Renata Souza", initials: "RS", vehicle: "Jeep Renegade 2021", value: "Pretensão R$ 86.900", color: "amber",
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:46
+{ title: "Cadastro", area: "AutoPonte Consigna", event: "Renata informa dados pessoais, veículo, preço pretendido, valor mínimo e consentimentos.", clientView: "Protocolo AP-3001 e acesso ao portal do proprietário são criados.", crm: "Solicitação de consignação • origem indicação • canal oficial ativado." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:47
+{ title: "Pré-avaliação remota", area: "AutoPonte Fotos", event: "Renata envia 8 fotos para triagem de conservação, enquadramento e possíveis avarias.", clientView: "Fotos aceitas para pré-análise; vistoria presencial continua obrigatória.", crm: "Qualidade suficiente • risco visual baixo • agendamento recomendado." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:48
+{ title: "Vistoria e contrato", area: "Operação", event: "Laudo aprovado sem histórico de leilão ou dano grave. Preço, despesas, prazo e autorizações são formalizados.", clientView: "Renata revisa e aceita o contrato de consignação.", crm: "Veículo aprovado • preço anunciado R$ 86.900 • mínimo autorizado R$ 83.000." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:49
+{ title: "Preparação", area: "Estoque virtual", event: "Higienização, sessão profissional de fotos e descrição comercial são concluídas.", clientView: "Renata acompanha tarefas e autoriza a publicação final.", crm: "Anúncio pronto • checklist documental completo • publicação autorizada." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:50
+{ title: "Divulgação e Match", area: "Marketing + IA", event: "Anúncio entra no portal e campanhas. A IA encontra quatro compradores compatíveis no banco.", clientView: "Painel mostra visualizações, contatos e visitas sem expor dados dos compradores.", crm: "4 matches • 7 leads • 2 visitas • mensagens revisadas antes do envio." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:52
+{ title: "Autorização e venda", area: "Loja parceira", event: "Renata aceita R$ 84.500 e autoriza a venda. Comprador conclui crédito e contrato.", clientView: "Documentos e autorização ficam registrados na linha do tempo.", crm: "Proposta aceita • venda autorizada • transferência iniciada." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:53
+{ title: "Repasse e encerramento", area: "Financeiro", event: "Transferência confirmada, despesas conciliadas e valor líquido repassado conforme contrato.", clientView: "Renata recebe demonstrativo, comprovante e confirmação de encerramento.", crm: "Consignação vendida • repasse concluído • documentos arquivados." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:72
+<header className="demo-header"><a className="brand" href="/"><span>AutoPonte</span> Veículos</a><div><span>Ambiente de demonstração</span><a href="/">Voltar ao portal</a></div></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:73
+<section className="demo-hero"><div><p className="eyebrow">Operação integrada</p><h1>Três clientes. Uma visão completa da AutoPonte.</h1><p>Avance pelas jornadas para acompanhar o que o cliente vê, o que a IA organiza e o que chega ao CRM até o fechamento.</p></div><div className="demo-kpis"><article><span>Jornadas concluídas</span><strong>{completed}/3</strong></article><article><span>Eventos simulados</span><strong>{totalEvents}/24</strong></article><article><span>Envios reais</span><strong>0</strong></article></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:82
+<article className="active-stage"><div className="stage-label"><span>Etapa {current + 1} de 8</span><b>{stage.area}</b></div><h2>{stage.title}</h2><p className="event-copy">{stage.event}</p><div className="integration-grid"><section><span className="integration-icon client">CL</span><div><small>VISÃO DO CLIENTE</small><p>{stage.clientView}</p></div></section><section><span className="integration-icon ai">IA</span><div><small>REGISTRO E AUTOMAÇÃO</small><p>{stage.crm}</p></div></section></div><div className="demo-actions"><button className="demo-back" onClick={back} disabled={current === 0}>← Etapa anterior</button><button className="demo-next" onClick={advance} disabled={current === 7}>{current === 7 ? "Jornada concluída" : "Avançar simulação →"}</button></div></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\demonstracao\page.tsx:85
+<aside className="demo-side"><section><span className="live-dot">● SIMULAÇÃO ATIVA</span><h3>Resumo da oportunidade</h3><dl><div><dt>Cliente</dt><dd>{journey.client}</dd></div><div><dt>Operação</dt><dd>{journey.label}</dd></div><div><dt>Veículo</dt><dd>{journey.vehicle}</dd></div><div><dt>Valor</dt><dd>{journey.value}</dd></div><div><dt>Responsável atual</dt><dd>{stage.area}</dd></div><div><dt>Status</dt><dd>{current === 7 ? "Concluído" : stage.title}</dd></div></dl></section><section className="demo-safety"><strong>Teste seguro</strong><p>Dados fictícios, sem mensagens, e-mails, reservas, contratos ou movimentações financeiras reais.</p><button onClick={resetAll}>Reiniciar as três jornadas</button></section><section className="demo-flow"><strong>Módulos conectados</strong><span>Portal e anúncios</span><i>↓</i><span>Atendimento IA</span><i>↓</i><span>Match, Fotos e FIPE</span><i>↓</i><span>CRM e loja parceira</span><i>↓</i><span>Acompanhamento e fechamento</span></section></aside>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\financeiro\page.tsx:7
+const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\financeiro\page.tsx:17
+return <CoreShell activeHref="/financeiro" title="Financeiro" subtitle="Visão financeira operacional do estoque atual. Não substitui ainda contabilidade/fiscal." actions={<a href="/veiculos">Ver estoque</a>}>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\financeiro\page.tsx:24
+<div className={styles.grid2}><article className={styles.card}><h2>Escopo atual</h2><p>Os números acima usam exclusivamente dados reais do cadastro de veículos. Contas a pagar/receber, comissões, conciliação, impostos e margem realizada ainda não possuem modelo canônico nesta base e não são simulados.</p></article><article className={styles.card}><h2>Próxima fundação</h2><div className={styles.statusLine}><span className={styles.dot}/><span>financial_events</span></div><div className={styles.statusLine}><span className={styles.dot}/><span>comissões</span></div><div className={styles.statusLine}><span className={styles.dot}/><span>recebimentos e despesas por negócio</span></div></article></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\leads\page.tsx:8
+<p>Ãrea destinada Ã  qualificaÃ§Ã£o de potenciais clientes antes da criaÃ§Ã£o ou evoluÃ§Ã£o de uma oportunidade.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\leads\page.tsx:9
+<p><Link href="/crm">Voltar Ã  Central de OperaÃ§Ãµes</Link></p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\matches\page.tsx:7
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\matches\page.tsx:22
+score: vehicleMatches.score, reasons: vehicleMatches.reasons, message_draft: vehicleMatches.messageDraft,
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\matches\page.tsx:26
+}).from(vehicleMatches).innerJoin(buyerProfiles, eq(buyerProfiles.id, vehicleMatches.buyerProfileId)).orderBy(desc(vehicleMatches.score), desc(vehicleMatches.createdAt)).limit(200);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\matches\page.tsx:29
+<section className="crm-summary"><div><span>Correspondências</span><strong>{rows.length}</strong></div><div><span>Aguardando revisão</span><strong>{rows.filter((row) => row.status === "review_pending").length}</strong></div><div><span>Compatibilidade alta</span><strong>{rows.filter((row) => row.score >= 80).length}</strong></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\matches\page.tsx:37
+return <article className="match-card" key={row.id}><div className="match-card-score"><strong>{row.score}%</strong><span>compatível</span></div><div className="match-card-body"><div className="opportunity-tags"><span>{row.source_type === "trade_in" ? "Possível troca" : "Pré-consignação"}</span><span className={row.status === "review_pending" ? "lead-warm" : "lead-review"}>{row.status === "review_pending" ? "Revisar contato" : "Uso interno"}</span></div><h2>{row.vehicle_label}</h2><p>{brl.format(row.vehicle_price)} • potencial comprador em {row.city}</p><h3>{row.name}</h3><p>{whatsappDisplay || "WhatsApp não informado"} • {email || "E-mail não informado"}</p><ul>{reasons.map((reason) => <li key={reason}>✓ {reason}</li>)}</ul><blockquote>{cleanContactText(row.message_draft) || "Mensagem ainda não preparada."}</blockquote>{canContact ? <a className="review-contact" href={whatsappUrl} target="_blank" rel="noreferrer">Revisar e abrir WhatsApp</a> : <p className="no-consent">{row.alerts_consent ? "WhatsApp válido não informado." : "Sem autorização para alertas."}</p>}</div></article>;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\nova\page.tsx:6
+export default async function NewOpportunityPage() {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:14
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:15
+const labels: Record<string, string> = { hot: "Alta prioridade", warm: "Em negociação", review: "Requer análise", new: "Novo cadastro" };
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:16
+const validStages = new Set<OpportunityStage>(["new", "contacted", "qualified", "store", "proposal", "closed"]);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:45
+<div><span>Retornos pendentes</span><strong>{allRows.filter((row) => row.nextFollowUp && new Date(row.nextFollowUp) <= new Date() && row.status !== "lost" && row.status !== "closed").length}</strong></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:48
+<div className="crm-title"><div><p className="eyebrow dark">ÃREA DE OPORTUNIDADES</p><h1>{selectedStage ? `${opportunityStageLabels[selectedStage]} · ${rows.length}` : "Oportunidades operacionais"}</h1></div><p>Clique em qualquer card para abrir dados, inteligência, ações e histórico persistente.</p></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:58
+<div className="opportunity-tags"><span className={`lead-${item.leadCategory}`}>{labels[item.leadCategory] ?? labels.new}</span><span>{item.status.replaceAll("_", " ")}</span></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:60
+<dl><div><dt>FIPE</dt><dd>{item.referencePrice > 0 ? brl.format(item.referencePrice) : "Não informada"}</dd></div><div><dt>Faixa de troca</dt><dd>{item.estimatedMax > 0 ? `${brl.format(item.estimatedMin)}–${brl.format(item.estimatedMax)}` : "Sem troca"}</dd></div></dl>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\oportunidades\page.tsx:62
+<p className="contact-name">{item.name}</p><p className="contact-date">Recebido em {item.createdAt.toLocaleDateString("pt-BR")} • próximo retorno {item.nextFollowUp ? new Date(item.nextFollowUp).toLocaleDateString("pt-BR") : "a definir"}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\parceiros\novo\page.tsx:4
+export default async function NewPartnerPage(){await requireChatGPTUser("/parceiros/novo");return <main className={styles.page}><div className={styles.topbar}><div><p>REDE AUTOPONTE</p><h1>Cadastrar parceiro</h1></div><div className={styles.actions}><a href="/crm">Voltar ao CRM</a><a href="/parceiros">Voltar aos parceiros</a></div></div><PartnerCreateForm/></main>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\parceiros\[id]\page.tsx:2
+const money=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\parceiros\[id]\page.tsx:3
+export default async function PartnerDetailPage({params}:{params:Promise<{id:string}>}){const{id}=await params;await requireChatGPTUser(`/parceiros/${id}`);const[partner]=await getDb().select().from(partners).where(eq(partners.id,id)).limit(1);if(!partner)notFound();const stock=await getDb().select().from(vehicles).where(eq(vehicles.partnerId,id)).limit(500);const total=stock.reduce((sum,v)=>sum+(v.askingPrice||v.fipeValue||0),0);return <main className={styles.page}><div className={styles.topbar}><div><p>PARCEIRO</p><h1>{partner.name}</h1><p>{partner.city}{partner.state?`/${partner.state}`:""} · {partner.status}</p></div><div className={styles.actions}><a href="/crm">Voltar ao CRM</a><a href="/parceiros">Parceiros</a><a href={`/veiculos/novo?partner=${partner.id}`}>+ Cadastrar veículo</a></div></div><div className={styles.layout}><section className={styles.card}><h2>Dados do parceiro</h2><div className={styles.kv}><div><span>Razão social</span><strong>{partner.legalName||"Não informada"}</strong></div><div><span>Documento</span><strong>{partner.document||"Não informado"}</strong></div><div><span>Contato</span><strong>{partner.contactName||"Não informado"}</strong></div><div><span>Telefone</span><strong>{partner.phoneE164?`+${partner.phoneE164}`:"Não informado"}</strong></div><div><span>E-mail</span><strong>{partner.email||"Não informado"}</strong></div><div><span>Integração</span><strong>{partner.integrationMode}{partner.externalSystem?` · ${partner.externalSystem}`:""}</strong></div></div></section><section className={styles.card}><h2>Resumo comercial</h2><div className={styles.kv}><div><span>Veículos</span><strong>{stock.length}</strong></div><div><span>Disponíveis</span><strong>{stock.filter(v=>v.status==="available").length}</strong></div><div><span>Valor anunciado</span><strong>{money.format(total)}</strong></div></div></section></div><section className={styles.card}><h2>Estoque do parceiro</h2>{stock.length===0?<p className={styles.muted}>Nenhum veículo vinculado.</p>:<table className={styles.table}><thead><tr><th>Veículo</th><th>Ano</th><th>Status</th><th>Preço</th><th></th></tr></thead><tbody>{stock.map(v=><tr key={v.id}><td>{v.brand} {v.model}</td><td>{v.modelYear}</td><td>{v.status}</td><td>{money.format(v.askingPrice||v.fipeValue)}</td><td><a href={`/veiculos/${v.id}`}>Abrir</a></td></tr>)}</tbody></table>}</section></main>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\propostas\page.tsx:13
+return <CoreShell activeHref="/propostas" title="Propostas" subtitle="Fundação operacional: oportunidades em estágio comercial que podem originar propostas." actions={<a className="primary" href="/oportunidades">Abrir pipeline</a>}>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\propostas\page.tsx:16
+{proposalCandidates.length === 0 ? <div className={styles.empty}>Nenhuma oportunidade em estágio de proposta/negociação foi encontrada.</div> : <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Cliente</th><th>Demanda</th><th>Etapa</th><th>Probabilidade</th><th>Próxima ação</th><th>Ação</th></tr></thead><tbody>{proposalCandidates.map((row)=><tr key={row.id}><td><b>{row.name}</b><br/><small>{row.city}</small></td><td>{row.desiredVehicle || `${row.brand} ${row.model}`}</td><td><span className={styles.badge}>{row.status || "—"}</span></td><td>{row.probability ?? 0}%</td><td>{row.nextAction || row.nextFollowUp || "—"}</td><td><a href={`/oportunidades/${row.id}`}>Abrir workspace</a></td></tr>)}</tbody></table></div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\quem-somos\page.tsx:8
+{ kicker: "02 • Encontramos", title: "A tecnologia procura a melhor combinação.", text: "A IA compara o perfil com o estoque e novas oportunidades de troca ou consignação — sempre explicando os motivos.", focus: "center" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\quem-somos\page.tsx:9
+{ kicker: "03 • Avaliamos", title: "Fotos, FIPE e critérios transparentes.", text: "Na troca ou consignação, organizamos imagens, referências de mercado e pré-avaliações, condicionadas à vistoria e aos documentos.", focus: "inspect" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\quem-somos\page.tsx:10
+{ kicker: "04 • Conectamos", title: "A loja recebe o contexto completo.", text: "O CRM leva histórico, interesse, simulação e próximos passos para que a equipe comercial finalize sem fazer o cliente recomeçar.", focus: "right" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\quem-somos\page.tsx:11
+{ kicker: "AutoPonte", title: "Do primeiro contato ao fechamento.", text: "Mais inteligência para vender. Mais transparência para comprar. Mais controle para quem confia seu carro à nossa operação.", focus: "wide" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\quem-somos\page.tsx:25
+<header className="story-header"><a className="brand" href="/"><span>AutoPonte</span> Veículos</a><div><span>Apresentação institucional</span><a href="/">Voltar ao portal</a></div></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\quem-somos\page.tsx:29
+<div className="watercolor-image" role="img" aria-label="Ilustração em aquarela mostrando compra, avaliação e consignação de veículos" />
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\quem-somos\page.tsx:35
+<div className="story-controls"><div><button onClick={() => setPlaying((value) => !value)}>{playing ? "❚❚ Pausar" : "▶ Reproduzir"}</button><button onClick={restart}>↻ Reiniciar</button></div><p>Duração aproximada: 31 segundos • Sem áudio • Formato adaptável para apresentações e mídias sociais</p></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\quem-somos\page.tsx:36
+<section className="story-use"><div><p className="eyebrow dark">Uma história, vários formatos</p><h2>Pronta para apresentar a AutoPonte.</h2></div><div className="story-format-grid"><article><b>16:9</b><span>Site, YouTube e apresentações</span></article><article><b>9:16</b><span>Reels, Stories e TikTok</span></article><article><b>1:1</b><span>Feed e campanhas patrocinadas</span></article></div><p className="story-export-note">Esta é a versão animada para o portal. A mesma narrativa e arte podem ser exportadas em vídeos específicos para cada canal na etapa de produção de mídia.</p></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:11
+const brl = new Intl.NumberFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:64
+const model = buildMissionControl(rows, new Date(), events);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:67
+.sort((a, b) => b.priorityScore - a.priorityScore);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:77
+<p>Cada recomendação abre a oportunidade correspondente e preserva o contexto específico do cliente.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:84
+<article><span>Ação imediata</span><strong>{opportunities.filter((item) => item.recommendation.urgency === "now").length}</strong></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:91
+<div className={styles.empty}>Sem recomendações acionáveis enquanto não houver oportunidades ativas.</div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:111
+<span>Ação recomendada</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:117
+<strong>{item.recommendation.rationale || "Oportunidade priorizada pelo score operacional."}</strong>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\recomendacoes\page.tsx:123
+<p>Score de prioridade {item.priorityScore}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\relatorios\page.tsx:24
+<article className={styles.metric}><span>Conversão base</span><strong>{conversion.toFixed(1)}%</strong></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\relatorios\page.tsx:27
+<div className={styles.grid2}><article className={styles.card}><h2>Composição do estoque</h2><p><b>AutoPonte:</b> {activeVehicles.length-partnerVehicles.length}</p><p><b>Parceiros:</b> {partnerVehicles.length}</p><p><b>Total ativo:</b> {activeVehicles.length}</p></article><article className={styles.card}><h2>Nota de consistência</h2><p>Esta página não inventa métricas sem fonte. Tempo em estoque, SLA, margem realizada e funil avançado serão adicionados quando seus eventos e timestamps estiverem consolidados no modelo canônico.</p></article></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\trocas\page.tsx:8
+const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\trocas\page.tsx:25
+{rows.length === 0 ? <div className={styles.empty}>Nenhum veículo de troca cadastrado. Cadastre o veículo com origem <b>Troca</b> em Estoque.</div> : <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Veículo</th><th>Ano</th><th>Km</th><th>FIPE</th><th>Preço</th><th>Condição</th><th>Status</th><th>Ação</th></tr></thead><tbody>{rows.map((v)=><tr key={v.id}><td><b>{v.brand} {v.model}</b><br/><small>{v.plate || "Sem placa"}</small></td><td>{v.modelYear || "—"}</td><td>{v.mileage.toLocaleString("pt-BR")} km</td><td>{money.format(v.fipeValue || 0)}</td><td>{money.format(v.askingPrice || v.fipeValue || 0)}</td><td>{v.vehicleCondition || "—"}</td><td><span className={styles.badge}>{v.status}</span></td><td><a href={`/veiculos/${v.id}`}>Abrir veículo</a></td></tr>)}</tbody></table></div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\novo\page.tsx:9
+export default async function NewVehiclePage() {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\novo\page.tsx:13
+<div className={styles.pageHeader}><div><h1>Cadastrar veículo</h1><p>Dados estruturados para estoque, parceiros, consignação e troca.</p></div><div className={styles.pageActions}><a href="/crm">← Voltar ao CRM</a><a href="/veiculos">Cancelar e voltar</a><a href="/parceiros/novo">Cadastrar parceiro</a></div></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:10
+const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:11
+const sourceLabels: Record<string, string> = { dealer_inventory: "Estoque de loja", consignment: "Consignação", trade_in: "Veículo de troca", autoponte_inventory: "Estoque AutoPonte", partner_inventory: "Estoque parceiro", new_vehicle: "Veículo 0 km" };
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:12
+const statusLabels: Record<string, string> = { available: "Disponível", evaluation: "Em avaliação", reserved: "Reservado", sold: "Vendido", unavailable: "Indisponível" };
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:26
+<div className={styles.vehicleIdentity}><span className={styles.statusBadge} data-status={vehicle.status}>{statusLabels[vehicle.status] ?? vehicle.status}</span><h2>{vehicle.brand} {vehicle.model}</h2><p>{vehicle.plate || "Placa não informada"} · {vehicle.color || "Cor não informada"} · {vehicle.mileage.toLocaleString("pt-BR")} km</p></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:31
+<section className={styles.card}><header><div><span>IDENTIFICAÇÃO</span><h2>Dados do veículo</h2></div></header><div className={styles.kv}><div><span>Placa</span><strong>{vehicle.plate || "Não informada"}</strong></div><div><span>RENAVAM</span><strong>{vehicle.renavam || "Não informado"}</strong></div><div><span>Chassi</span><strong>{vehicle.chassis || "Não informado"}</strong></div><div><span>Código interno</span><strong>{vehicle.stockCode || "Não informado"}</strong></div><div><span>Quilometragem</span><strong>{vehicle.mileage.toLocaleString("pt-BR")} km</strong></div><div><span>Cor</span><strong>{vehicle.color || "Não informada"}</strong></div><div><span>Câmbio</span><strong>{vehicle.transmission || "Não informado"}</strong></div><div><span>Carroceria</span><strong>{vehicle.bodyType || "Não informada"}</strong></div><div><span>Motor / potência</span><strong>{[vehicle.engine, vehicle.power].filter(Boolean).join(" · ") || "Não informado"}</strong></div></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:32
+<section className={styles.card}><header><div><span>CONDIÇÃO</span><h2>Documentação e preparação</h2></div></header><div className={styles.kv}><div><span>Condição</span><strong>{vehicle.vehicleCondition || "Não informada"}</strong></div><div><span>Documentação</span><strong>{vehicle.documentStatus || "Não informada"}</strong></div><div><span>Vistoria</span><strong>{vehicle.inspectionStatus || "Não informada"}</strong></div><div><span>Aquisição</span><strong>{vehicle.acquisitionDate || "Não informada"}</strong></div><div><span>Anúncio</span><strong>{vehicle.listingDate || "Não informado"}</strong></div><div><span>Opcionais</span><strong>{vehicle.optionalItems || "Não informados"}</strong></div></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:35
+<section className={styles.card}><header><div><span>COMERCIAL</span><h2>Valores e origem</h2></div></header><div className={styles.compactKv}><div><span>Estoque</span><strong>{vehicle.inventoryScope === "partner" ? "Parceiro" : "AutoPonte"}</strong></div><div><span>Parceiro</span><strong>{partner?.name || "Não aplicável"}</strong></div><div><span>Origem</span><strong>{sourceLabels[vehicle.sourceType] ?? vehicle.sourceType}</strong></div><div><span>Valor FIPE</span><strong>{money.format(vehicle.fipeValue)}</strong></div><div><span>Custo</span><strong>{money.format(vehicle.acquisitionCost || 0)}</strong></div><div><span>Proprietário / loja</span><strong>{vehicle.ownerName || "Não informado"}</strong></div></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\[id]\page.tsx:36
+<section className={styles.recommendationCard}><span>RECOMENDAÇÃO EXPLICADA</span><h3>Aguardar dados de demanda compatível</h3><p><strong>Por que agora:</strong> o cadastro do veículo está ativo, mas o motor de matches ainda não está conectado a esta página.</p><p><strong>Impacto esperado:</strong> após a integração, esta área mostrará compradores compatíveis, urgência e ação recomendada com evidência.</p></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:10
+const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:11
+const sourceLabels: Record<string, string> = { dealer_inventory: "Estoque próprio", consignment: "Consignação", trade_in: "Troca", autoponte_inventory: "AutoPonte", partner_inventory: "Estoque parceiro", new_vehicle: "0 km" };
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:12
+const statusLabels: Record<string, string> = { available: "Disponível", evaluation: "Em avaliação", reserved: "Reservado", sold: "Vendido", unavailable: "Indisponível" };
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:16
+const date = new Date(value);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:26
+const partnerMap = new Map(partnerRows.map((p) => [p.id, p.name]));
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:38
+const agingValues = activeRows.map((vehicle) => daysSince(vehicle.listingDate || vehicle.acquisitionDate || vehicle.createdAt)).filter((value): value is number => value !== null);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:39
+const averageAging = agingValues.length ? Math.round(agingValues.reduce((sum, value) => sum + value, 0) / agingValues.length) : 0;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:56
+<article><i>◷</i><div><span>Aging médio</span><strong>{averageAging} dias</strong><small>Tempo no estoque</small></div></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:63
+<thead><tr><th>Veículo</th><th>Origem</th><th>Proprietário / parceiro</th><th>Ano</th><th>Km</th><th>FIPE</th><th>Preço</th><th>Margem</th><th>Aging</th><th>Status</th><th>Ações</th></tr></thead>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:68
+const aging = daysSince(vehicle.listingDate || vehicle.acquisitionDate || vehicle.createdAt);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:69
+const owner = vehicle.inventoryScope === "partner" ? partnerMap.get(vehicle.partnerId) || vehicle.ownerName || "Parceiro não informado" : vehicle.ownerName || "AutoPonte Veículos";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:71
+<td><div className={styles.vehicleCell}><div className={styles.vehicleThumb}>{vehicle.brand.slice(0, 1)}{vehicle.model.slice(0, 1)}</div><div><strong>{vehicle.brand} {vehicle.model}</strong><small>{vehicle.plate || vehicle.stockCode || "Sem placa"} · {vehicle.color || "Cor não informada"}</small></div></div></td>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:73
+<td><strong className={styles.cellStrong}>{owner}</strong><small>{vehicle.inventoryScope === "partner" ? "Parceiro" : "Operação AutoPonte"}</small></td>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\veiculos\page.tsx:75
+<td>{margin ? <><strong>{money.format(margin)}</strong>{marginPct !== null && <small>{marginPct.toFixed(1)}%</small>}</> : "—"}</td><td>{aging === null ? "—" : <>{aging}<small>dias</small></>}</td>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\chatgpt-auth.ts:23
+// A autenticação Supabase será ativada na próxima etapa.
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\chatgpt-auth.ts:71
+url = new URL(value, "https://app.local");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\layout.tsx:18
+description: "Marketplace regional de veículos com atendimento inteligente e simulação orientativa.",
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:6
+const money = new Intl.NumberFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:35
+const query = new URLSearchParams(params);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:49
+throw new Error(message);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:64
+if (file.size > 8 * 1024 * 1024) throw new Error(`${file.name} ultrapassa o limite de 8 MB.`);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:71
+if (!context) throw new Error("Não foi possível preparar a imagem.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:74
+const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((item) => item ? resolve(item) : reject(new Error("Não foi possível preparar a imagem.")), "image/jpeg", .76));
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:75
+return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:84
+{ step: "02", label: "ENCONTRAMOS", title: "A tecnologia procura a melhor combinação.", text: "A AutoPonte cruza o perfil do comprador com veículos do estoque, novas trocas e consignações compatíveis." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:85
+{ step: "03", label: "CONECTAMOS", title: "A loja recebe o contexto completo.", text: "Interesse, histórico, avaliação, simulação e próximos passos seguem juntos para que o cliente não precise recomeçar." },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:92
+const [matchScore, setMatchScore] = useState<number | null>(null);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:116
+const params = new URLSearchParams(window.location.search);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:122
+const score = Number(params.get("match"));
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:123
+setMatchScore(Number.isFinite(score) && score > 0 ? Math.min(100, score) : null);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:130
+.catch((error) => { if (active) setFipeError(error instanceof Error ? error.message : "Não foi possível carregar as marcas."); });
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:147
+setFipeError(error instanceof Error ? error.message : "Não foi possível carregar os modelos.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:164
+setFipeError(error instanceof Error ? error.message : "Não foi possível carregar os anos.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:179
+setFipeError(error instanceof Error ? error.message : "Não foi possível obter o valor FIPE.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:198
+setTradeError(error instanceof Error ? error.message : "Não foi possível preparar as fotos.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:220
+const form = new FormData(event.currentTarget);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:228
+throw new Error(response.ok ? "Resposta inválida do servidor." : "As fotos ficaram grandes demais. Selecione imagens menores e tente novamente.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:230
+if (!response.ok) throw new Error(payload.error || "Não foi possível concluir a avaliação.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:235
+setTradeError(error instanceof Error ? error.message : "Não foi possível concluir a avaliação.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:254
+<nav aria-label="Navegação principal">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:258
+<a href="#consignacao">Consignação</a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:265
+<a href="/demonstracao">Demonstração</a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:280
+Carros de lojas parceiras, atendimento inteligente e simulação rápida pelo WhatsApp.
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:292
+<div className="hero-media" role="img" aria-label="SUV azul em ambiente urbano contemporâneo">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:298
+<div className="home-story-art" role="img" aria-label="Ilustração em preto e branco conectando atendimento, veículos, cidade e loja" />
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:305
+<div className="home-story-actions"><a href="/quem-somos">Ver apresentação completa</a><a className="outline" href="/atendimento">Começar uma conversa</a></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:326
+<p className="eyebrow dark">Seleção inicial</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:354
+<p className="prototype-note">Veículos e valores demonstrativos para apresentação do protótipo.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:360
+<h2>Envie as fotos e receba uma pré-avaliação para troca.</h2>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:362
+A AutoPonte organiza os dados do seu veículo, analisa as informações enviadas e apresenta uma faixa preliminar de compra. Assim, você já chega à negociação do próximo carro com uma referência.
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:366
+<article><span>02</span><div><strong>Análise digital</strong><small>Quilometragem, conservação e referência de mercado.</small></div></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:367
+<article><span>03</span><div><strong>Oferta confirmada</strong><small>Após documentos e inspeção presencial.</small></div></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:370
+<strong>Aquisição vinculada à troca</strong>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:371
+<p>A AutoPonte não compra veículos isoladamente. A aquisição acontece somente se o carro entrar como parte do pagamento de outro veículo anunciado na plataforma e a negociação principal for concluída.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:377
+<span>Pré-avaliação gratuita</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:390
+<label>Modelo e versão
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:417
+<small>A avaliação da troca será vinculada a esta oportunidade de compra.</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:457
+<label>Cidade<input name="city" required defaultValue="São Bernardo do Campo" /></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:459
+<label className="consent"><input name="consent" type="checkbox" required value="yes" /><span>Autorizo o tratamento destes dados e imagens para avaliação, contato comercial e apresentação da proposta, conforme a política de privacidade.</span></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:465
+<li>Negociação do veículo de interesse concluída com uma loja parceira.</li>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:467
+<li>Ausência de histórico de leilão, restrições relevantes ou comprometimento estrutural.</li>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:468
+<li>Documentação, propriedade, débitos e informações fornecidas devidamente confirmados.</li>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:474
+{photosProcessing ? "Preparando fotos…" : tradeStatus === "sending" ? "Analisando informações…" : "Receber minha pré-avaliação"}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:478
+<span>Resultado da pré-avaliação</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:483
+<p className="trade-gap">Diferença para a FIPE: {money.format(Math.max(0, tradeResult.fipeValue - tradeResult.estimatedMax))} a {money.format(Math.max(0, tradeResult.fipeValue - tradeResult.estimatedMin))}, considerando margem de revenda, conservação, quilometragem e custos da operação.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:485
+<small>Protocolo {tradeResult.protocol}. O valor FIPE é uma referência, não um preço obrigatório. A aquisição somente ocorrerá com a conclusão da compra do veículo de interesse e aprovação integral da vistoria, sem apontamentos graves ou histórico de leilão. A faixa não constitui oferta vinculante.</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:492
+<h2>Da descoberta à negociação, sem repetir a história</h2>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:496
+<article><span>03</span><h3>A loja finaliza</h3><p>Com sua autorização, a loja recebe o contexto e assume negociação, crédito e contrato.</p></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:503
+<h2>Consignou seu carro? Acompanhe cada decisão.</h2>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:505
+<div className="consignment-links"><a href="/consignacao/solicitar">Quero consignar meu carro</a><a className="outline" href="/consignacao">Ver demonstração do portal</a></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:507
+<div className="consignment-preview" aria-label="Resumo do painel de consignação">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:510
+<div><b>1 proposta</b><small>Aguardando decisão</small></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:511
+<div><b>1 manutenção</b><small>Aguardando autorização</small></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:523
+<span>Sem exclusividade • comissão apenas em venda atribuída</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:524
+<button onClick={() => alert("Demonstração: o cadastro de lojistas será conectado ao WhatsApp na versão operacional.")}>Quero participar do piloto</button>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:530
+<p>As simulações de crédito e avaliações de troca são preliminares. Financiamento, preço de compra, parcelas e condições finais dependem de análise, documentação, inspeção do veículo, instituição financeira e loja responsável.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:535
+<p>Protótipo comercial • São Bernardo do Campo, SP</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:542
+<button className="modal-close" aria-label="Fechar simulação" onClick={() => setSelected(null)}>×</button>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:543
+{matchScore && <span className="modal-match">Recomendado para você • {matchScore}% compatível</span>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:544
+<p className="eyebrow dark">Simulação orientativa</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:555
+<div className="estimate"><span>Parcela estimada</span><strong>{money.format(estimate)}</strong><small>Cálculo demonstrativo com taxa hipotética. Não é proposta nem aprovação.</small></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\app\page.tsx:556
+<button className="primary full" onClick={() => alert("Demonstração: na versão operacional, esta ação abrirá o atendimento oficial da AutoPonte no WhatsApp.")}>Continuar pelo WhatsApp</button>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:61
+export function OpportunityScore({ score, trend = "estável", risk = "baixo" }: { score: number; trend?: string; risk?: string }) {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:62
+return <div className="ap-score"><strong>{score}</strong><div><span>Opportunity Score</span><small>{trend} · risco {risk}</small></div></div>;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:69
+export function PipelineCard({ customer, vehicle, nextAction, score, age }: { customer: string; vehicle: string; nextAction: string; score: number; age?: string }) {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:70
+return <article className="ap-pipeline-card"><header><strong>{customer}</strong><APBadge tone={score >= 85 ? "success" : "warning"}>{score}</APBadge></header><p>{vehicle}</p>{age && <small>{age}</small>}<footer>{nextAction}</footer></article>;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:73
+export function Customer360({ name, subtitle, score, children }: { name: string; subtitle?: string; score?: number; children?: ReactNode }) {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:74
+return <section className="ap-customer-360"><header><div className="ap-avatar">{name.slice(0,2).toUpperCase()}</div><div><h2>{name}</h2>{subtitle && <p>{subtitle}</p>}</div>{score !== undefined && <OpportunityScore score={score}/>}</header>{children}</section>;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:86
+return <div className="ap-trade-evaluation"><div><span>Avaliação de troca</span><h3>{vehicle}</h3></div><strong>{range}</strong><APBadge tone="warning">{status}</APBadge></div>;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:93
+export function VehicleCard({ vehicle, price, meta, score }: { vehicle: string; price: string; meta: string; score?: number }) {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\apdl\index.tsx:94
+return <article className="ap-vehicle-card"><div className="ap-vehicle-card__media">AP</div><div><h3>{vehicle}</h3><p>{meta}</p><strong>{price}</strong>{score !== undefined && <APBadge tone="success">Score {score}</APBadge>}</div></article>;
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CoreShell.tsx:16
+{ label: "CorrespondÃªncias IA", href: "/matches" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:49
+title: "GESTÃO",
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:82
+["OPPORTUNITY WORKSPACE", "ÁREA DE OPORTUNIDADES"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:83
+["Opportunity Workspace", "Área de oportunidades"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:84
+["OPERATIONAL LAYER", "CAMADA OPERACIONAL"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:85
+["Operational Layer", "Camada operacional"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:86
+["PIPELINE", "FUNIL COMERCIAL"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:87
+["Pipeline", "Funil comercial"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:88
+["MATCH IA", "CORRESPONDÊNCIAS IA"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:89
+["Match IA", "Correspondências IA"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:90
+["Aging", "Tempo em estoque"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:91
+["SCORE", "PONTUAÇÃO"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:92
+["Score", "Pontuação"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:93
+["NEW", "NOVO"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:94
+["New", "Novo"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:105
+["RelatÃ³rios", "Relatórios"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:106
+["ConfiguraÃ§Ãµes", "Configurações"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:107
+["CatÃ¡logo", "Catálogo"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:108
+["OperaÃ§Ã£o", "Operação"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:109
+["RecomendaÃ§Ãµes", "Recomendações"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:163
+const observer = new MutationObserver(() => run());
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:243
+<small>Operação comercial</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\crm\CRMAppShell.tsx:253
+{NAVIGATION.flatMap(group => group.items).find(item => activeFor(pathname, item.href))?.label || "Operação"}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\DecisionRail.tsx:18
+{ title: "Revisar propostas", detail: `${model.proposalCount} negociações estão em decisão.` },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\DecisionRail.tsx:25
+{ time: "14:30", title: "Revisar documentação", detail: "Financiamento Lucas" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\format.ts:1
+export const brl = new Intl.NumberFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\MissionBrief.tsx:15
+actions={<APBadge tone="success">Operação online</APBadge>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\MissionBrief.tsx:20
+<span>MISSÃO DO DIA</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\MissionBrief.tsx:31
+action={<APButton variant={index === 0 ? "primary" : "secondary"}>Abrir ação</APButton>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\OperationOverview.tsx:8
+<PulseIndicator value={model.operationScore} label="Pulse"/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\OperationOverview.tsx:9
+<div><span>SAÚDE DA OPERAÇÃO</span><h2>Operação saudável</h2><p>O principal ponto de atenção são retornos vencidos e oportunidades sem próxima ação.</p></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\OperationOverview.tsx:18
+{ label: "Conversão", value: Math.max(15, model.conversion) },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\OperationOverview.tsx:25
+<KPICard label="Pipeline potencial" value={brl.format(model.activeValue)} trend={`${model.proposalCount} propostas`} tone="neutral"/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\OperationOverview.tsx:27
+<KPICard label="Conversão" value={`${model.conversion}%`} trend={`Ticket ${brl.format(model.averageTicket)}`} tone="ai"/>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\PipelineLive.tsx:1
+import { APPanel, PipelineCard } from "../apdl";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\PipelineLive.tsx:5
+{ id: "new", label: "Novos" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\PipelineLive.tsx:6
+{ id: "contacted", label: "Contato" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\PipelineLive.tsx:13
+export function PipelineLive({ model }: { model: MissionControlViewModel }) {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\PipelineLive.tsx:14
+return <APPanel title="Pipeline vivo" action={<a href="/oportunidades">Abrir pipeline completo →</a>}>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\PipelineLive.tsx:15
+<div className="mc-pipeline">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\PipelineLive.tsx:18
+return <section className="mc-pipeline-column" key={stage.id}>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\PipelineLive.tsx:20
+<div>{items.length ? items.map(item => <PipelineCard key={item.id} customer={item.name} vehicle={item.interest} nextAction={item.next} score={item.probability} age={item.offered}/>) : <p className="mc-empty">Sem oportunidades nesta etapa.</p>}</div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\QuickActions.tsx:5
+["Abrir consignação", "/consignacao"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:13
+{ label: "RelatÃ³rios", href: "/relatorios" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:14
+{ label: "ConfiguraÃ§Ãµes", href: "/configuracoes" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:15
+{ label: "CorrespondÃªncias IA", href: "/matches" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:16
+{ label: "CatÃ¡logo APDL", href: "/apdl" },
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\components\mission-control\Shell.tsx:26
+<a className="ap-button ap-button--secondary" href="/matches">CorrespondÃªncias IA</a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\FlowEngineV2.tsx:5
+const brl = new Intl.NumberFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\FlowEngineV2.tsx:28
+const stageLinks = new Map(flow.stages.map((stage) => {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\FlowEngineV2.tsx:31
+.sort((a, b) => b.priorityScore - a.priorityScore)[0];
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\FlowEngineV2.tsx:39
+<h2>Pipeline vivo</h2>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\FlowEngineV2.tsx:44
+<strong>{flow.health.score}</strong>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\FlowEngineV2.tsx:63
+<small>pipeline ativo</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\FlowEngineV2.tsx:67
+<div className={styles.flow} aria-label="Etapas do pipeline">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\FlowEngineV2.tsx:127
+<span>Próxima ação</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:7
+const brl = new Intl.NumberFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:23
+["RelatÃ³rios", "/crm#relatorios", Icons.Chart],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:24
+["ConfiguraÃ§Ãµes", "/crm#configuracoes", Icons.Settings],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:30
+.sort((a, b) => b.priorityScore - a.priorityScore)
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:35
+return new Intl.DateTimeFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:39
+}).format(new Date());
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:69
+"--pulse": `${Math.max(0, Math.min(100, model.operationScore)) * 3.6}deg`,
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:79
+<span>VEÃCULOS</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:95
+<small>OperaÃ§Ã£o ativa</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:102
+<small>Gestor Â· online</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:112
+<input aria-label="Busca universal" placeholder="Buscar cliente, placa, telefone, veÃ­culo..." />
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:116
+<button className={styles.iconButton} aria-label="NotificaÃ§Ãµes">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:128
+<section className={styles.summaryRow} aria-label="Resumo da operaÃ§Ã£o">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:132
+<strong>{model.operationScore}</strong>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:137
+<span className={styles.eyebrow}>OperaÃ§Ã£o</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:139
+<small>SaÃºde do fluxo {model.flow.health.score}/100</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:146
+<span className={styles.positive}>em negÃ³cios potenciais</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:151
+<span>NegociaÃ§Ãµes</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:156
+<span>ConversÃ£o</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:168
+<small>em atenÃ§Ã£o</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:179
+<h1>MISSÃƒO DO DIA</h1>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:180
+<span>As 3 decisÃµes que mais impactam hoje</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:185
+{priorities.length === 0 && <div className={styles.emptyState}>Nenhuma oportunidade ativa. Novos dados reais aparecerÃ£o aqui.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:206
+<p>{item.interest} Â· {item.city}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:247
+{model.recentEvents.length === 0 && <div className={styles.emptyState}>O histÃ³rico operacional aparecerÃ¡ apÃ³s a primeira aÃ§Ã£o.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:250
+<time>{new Date(event.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:252
+<p>{event.title}{event.description ? ` Â· ${event.description}` : ""}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:273
+<p>Minha anÃ¡lise aponta onde vocÃª pode ganhar mais hoje:</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:275
+{model.recommendations.length === 0 && <div className={styles.emptyState}>Sem recomendaÃ§Ãµes enquanto nÃ£o houver oportunidades ativas.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:286
+Ver todas as recomendaÃ§Ãµes
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:300
+{priorities.length === 0 && <div className={styles.emptyState}>Nenhuma aÃ§Ã£o agendada.</div>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:303
+<time>{item.nextFollowUp ? new Date(item.nextFollowUp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}</time>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:315
+<span><h2>AÃ‡Ã•ES RÃPIDAS</h2></span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:321
+<a href="/matches"><Icons.Search />Buscar veÃ­culo</a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\mission-control\components\MissionControl.tsx:331
+<a href="/crm"><Icons.Grid />InÃ­cio</a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:28
+const form = new FormData(event.currentTarget);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:40
+nextFollowUp: nextFollowUp ? new Date(nextFollowUp).toISOString() : "",
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:69
+if (!response.ok || !result.href) throw new Error(result.error || "Não foi possível cadastrar a oportunidade.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:73
+setError(cause instanceof Error ? cause.message : "Não foi possível cadastrar a oportunidade.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:88
+<label><span>Cidade *</span><input name="city" required maxLength={120} placeholder="São Bernardo do Campo" /></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:96
+<label><span>Etapa inicial</span><select name="status" defaultValue="new"><option value="new">Lead</option><option value="contacted">Contato</option><option value="qualified">Qualificação</option><option value="sent_to_store">Loja</option><option value="proposal">Proposta</option></select></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:97
+<label><span>Prioridade</span><select name="leadCategory" defaultValue="new"><option value="new">Nova</option><option value="warm">Em negociação</option><option value="hot">Alta prioridade</option><option value="review">Requer análise</option></select></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:98
+<label className={styles.actionField}><span>Próxima ação</span><input name="nextAction" maxLength={240} placeholder="Ex.: Enviar opções de estoque" /></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:99
+<label><span>Prazo da próxima ação</span><input name="nextFollowUp" type="datetime-local" /></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:105
+<header><span>03</span><div><h2>Veículo de troca</h2><p>Opcional. Ative somente quando o cliente realmente tiver um veículo na negociação.</p></div></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:106
+<label className="trade-toggle"><input type="checkbox" checked={hasTradeIn} onChange={(event: ChangeEvent<HTMLInputElement>) => setHasTradeIn(event.target.checked)} /><span><strong>Cliente possui veículo de troca</strong><small>Os valores alimentarão margem, confiança e recomendação do ADE.</small></span></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:111
+<label><span>Condição</span><select name="tradeInCondition" defaultValue="good"><option value="excellent">Excelente</option><option value="good">Boa</option><option value="fair">Regular</option></select></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:112
+<label><span>Avaliação mínima</span><input name="estimatedMin" type="number" min="0" step="1" /></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-create\components\OpportunityCreateForm.tsx:113
+<label><span>Avaliação máxima</span><input name="estimatedMax" type="number" min="0" step="1" /></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:15
+const brl = new Intl.NumberFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:21
+const number = new Intl.NumberFormat("pt-BR");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:24
+if (!value) return "Não definido";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:25
+const date = new Date(value);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:26
+if (Number.isNaN(date.getTime())) return "Não definido";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:27
+return new Intl.DateTimeFormat("pt-BR", {
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:35
+const date = new Date(value);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:37
+const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:51
+return condition || "Não informado";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:65
+const evidence = reasons[0] || data.assessment.recommendation.rationale || "A recomendação foi calculada a partir dos dados atuais da oportunidade.";
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:69
+? "Aumentar a qualidade do próximo contato e obter dados que permitam avançar a negociação."
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:71
+const urgency = data.assessment.recommendation.urgency || (data.assessment.temperature.score >= 70 ? "alta" : data.assessment.temperature.score >= 40 ? "média" : "baixa");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:119
+throw new Error("error" in result ? result.error || "Não foi possível salvar." : "Não foi possível salvar.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:134
+setMessage("Alteração salva e inteligência recalculada.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:138
+setError(cause instanceof Error ? cause.message : "Não foi possível salvar a alteração.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:148
+<a className={styles.brand} href="/crm"><b>A</b><span><strong>AutoPonte</strong><small>OPPORTUNITY WORKSPACE</small></span></a>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:156
+<p>{data.desiredVehicle || "Veículo desejado ainda não definido"} · {data.client.city}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:160
+{whatsappUrl ? <a className={styles.whatsappAction} href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Abrir conversa no WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.8a8 8 0 0 1-11.8 7l-4.1 1.1 1.1-4A8 8 0 1 1 20 11.8Zm-8-6.2a6.2 6.2 0 0 0-5.3 9.5l.2.4-.6 2.1 2.2-.6.4.2A6.2 6.2 0 1 0 12 5.6Zm3.5 8.7c-.2.5-1.1 1-1.6 1.1-.4.1-1 .2-2.9-.6-2.4-1-3.9-3.4-4-3.6-.1-.2-1-1.3-1-2.5 0-1.2.6-1.8.9-2 .2-.2.5-.3.8-.3h.5c.2 0 .4 0 .6.5l.7 1.7c.1.2.1.4 0 .6l-.4.6-.5.5c-.2.2-.3.4-.1.7.2.4.8 1.3 1.8 2 .9.8 1.7 1 2.1 1.2.3.1.5.1.7-.1l.9-1.1c.2-.3.4-.3.7-.2l1.8.8c.3.1.5.2.5.4 0 .1 0 .5-.2 1Z"/></svg><span>WhatsApp</span></a> : <span className={styles.contactUnavailable}>WhatsApp não informado</span>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:161
+{emailUrl ? <a className={styles.emailAction} href={emailUrl} target="_blank" rel="noreferrer" aria-label="Escrever e-mail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3V5Zm9 7.2L5.4 7h13.2L12 12.2ZM5 17h14V9.1l-7 5.5-7-5.5V17Z"/></svg><span>E-mail</span></a> : <span className={styles.contactUnavailable}>E-mail não informado</span>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:169
+<article><span>Confiança</span><strong>{data.assessment.confidence.score}%</strong><small>{data.assessment.confidence.level === "high" ? "alta" : data.assessment.confidence.level === "medium" ? "média" : "baixa"}</small></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:170
+<article><span>Temperatura</span><strong>{data.assessment.temperature.score}</strong><small>{data.assessment.temperature.label}</small></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:172
+<article><span>Margem potencial</span><strong className={styles.moneyMetric}>{brl.format(data.commercial.marginPotential)}</strong><small>FIPE menos avaliação média</small></article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:178
+<header className={styles.panelHeader}><div><span>RECOMENDAÇÃO EXPLICADA</span><h2>{data.assessment.recommendation.action || "Sem recomendação acionável no momento"}</h2></div><b>{data.assessment.recommendation.channel || "Análise"}</b></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:180
+<p className={styles.recommendation}>{data.assessment.recommendation.rationale || "Dados insuficientes para uma recomendação específica."}</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:187
+<article><span>PONTOS DE ATENÇÃO</span>{data.assessment.explainability.warnings.length ? data.assessment.explainability.warnings.slice(0, 3).map((warning) => <p key={warning}>! {warning}</p>) : <p>Sem alertas críticos.</p>}</article>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:196
+<div><dt>WhatsApp</dt><dd>{whatsappDisplay || "Não informado"}</dd></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:197
+<div><dt>E-mail</dt><dd>{data.client.email || "Não informado"}</dd></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:208
+<div><dt>Ano</dt><dd>{data.tradeIn.year || "Não se aplica"}</dd></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:209
+<div><dt>Quilometragem</dt><dd>{data.tradeIn.brand ? `${number.format(data.tradeIn.mileage)} km` : "Não se aplica"}</dd></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:210
+<div><dt>Condição</dt><dd>{conditionLabel(data.tradeIn.condition)}</dd></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:211
+<div><dt>Versão</dt><dd>{data.tradeIn.version || "Não informada"}</dd></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:221
+<div><span>Faixa mínima</span><strong>{brl.format(data.tradeIn.estimatedMin)}</strong><small>pré-avaliação</small></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:222
+<div><span>Faixa máxima</span><strong>{brl.format(data.tradeIn.estimatedMax)}</strong><small>pré-avaliação</small></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:253
+<header><span>ETAPA</span><h2>Alterar pipeline</h2></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:261
+<header><span>CONTATO</span><h2>Registrar interação</h2></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:268
+<header><span>PRÓXIMA AÇÃO</span><h2>Definir compromisso</h2></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:271
+<button disabled={pending !== null || !nextAction.trim() || !nextDue} onClick={() => mutate("next_action", { action: "next_action", label: nextAction, dueAt: new Date(nextDue).toISOString() })}>{pending === "next_action" ? "Salvando..." : "Definir próxima ação"}</button>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:272
+<small>Atual: {data.commercial.nextAction || "não definida"}<br />Prazo: {formatDate(data.commercial.nextFollowUp)}</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:276
+<header><span>OBSERVAÇÃO</span><h2>Adicionar nota</h2></header>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:277
+<textarea value={note} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setNote(event.target.value)} placeholder="Informação comercial, objeção, condição ou decisão..." rows={5} />
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\opportunity-workspace\components\OpportunityWorkspace.tsx:278
+<button disabled={pending !== null || !note.trim()} onClick={async () => { if (await mutate("note", { action: "note", note })) setNote(""); }}>{pending === "note" ? "Salvando..." : "Salvar observação"}</button>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\partner-registry\components\PartnerCreateForm.tsx:3
+export function PartnerCreateForm(){const router=useRouter();const[saving,setSaving]=useState(false);const[error,setError]=useState("");async function submit(formData:FormData){setSaving(true);setError("");try{const response=await fetch("/api/partners",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.fromEntries(formData.entries()))});const body=await response.json() as {error?:string;href?:string};if(!response.ok)throw new Error(body.error||"Não foi possível cadastrar o parceiro.");router.push(body.href||"/parceiros");router.refresh()}catch(cause){setError(cause instanceof Error?cause.message:"Não foi possível cadastrar o parceiro.");setSaving(false)}}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\partner-registry\components\PartnerCreateForm.tsx:4
+return <form className={styles.form} action={submit}>{error&&<div className={styles.error}>{error}</div>}<section className={styles.card}><h2>Identificação do parceiro</h2><div className={styles.grid}><label><span>Nome comercial *</span><input name="name" required /></label><label><span>Razão social</span><input name="legalName" /></label><label><span>CNPJ / documento</span><input name="document" /></label><label><span>Tipo</span><select name="partnerType" defaultValue="dealer"><option value="dealer">Loja / revenda</option><option value="dealer_group">Grupo de lojas</option><option value="broker">Intermediador</option><option value="supplier">Fornecedor</option><option value="other">Outro</option></select></label><label><span>Status</span><select name="status" defaultValue="active"><option value="active">Ativo</option><option value="inactive">Inativo</option><option value="pending">Em homologação</option></select></label><label><span>Contato principal</span><input name="contactName" /></label><label><span>DDI</span><input name="phoneDdi" defaultValue="55" inputMode="numeric" /></label><label><span>Telefone / WhatsApp</span><input name="phoneLocal" /></label><label><span>E-mail</span><input name="email" type="email" /></label><label><span>Cidade</span><input name="city" /></label><label><span>UF</span><input name="state" maxLength={2} /></label><label><span>Operação</span><select name="integrationMode" defaultValue="manual"><option value="manual">Cadastro manual</option><option value="csv">Importação CSV</option><option value="api">Integração API</option></select></label><label><span>Sistema administrativo atual</span><input name="externalSystem" placeholder="Ex.: DMS, ERP ou planilha" /></label><label className={styles.full}><span>Observações</span><textarea name="notes" rows={3} /></label></div></section><div className={styles.submit}><a href="/parceiros">Cancelar</a><button disabled={saving}>{saving?"Salvando...":"Cadastrar parceiro"}</button></div></form>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-demand\components\DesiredVehicleSelector.tsx:27
+const currentYear = new Date().getFullYear();
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-demand\components\DesiredVehicleSelector.tsx:34
+throw new Error(!Array.isArray(data) && data.error ? data.error : "Não foi possível carregar o catálogo FIPE.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-demand\components\DesiredVehicleSelector.tsx:38
+// O <select> sempre devolve string; normalizar aqui evita que a versão
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-demand\components\DesiredVehicleSelector.tsx:58
+.catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Não foi possível carregar as marcas FIPE."); })
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-demand\components\DesiredVehicleSelector.tsx:73
+.catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Não foi possível carregar os modelos FIPE."); })
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-demand\components\DesiredVehicleSelector.tsx:147
+<span>Versão</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-demand\components\DesiredVehicleSelector.tsx:178
+<p className={styles.helper}>A ausência de modelo ou versão representa flexibilidade comercial, não cadastro incompleto.</p>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:11
+["Mission Control", "/crm", "âŒ"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:12
+["Clientes", "/clientes", "â—Ž"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:13
+["Leads", "/crm#leads", "â—‡"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:14
+["Oportunidades", "/oportunidades", "â—‰"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:15
+["Estoque", "/veiculos", "â–£"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:16
+["Trocas", "/crm#trocas", "â‡„"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:17
+["Propostas", "/crm#propostas", "â–¤"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:18
+["Parceiros", "/parceiros", "â™§"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:20
+["RelatÃ³rios", "/crm#relatorios", "â–¥"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:21
+["ConfiguraÃ§Ãµes", "/crm#configuracoes", "âš™"],
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:32
+<nav className={styles.sidebarNav} aria-label="NavegaÃ§Ã£o principal">
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:39
+<small>Sua operaÃ§Ã£o</small>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:49
+<div className={styles.breadcrumb}>{breadcrumb ?? <><a href="/crm">Mission Control</a><b>â€º</b><span>Estoque</span></>}</div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:50
+<div className={styles.globalSearch}><span>âŒ•</span><input aria-label="Busca global" placeholder="Buscar clientes, veÃ­culos, placas..."/><kbd>Ctrl + K</kbd></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\InventoryShell.tsx:51
+<div className={styles.headerIcons}><a href="/crm" title="NotificaÃ§Ãµes">â—</a><a href="/crm" title="Ajuda">?</a><span className={styles.avatar}>EG</span></div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleCreateForm.tsx:4
+export function VehicleCreateForm({partners}:{partners:PartnerOption[]}){const router=useRouter();const params=useSearchParams();const initialPartner=params.get("partner")||"";const[fipe,setFipe]=useState(emptyVehicleFipeValue);const[saving,setSaving]=useState(false);const[error,setError]=useState("");const[scope,setScope]=useState<"autoponte"|"partner">(initialPartner?"partner":"autoponte");const[partnerId,setPartnerId]=useState(initialPartner);const sourceDefault=useMemo(()=>scope==="partner"?"partner_inventory":"autoponte_inventory",[scope]);async function submit(formData:FormData){setSaving(true);setError("");const payload=Object.fromEntries(formData.entries());Object.assign(payload,{brandCode:fipe.brandCode,modelCode:fipe.modelCode,yearCode:fipe.yearCode,inventoryScope:scope,partnerId:scope==="partner"?partnerId:""});try{const response=await fetch("/api/vehicles",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const body=await response.json() as {error?:string;href?:string};if(!response.ok)throw new Error(body.error||"Não foi possível cadastrar o veículo.");router.push(body.href||"/veiculos");router.refresh()}catch(cause){setError(cause instanceof Error?cause.message:"Não foi possível cadastrar o veículo.");setSaving(false)}}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleCreateForm.tsx:5
+return <form className={styles.form} action={submit}>{error&&<div className={styles.error} role="alert">{error}</div>}<section className={styles.card}><header><div><span>CLASSIFICAÇÃO DO ESTOQUE</span><h2>AutoPonte ou parceiro</h2></div></header><div className={styles.grid4}><label><span>Estoque *</span><select name="inventoryScope" value={scope} onChange={e=>setScope(e.target.value as "autoponte"|"partner")}><option value="autoponte">Estoque AutoPonte</option><option value="partner">Estoque de parceiro</option></select></label>{scope==="partner"&&<label><span>Parceiro *</span><select name="partnerId" value={partnerId} required onChange={e=>setPartnerId(e.target.value)}><option value="">Selecionar parceiro</option>{partners.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>}<label><span>Origem *</span><select key={sourceDefault} name="sourceType" defaultValue={sourceDefault}><option value="autoponte_inventory">Estoque AutoPonte</option><option value="dealer_inventory">Estoque de loja própria</option><option value="partner_inventory">Estoque parceiro</option><option value="consignment">Consignação</option><option value="trade_in">Veículo de troca</option><option value="new_vehicle">Veículo 0 km</option></select></label><label><span>Status *</span><select name="status" defaultValue="available"><option value="available">Disponível</option><option value="evaluation">Em avaliação</option><option value="reserved">Reservado</option><option value="sold">Vendido</option><option value="unavailable">Indisponível</option></select></label></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleCreateForm.tsx:6
+<section className={styles.card}><header><div><span>IDENTIFICAÇÃO</span><h2>Dados oficiais do veículo</h2></div></header><VehicleFipeSelector value={fipe} onChange={setFipe} disabled={saving}/><div className={styles.grid4}><label><span>Placa</span><input name="plate" placeholder="ABC1D23" maxLength={8}/></label><label><span>Chassi</span><input name="chassis" maxLength={24}/></label><label><span>Código interno</span><input name="stockCode" placeholder="AP-00125"/></label><label><span>Quilometragem</span><input name="mileage" type="number" min="0" defaultValue="0"/></label><label><span>Cor</span><input name="color"/></label><label><span>Câmbio</span><select name="transmission" defaultValue=""><option value="">Selecionar</option><option>Automático</option><option>Manual</option><option>CVT</option><option>Automatizado</option></select></label><label><span>Carroceria</span><input name="bodyType"/></label><label><span>Portas</span><input name="doors" type="number" min="0" max="8"/></label><label><span>Motor</span><input name="engine"/></label><label><span>Potência</span><input name="power"/></label><label><span>RENAVAM</span><input name="renavam" inputMode="numeric"/></label><label><span>UF</span><input name="registrationState" maxLength={2}/></label><label><span>Cidade</span><input name="city"/></label></div></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleCreateForm.tsx:7
+<section className={styles.card}><header><div><span>CONDIÇÃO E DOCUMENTAÇÃO</span><h2>Estado operacional</h2></div></header><div className={styles.grid4}><label><span>Condição</span><select name="vehicleCondition" defaultValue="good"><option value="excellent">Excelente</option><option value="good">Boa</option><option value="regular">Regular</option><option value="needs_repair">Necessita reparos</option></select></label><label><span>Documentação</span><select name="documentStatus" defaultValue="regular"><option value="regular">Regular</option><option value="pending">Com pendência</option><option value="financed">Financiado</option><option value="blocked">Bloqueado</option></select></label><label><span>Vistoria</span><select name="inspectionStatus" defaultValue="pending"><option value="pending">Pendente</option><option value="approved">Aprovada</option><option value="approved_notes">Aprovada com apontamentos</option><option value="rejected">Reprovada</option></select></label><label><span>Data de aquisição</span><input name="acquisitionDate" type="date"/></label><label><span>Data de anúncio</span><input name="listingDate" type="date"/></label></div><label className={styles.full}><span>Opcionais e equipamentos</span><textarea name="optionalItems" rows={2}/></label></section>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleCreateForm.tsx:8
+<section className={styles.card}><header><div><span>COMERCIAL</span><h2>Valores e responsável</h2></div></header><div className={styles.grid4}><label><span>Proprietário / loja</span><input name="ownerName"/></label><label><span>Preço pedido</span><input name="askingPrice" type="number" min="0"/></label><label><span>Custo de aquisição</span><input name="acquisitionCost" type="number" min="0"/></label></div><label className={styles.full}><span>Observações</span><textarea name="notes" rows={3}/></label></section><div className={styles.actions}><a href="/veiculos">Cancelar</a><button type="submit" disabled={saving||!fipe.fipeCode}>{saving?"Salvando...":"Cadastrar veículo"}</button></div></form>}
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleFipeSelector.tsx:28
+if (!response.ok) throw new Error(typeof body === "object" && body && "error" in body ? body.error || "Consulta FIPE indisponível." : "Consulta FIPE indisponível.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleFipeSelector.tsx:43
+.catch((cause) => setError(cause instanceof Error ? cause.message : "Não foi possível carregar as marcas."))
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleFipeSelector.tsx:55
+catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível carregar os modelos."); }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleFipeSelector.tsx:67
+catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível carregar os anos."); }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleFipeSelector.tsx:79
+} catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível consultar o valor FIPE."); }
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleFipeSelector.tsx:87
+<label><span>Modelo / versão *</span><select value={value.modelCode} onChange={onModel} disabled={disabled || !value.brandCode || loading === "models"} required><option value="">{loading === "models" ? "Carregando..." : "Selecione"}</option>{models.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-registry\components\VehicleFipeSelector.tsx:90
+<div className={styles.fipeSummary}>{loading === "quote" ? "Consultando FIPE..." : value.fipeCode ? <><strong>{value.brand} {value.model}</strong><span>{value.modelYear} · {value.fuel} · FIPE {value.fipeCode} · {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value.price)} · {value.referenceMonth}</span></> : "Selecione marca, modelo e ano para preencher a identificação oficial."}</div>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-trade\components\TradeInFipeSelector.tsx:56
+throw new Error(typeof data === "object" && data && "error" in data && data.error ? data.error : "Não foi possível consultar a FIPE.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-trade\components\TradeInFipeSelector.tsx:72
+.catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Não foi possível carregar as marcas."); })
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-trade\components\TradeInFipeSelector.tsx:90
+setError(cause instanceof Error ? cause.message : "Não foi possível carregar os modelos.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-trade\components\TradeInFipeSelector.tsx:108
+setError(cause instanceof Error ? cause.message : "Não foi possível carregar os anos.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-trade\components\TradeInFipeSelector.tsx:134
+setError(cause instanceof Error ? cause.message : "Não foi possível consultar o valor FIPE.");
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-trade\components\TradeInFipeSelector.tsx:152
+<span>Modelo / versão *</span>
+-----
+C:\Users\evand\Desktop\AutoPonte\CRM\code\autoponte_work\features\vehicle-trade\components\TradeInFipeSelector.tsx:169
+<div><strong>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value.price)}</strong><small>{value.referenceMonth}</small></div>
+-----

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 
 export type Tone = "neutral" | "success" | "warning" | "danger" | "ai";
 
@@ -59,7 +59,7 @@ export function HeatMap({ items }: { items: Array<{ label: string; value: number
 }
 
 export function OpportunityScore({ score, trend = "estável", risk = "baixo" }: { score: number; trend?: string; risk?: string }) {
-  return <div className="ap-score"><strong>{score}</strong><div><span>Opportunity Score</span><small>{trend} · risco {risk}</small></div></div>;
+  return <div className="ap-score"><strong>{score}</strong><div><span>Pontuação da oportunidade</span><small>{trend} · risco {risk}</small></div></div>;
 }
 
 export function DecisionPanel({ decisions }: { decisions: Array<{ title: string; detail: string }> }) {
@@ -91,7 +91,7 @@ export function WhatsAppWorkspace({ contact, preview }: { contact: string; previ
 }
 
 export function VehicleCard({ vehicle, price, meta, score }: { vehicle: string; price: string; meta: string; score?: number }) {
-  return <article className="ap-vehicle-card"><div className="ap-vehicle-card__media">AP</div><div><h3>{vehicle}</h3><p>{meta}</p><strong>{price}</strong>{score !== undefined && <APBadge tone="success">Score {score}</APBadge>}</div></article>;
+  return <article className="ap-vehicle-card"><div className="ap-vehicle-card__media">AP</div><div><h3>{vehicle}</h3><p>{meta}</p><strong>{price}</strong>{score !== undefined && <APBadge tone="success">Pontuação {score}</APBadge>}</div></article>;
 }
 
 export function VehicleHealth({ days, demand, status }: { days: number; demand: string; status: Tone }) {

@@ -1,0 +1,734 @@
+﻿========== .\components\crm\CoreShell.tsx ==========
+import type { ReactNode } from "react";
+import { CommandPalette, EnterpriseSidebar } from "../apdl";
+import styles from "./CoreShell.module.css";
+
+const baseNavigation = [
+  { label: "Mission Control", href: "/crm" },
+  { label: "Clientes", href: "/clientes" },
+  { label: "Oportunidades", href: "/oportunidades" },
+  { label: "Estoque", href: "/veiculos" },
+  { label: "Trocas", href: "/trocas" },
+  { label: "Propostas", href: "/propostas" },
+  { label: "Parceiros", href: "/parceiros" },
+  { label: "Financeiro", href: "/financeiro" },
+  { label: "Relatórios", href: "/relatorios" },
+  { label: "Configurações", href: "/configuracoes" },
+  { label: "Correspondências IA", href: "/matches" },
+];
+
+export function CoreShell({
+  children,
+  activeHref,
+  title,
+  subtitle,
+  actions,
+}: {
+  children: ReactNode;
+  activeHref: string;
+  title: string;
+  subtitle?: string;
+  actions?: ReactNode;
+}) {
+  const navigation = baseNavigation.map((item) => ({ ...item, active: item.href === activeHref }));
+  return <main className={styles.shell}>
+    <EnterpriseSidebar items={navigation}/>
+    <section className={styles.stage}>
+      <header className={styles.topbar}>
+        <CommandPalette/>
+        <div className={styles.topActions}>{actions}</div>
+      </header>
+      <div className={styles.content}>
+        <div className={styles.pageHeader}>
+          <div><span className={styles.eyebrow}>AUTOPONTE CRM</span><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>
+          <a className={styles.back} href="/crm">← Voltar ao CRM</a>
+        </div>
+        {children}
+      </div>
+    </section>
+  </main>;
+}
+
+export const coreStyles = styles;
+
+
+
+========== .\components\crm\CRMAppShell.tsx ==========
+"use client";
+
+import type { ReactNode } from "react";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import styles from "./CRMAppShell.module.css";
+
+type NavItem = {
+  label: string;
+  href: string;
+  icon: string;
+};
+
+type NavGroup = {
+  title?: string;
+  items: NavItem[];
+};
+
+const NAVIGATION: NavGroup[] = [
+  {
+    items: [
+      { label: "Central de Operações", href: "/crm", icon: "grid" },
+    ],
+  },
+  {
+    title: "COMERCIAL",
+    items: [
+      { label: "Potenciais clientes", href: "/leads", icon: "target" },
+      { label: "Clientes", href: "/clientes", icon: "users" },
+      { label: "Oportunidades", href: "/oportunidades", icon: "target" },
+      { label: "Propostas", href: "/propostas", icon: "file" },
+    ],
+  },
+  {
+    title: "VEÍCULOS",
+    items: [
+      { label: "Estoque", href: "/veiculos", icon: "car" },
+      { label: "Trocas", href: "/trocas", icon: "swap" },
+      { label: "Correspondências IA", href: "/matches", icon: "spark" },
+    ],
+  },
+  {
+    title: "REDE",
+    items: [
+      { label: "Parceiros", href: "/parceiros", icon: "store" },
+    ],
+  },
+  {
+    title: "GESTÃO",
+    items: [
+      { label: "Financeiro", href: "/financeiro", icon: "wallet" },
+      { label: "Relatórios", href: "/relatorios", icon: "chart" },
+      { label: "Recomendações IA", href: "/recomendacoes", icon: "bulb" },
+    ],
+  },
+  {
+    title: "SISTEMA",
+    items: [
+      { label: "Configurações", href: "/configuracoes", icon: "settings" },
+    ],
+  },
+];
+
+const MANAGED_PREFIXES = [
+  "/crm",
+  "/clientes",
+  "/leads",
+  "/oportunidades",
+  "/veiculos",
+  "/estoque",
+  "/trocas",
+  "/propostas",
+  "/parceiros",
+  "/financeiro",
+  "/relatorios",
+  "/configuracoes",
+  "/recomendacoes",
+  "/matches",
+];
+
+const VISIBLE_TEXT_REPLACEMENTS: Array<[string, string]> = [
+  ["OPPORTUNITY WORKSPACE", "ÁREA DE OPORTUNIDADES"],
+  ["Opportunity Workspace", "Área de oportunidades"],
+  ["OPERATIONAL LAYER", "CAMADA OPERACIONAL"],
+  ["Operational Layer", "Camada operacional"],
+  ["PIPELINE", "FUNIL COMERCIAL"],
+  ["Pipeline", "Funil comercial"],
+  ["MATCH IA", "CORRESPONDÊNCIAS IA"],
+  ["Match IA", "Correspondências IA"],
+  ["Aging", "Tempo em estoque"],
+  ["SCORE", "PONTUAÇÃO"],
+  ["Score", "Pontuação"],
+  ["NEW", "NOVO"],
+  ["New", "Novo"],
+  ["Customer", "Cliente"],
+  ["Customers", "Clientes"],
+  ["Trade-in", "Troca"],
+  ["Trade in", "Troca"],
+  ["Inventory", "Estoque"],
+  ["Partner", "Parceiro"],
+  ["Partners", "Parceiros"],
+  ["Financial", "Financeiro"],
+  ["Reports", "Relatórios"],
+  ["Settings", "Configurações"],
+  ["Relatórios", "Relatórios"],
+  ["Configurações", "Configurações"],
+  ["Catálogo", "Catálogo"],
+  ["Operação", "Operação"],
+  ["Recomendações", "Recomendações"],
+];
+
+function isManaged(pathname: string) {
+  return MANAGED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
+function activeFor(pathname: string, href: string) {
+  if (href === "/crm") return pathname === "/crm";
+  if (href === "/veiculos") {
+    return (
+      pathname === "/estoque" ||
+      pathname === "/veiculos" ||
+      pathname.startsWith("/veiculos/")
+    );
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function normalizeVisibleText(root: HTMLElement) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes: Text[] = [];
+  let current = walker.nextNode();
+
+  while (current) {
+    nodes.push(current as Text);
+    current = walker.nextNode();
+  }
+
+  for (const node of nodes) {
+    const parent = node.parentElement;
+    if (!parent) continue;
+    if (["SCRIPT", "STYLE", "CODE", "PRE"].includes(parent.tagName)) continue;
+
+    let value = node.nodeValue || "";
+    let changed = value;
+
+    for (const [source, target] of VISIBLE_TEXT_REPLACEMENTS) {
+      changed = changed.split(source).join(target);
+    }
+
+    if (changed !== value) node.nodeValue = changed;
+  }
+}
+
+function InterfaceLanguageNormalizer({ enabled }: { enabled: boolean }) {
+  useEffect(() => {
+    if (!enabled) return;
+
+    const run = () => normalizeVisibleText(document.body);
+    run();
+
+    const observer = new MutationObserver(() => run());
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+    });
+
+    return () => observer.disconnect();
+  }, [enabled]);
+
+  return null;
+}
+
+function Icon({ name }: { name: string }) {
+  const common = {
+    width: 19,
+    height: 19,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  if (name === "users") return <svg {...common}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+  if (name === "car") return <svg {...common}><path d="M3 13l2-5h14l2 5"/><path d="M5 13h14a2 2 0 0 1 2 2v3H3v-3a2 2 0 0 1 2-2Z"/><circle cx="6.5" cy="17" r="1"/><circle cx="17.5" cy="17" r="1"/></svg>;
+  if (name === "swap") return <svg {...common}><path d="M7 7h11l-3-3M17 17H6l3 3M18 7l3 3-3 3M6 17l-3-3 3-3"/></svg>;
+  if (name === "file") return <svg {...common}><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>;
+  if (name === "store") return <svg {...common}><path d="M3 9l2-5h14l2 5"/><path d="M5 13v8h14v-8M8 21v-5h8v5"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg>;
+  if (name === "wallet") return <svg {...common}><path d="M3 6h15a3 3 0 0 1 3 3v9H3z"/><path d="M3 6V4h13v2M16 12h5"/><circle cx="17" cy="12" r=".7" fill="currentColor"/></svg>;
+  if (name === "chart") return <svg {...common}><path d="M4 20V10M10 20V4M16 20v-7M22 20V7"/></svg>;
+  if (name === "settings") return <svg {...common}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06-2.83 2.83-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21h-4v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06-2.83-2.83.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3v-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06 2.83-2.83.06.06A1.65 1.65 0 0 0 8.92 4a1.65 1.65 0 0 0 1-1.51V2h4v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06 2.83 2.83-.06.06A1.65 1.65 0 0 0 19.4 9c.12.37.46.63.85.64H21v4h-.75c-.39.01-.73.27-.85.64Z"/></svg>;
+  if (name === "grid") return <svg {...common}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>;
+  if (name === "bulb") return <svg {...common}><path d="M9 18h6M10 22h4"/><path d="M8.5 15.5A6 6 0 1 1 15.5 15.5c-.9.7-1.5 1.4-1.5 2.5h-4c0-1.1-.6-1.8-1.5-2.5Z"/></svg>;
+  if (name === "spark") return <svg {...common}><path d="M12 3l1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4L12 3Z"/><path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8L18 14Z"/></svg>;
+  return <svg {...common}><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg>;
+}
+
+export function CRMAppShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname() || "/";
+  const managed = isManaged(pathname);
+
+  if (!managed) return <>{children}</>;
+
+  return (
+    <div className={styles.shell}>
+      <InterfaceLanguageNormalizer enabled={managed} />
+
+      <aside className={styles.sidebar}>
+        <a href="/crm" className={styles.brand} aria-label="AutoPonte Veículos">
+          <span className={styles.brandMark}>A</span>
+          <span>
+            <strong>AutoPonte</strong>
+            <small>VEÍCULOS</small>
+          </span>
+        </a>
+
+        <nav className={styles.nav}>
+          {NAVIGATION.map((group, groupIndex) => (
+            <div className={styles.group} key={`${group.title || "main"}-${groupIndex}`}>
+              {group.title ? <p className={styles.groupTitle}>{group.title}</p> : null}
+              {group.items.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={activeFor(pathname, item.href) ? styles.active : ""}
+                >
+                  <span className={styles.icon}><Icon name={item.icon} /></span>
+                  <span>{item.label}</span>
+                </a>
+              ))}
+            </div>
+          ))}
+        </nav>
+
+        <div className={styles.footer}>
+          <span className={styles.user}>AP</span>
+          <span>
+            <strong>AutoPonte</strong>
+            <small>Operação comercial</small>
+          </span>
+        </div>
+      </aside>
+
+      <section className={styles.stage}>
+        <header className={styles.topbar}>
+          <div>
+            <div className={styles.breadcrumb}>AutoPonte CRM</div>
+            <div className={styles.routeLabel}>
+              {NAVIGATION.flatMap(group => group.items).find(item => activeFor(pathname, item.href))?.label || "Operação"}
+            </div>
+          </div>
+
+          <div className={styles.actions}>
+            <a href="/recomendacoes">Recomendações IA</a>
+            <a href="/oportunidades/nova" className={styles.primary}>+ Nova oportunidade</a>
+          </div>
+        </header>
+
+        <div className={styles.content}>{children}</div>
+      </section>
+    </div>
+  );
+}
+
+
+
+========== .\features\mission-control\components\MissionControl.tsx ==========
+import type { CSSProperties } from "react";
+import type { MissionControlViewModel, MissionOpportunity } from "../../../lib/mission-control/model";
+import { Icons } from "./icons";
+import styles from "./MissionControl.module.css";
+import { FlowEngineV2 } from "./FlowEngineV2";
+
+const brl = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  maximumFractionDigits: 0,
+});
+
+const nav = [
+  ["Mission Control", "/crm", Icons.Grid],
+  ["Clientes", "/clientes", Icons.Users],
+  ["Leads", "/oportunidades", Icons.Target],
+  ["Oportunidades", "/oportunidades", Icons.Target],
+  ["Estoque", "/veiculos", Icons.Car],
+  ["Trocas", "/oportunidades", Icons.Swap],
+  ["Propostas", "/crm#propostas", Icons.File],
+  ["Parceiros", "/crm#parceiros", Icons.Store],
+  ["Financeiro", "/financeiro", Icons.Wallet],
+  ["Relatórios", "/crm#relatorios", Icons.Chart],
+  ["Configurações", "/crm#configuracoes", Icons.Settings],
+] as const;
+
+function priority(model: MissionControlViewModel) {
+  return [...model.opportunities]
+    .filter((item) => item.status !== "closed" && item.status !== "lost")
+    .sort((a, b) => b.priorityScore - a.priorityScore)
+    .slice(0, 3);
+}
+
+function dayLabel() {
+  return new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
+}
+
+function actionLabel(item: MissionOpportunity, index: number) {
+  if (index === 0 && item.recommendation.urgency === "now") return item.recommendation.action;
+  return item.recommendation.action;
+}
+
+function opportunityTitle(item: MissionOpportunity) {
+  return item.name;
+}
+
+function opportunityTag(item: MissionOpportunity, index: number) {
+  if (item.momentum === "decelerating") return "Perdendo forca";
+  if (item.temperature.level === "critical") return "Critica";
+  if (item.temperature.level === "hot") return "Quente";
+  return item.temperature.label;
+}
+
+function reasonLines(item: MissionOpportunity, index: number) {
+  const reasons = [...item.explanations];
+  if (item.warnings[0]) reasons.push(item.warnings[0]);
+  if (item.marginPotential > 0) reasons.unshift(`Margem potencial de ${brl.format(item.marginPotential)}`);
+  return reasons.slice(0, 3);
+}
+
+export function MissionControl({ model }: { model: MissionControlViewModel }) {
+  const priorities = priority(model);
+  const primary = priorities[0] ?? model.opportunities[0];
+  const pulseStyle = {
+    "--pulse": `${Math.max(0, Math.min(100, model.operationScore)) * 3.6}deg`,
+  } as CSSProperties;
+
+  return (
+    <main className={styles.shell}>
+      <aside className={styles.sidebar}>
+        <a className={styles.brand} href="/crm">
+          <span className={styles.mark}>A</span>
+          <span className={styles.brandText}>
+            <strong>AutoPonte</strong>
+          <span>VEÍCULOS</span>
+          </span>
+        </a>
+
+        <nav className={styles.nav}>
+          {nav.map(([label, href, Icon], index) => (
+            <a key={label} href={href} className={index === 0 ? styles.active : ""}>
+              <Icon />
+              {label === "Leads" && <b className={styles.badge}>{model.activeCount}</b>}
+              <span>{label}</span>
+            </a>
+          ))}
+        </nav>
+
+        <div className={styles.sidebarBottom}>
+          <div className={styles.operation}>
+            <small>Operação ativa</small>
+            <strong>AutoPonte Motors</strong>
+          </div>
+          <div className={styles.user}>
+            <span className={styles.avatar}>EG</span>
+            <div>
+              <strong>Evandro Gatti</strong>
+              <small>Gestor · online</small>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section className={styles.stage}>
+        <header className={styles.topbar}>
+          <label className={styles.search}>
+            <Icons.Search />
+            <input aria-label="Busca universal" placeholder="Buscar cliente, placa, telefone, veículo..." />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div className={styles.topActions}>
+            <button className={styles.iconButton} aria-label="Notificações">
+              <Icons.Bell />
+              <b>{model.immediateActions}</b>
+            </button>
+            <a className={styles.primary} href="/oportunidades/nova">
+              <Icons.Plus />
+              <span>Nova oportunidade</span>
+            </a>
+          </div>
+        </header>
+
+        <div className={styles.content}>
+          <section className={styles.summaryRow} aria-label="Resumo da operação">
+            <div className={styles.pulseSummary}>
+              <div className={styles.pulse} style={pulseStyle}>
+                <div>
+                  <strong>{model.operationScore}</strong>
+                  <span>/100</span>
+                </div>
+              </div>
+              <div className={styles.pulseCopy}>
+                <span className={styles.eyebrow}>Operação</span>
+                <strong>{model.businessTemperature.label.toUpperCase()}</strong>
+                <small>Saúde do fluxo {model.flow.health.score}/100</small>
+              </div>
+            </div>
+
+            <div className={styles.potential}>
+              <span className={styles.eyebrow}>Valor ativo priorizado</span>
+              <strong>{brl.format(model.activeValue)}</strong>
+              <span className={styles.positive}>em negócios potenciais</span>
+            </div>
+
+            <div className={styles.metrics}>
+              <div className={styles.metric}>
+                <span>Negociações</span>
+                <strong>{model.activeCount}</strong>
+                <small>ativas</small>
+              </div>
+              <div className={styles.metric}>
+                <span>Conversão</span>
+                <strong>{model.conversion}%</strong>
+                <small>base real</small>
+              </div>
+              <div className={styles.metric}>
+                <span>Margem prevista</span>
+                <strong>{brl.format(model.projectedMargin)}</strong>
+                <small>projetada</small>
+              </div>
+              <div className={styles.metric}>
+                <span>Trocas</span>
+                <strong>{model.tradeInCount}</strong>
+                <small>em atenção</small>
+              </div>
+            </div>
+          </section>
+
+          <div className={styles.workspace}>
+            <div className={styles.centerColumn}>
+              <section className={styles.mission}>
+                <header className={styles.sectionTitle}>
+                  <div>
+                    <Icons.Target />
+                    <h1>MISSÃO DO DIA</h1>
+                    <span>As 3 decisões que mais impactam hoje</span>
+                  </div>
+                </header>
+
+                <div className={styles.missionGrid}>
+                  {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma oportunidade ativa. Novos dados reais aparecerão aqui.</div>}
+                  {priorities.map((item, index) => {
+                    const reasons = reasonLines(item, index);
+                    return (
+                      <a
+                        className={`${styles.missionCard} ${index === 0 ? styles.primaryMission : ""}`}
+                        href={`/oportunidades/${item.id}`}
+                        key={item.id}
+                      >
+                        <header>
+                          <div className={styles.priorityLabel}>
+                            <b>{index + 1}</b>
+                            <span>PRIORIDADE</span>
+                          </div>
+                          <em className={styles.statusTag}>{opportunityTag(item, index)}</em>
+                        </header>
+
+                        <div className={styles.identity}>
+                          <span className={styles.initials}>{item.name.slice(0, 2).toUpperCase()}</span>
+                          <div>
+                            <h2>{opportunityTitle(item)}</h2>
+                            <p>{item.interest} · {item.city}</p>
+                          </div>
+                        </div>
+
+                        <div className={styles.missionBody}>
+                          <div className={styles.decisionValue}>
+                            <strong>{index === 1 ? brl.format(item.marginPotential) : `${item.probability}%`}</strong>
+                            <span>{index === 1 ? "margem prevista" : "chance estimada"}</span>
+                          </div>
+
+                          <div className={styles.reasonBox}>
+                            <span>POR QUE AGORA?</span>
+                            <ul>
+                              {reasons.map((reason) => <li key={reason}>{reason}</li>)}
+                            </ul>
+                          </div>
+                        </div>
+
+                        <span className={styles.missionAction}>
+                          {index === 0 ? <Icons.Phone /> : <Icons.Arrow />}
+                          {actionLabel(item, index)}
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </section>
+
+              <section className={styles.lowerGrid}>
+                <article className={styles.panel}>
+                  <header className={styles.panelHeader}>
+                    <div>
+                      <Icons.Clock />
+                      <span>
+                        <h2>DECISION FEED</h2>
+                        <small>O que aconteceu agora</small>
+                      </span>
+                    </div>
+                    <a href="/oportunidades">Ver tudo</a>
+                  </header>
+                  <div className={styles.feed}>
+                    {model.recentEvents.length === 0 && <div className={styles.emptyState}>O histórico operacional aparecerá após a primeira ação.</div>}
+                    {model.recentEvents.slice(0, 5).map((event, index) => (
+                      <a className={styles.feedRow} href={`/oportunidades/${event.opportunityId}`} key={event.id}>
+                        <time>{new Date(event.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time>
+                        <i data-index={index} />
+                        <p>{event.title}{event.description ? ` · ${event.description}` : ""}</p>
+                      </a>
+                    ))}
+                  </div>
+                </article>
+
+                <FlowEngineV2 flow={model.flow} opportunities={model.opportunities} />
+              </section>
+            </div>
+
+            <aside className={styles.rail}>
+              <section className={styles.advisor}>
+                <header className={styles.advisorHeader}>
+                  <div>
+                    <Icons.Spark />
+                    <span>CONSELHEIRO AUTOPONTE</span>
+                  </div>
+                  <b>IA</b>
+                </header>
+                <div className={styles.advisorBody}>
+                  <h2>Bom dia, Evandro.</h2>
+                  <p>Minha análise aponta onde você pode ganhar mais hoje:</p>
+                  <div className={styles.insightList}>
+                    {model.recommendations.length === 0 && <div className={styles.emptyState}>Sem recomendações enquanto não houver oportunidades ativas.</div>}
+                    {model.recommendations.slice(0, 3).map((recommendation, index) => (
+                      <a href={`/oportunidades/${recommendation.opportunityId}`} className={styles.insight} key={recommendation.opportunityId}>
+                        <b>{index + 1}</b>
+                        <p>{recommendation.text}</p>
+                        <Icons.Arrow />
+                      </a>
+                    ))}
+                  </div>
+                  <a className={styles.advisorAction} href="/recomendacoes">
+                    <Icons.Spark />
+                    Ver todas as recomendações
+                  </a>
+                </div>
+              </section>
+
+              <section className={styles.panel}>
+                <header className={styles.panelHeader}>
+                  <div>
+                    <Icons.Clock />
+                    <span><h2>AGENDA DE HOJE</h2></span>
+                  </div>
+                  <a href="/crm#agenda">Ver agenda</a>
+                </header>
+                <div className={styles.agenda}>
+                  {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma ação agendada.</div>}
+                  {priorities.map((item) => (
+                    <a className={styles.agendaRow} href={`/oportunidades/${item.id}`} key={item.id}>
+                      <time>{item.nextFollowUp ? new Date(item.nextFollowUp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}</time>
+                      <strong>{item.recommendation.action}</strong>
+                      <span>{item.name}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+
+              <section className={styles.panel}>
+                <header className={styles.panelHeader}>
+                  <div>
+                    <Icons.Plus />
+          <span><h2>AÇÕES RÁPIDAS</h2></span>
+                  </div>
+                </header>
+                <div className={styles.quick}>
+                  <a href="/oportunidades"><Icons.Target />Novo lead</a>
+                  <a href="/oportunidades"><Icons.Swap />Avaliar troca</a>
+                  <a href="/matches"><Icons.Search />Buscar veículo</a>
+                  <a href="/crm#propostas"><Icons.File />Nova proposta</a>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <nav className={styles.mobileNav}>
+        <a href="/crm"><Icons.Grid />Início</a>
+        <a href="/oportunidades"><Icons.Target />Leads</a>
+        <a href="/veiculos"><Icons.Car />Estoque</a>
+        <a href="/matches"><Icons.Search />Match</a>
+        <a href="/crm#configuracoes"><Icons.Settings />Ajustes</a>
+      </nav>
+    </main>
+  );
+}
+
+
+
+
+
+========== .\features\vehicle-registry\components\InventoryShell.tsx ==========
+import type { ReactNode } from "react";
+import styles from "./VehicleRegistry.module.css";
+
+type InventoryShellProps = {
+  children: ReactNode;
+  active?: "inventory" | "partners";
+  breadcrumb?: ReactNode;
+};
+
+const navigation = [
+  ["Mission Control", "/crm", "⌂"],
+  ["Clientes", "/clientes", "â—Ž"],
+  ["Leads", "/crm#leads", "â—‡"],
+  ["Oportunidades", "/oportunidades", "â—‰"],
+  ["Estoque", "/veiculos", "▣"],
+  ["Trocas", "/crm#trocas", "â‡„"],
+  ["Propostas", "/crm#propostas", "▤"],
+  ["Parceiros", "/parceiros", "â™§"],
+  ["Financeiro", "/financeiro", "$"],
+  ["Relatórios", "/crm#relatorios", "▥"],
+  ["Configurações", "/crm#configuracoes", "⚙"],
+] as const;
+
+export function InventoryShell({ children, active = "inventory", breadcrumb }: InventoryShellProps) {
+  return (
+    <div className={styles.shell}>
+      <aside className={styles.sidebar}>
+        <a className={styles.brand} href="/crm" aria-label="AutoPonte CRM">
+          <strong>Auto<span>Ponte</span></strong>
+          <small>CRM</small>
+        </a>
+        <nav className={styles.sidebarNav} aria-label="Navegação principal">
+          {navigation.map(([label, href, icon]) => {
+            const isActive = (active === "inventory" && label === "Estoque") || (active === "partners" && label === "Parceiros");
+            return <a key={label} href={href} data-active={isActive}><i>{icon}</i><span>{label}</span></a>;
+          })}
+        </nav>
+        <div className={styles.operationCard}>
+          <small>Sua operação</small>
+          <strong>Loja Matriz</strong>
+        </div>
+        <div className={styles.userCard}>
+          <span>EG</span>
+          <div><strong>Evandro Gatti</strong><small>Administrador</small></div>
+        </div>
+      </aside>
+      <div className={styles.workspace}>
+        <header className={styles.appHeader}>
+          <div className={styles.breadcrumb}>{breadcrumb ?? <><a href="/crm">Mission Control</a><b>›</b><span>Estoque</span></>}</div>
+          <div className={styles.globalSearch}><span>⌕</span><input aria-label="Busca global" placeholder="Buscar clientes, veículos, placas..."/><kbd>Ctrl + K</kbd></div>
+          <div className={styles.headerIcons}><a href="/crm" title="Notificações">â—</a><a href="/crm" title="Ajuda">?</a><span className={styles.avatar}>EG</span></div>
+        </header>
+        <div className={styles.content}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+

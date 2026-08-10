@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../db";
 import { opportunityEvents, tradeIns } from "../../db/schema";
 import { evaluateOpportunity } from "../ade";
+import { cleanContactText } from "../contact";
 import {
   calculateEstimatedMidpoint,
   calculateMarginPotential,
@@ -12,6 +13,7 @@ import {
   statusToStage,
 } from "./domain";
 import type { OpportunityCommand, OpportunityEventView, OpportunityWorkspaceData } from "./types";
+import { resolveDesiredVehicleProfile } from "../vehicles/fipe-validation";
 
 type TradeInRecord = typeof tradeIns.$inferSelect;
 type EventRecord = typeof opportunityEvents.$inferSelect;
@@ -55,11 +57,24 @@ export function buildOpportunityWorkspace(
     leadCategory: row.leadCategory,
     client: {
       name: row.name,
-      whatsapp: row.whatsapp,
-      email: row.email,
+      whatsapp: cleanContactText(row.whatsapp),
+      email: cleanContactText(row.email),
       city: row.city,
     },
     desiredVehicle: row.desiredVehicle,
+    desiredVehicleProfile: {
+      brandCode: row.desiredBrandCode,
+      brand: row.desiredBrand,
+      modelKey: row.desiredModelKey,
+      model: row.desiredModel,
+      versionCode: row.desiredVersionCode,
+      version: row.desiredVersion,
+      yearMin: row.desiredYearMin,
+      yearMax: row.desiredYearMax,
+      priceMin: row.desiredPriceMin,
+      priceMax: row.desiredPriceMax,
+      searchScope: row.desiredSearchScope === "brand" || row.desiredSearchScope === "model" || row.desiredSearchScope === "version" ? row.desiredSearchScope : "legacy",
+    },
     tradeIn: {
       brand: row.brand,
       model: row.model,
@@ -150,6 +165,9 @@ export async function recordOpportunityEvent(
 }
 
 export async function applyOpportunityCommand(id: string, command: OpportunityCommand, actor: Actor) {
+  const resolvedDemand = command.action === "edit_demand"
+    ? await resolveDesiredVehicleProfile(command.desiredVehicle)
+    : null;
   const db = getDb();
   const now = new Date();
 
@@ -175,6 +193,57 @@ export async function applyOpportunityCommand(id: string, command: OpportunityCo
       title = `Etapa alterada para ${opportunityStatusLabels[command.status]}`;
       description = `${opportunityStatusLabels[normalizeOpportunityStatus(current.status)]} → ${opportunityStatusLabels[command.status]}`;
       metadata = { from: current.status, to: command.status };
+    }
+
+    if (command.action === "edit_client") {
+      updates = {
+        ...updates,
+        name: command.name,
+        whatsapp: command.whatsapp,
+        email: command.email,
+        city: command.city,
+      };
+      title = "Dados do cliente atualizados";
+      description = `${command.name} · ${command.city}`;
+      metadata = {
+        previous: { name: current.name, whatsapp: current.whatsapp, email: current.email, city: current.city },
+        current: { name: command.name, whatsapp: command.whatsapp, email: command.email, city: command.city },
+      };
+    }
+
+
+    if (command.action === "edit_demand" && resolvedDemand) {
+      updates = {
+        ...updates,
+        desiredVehicle: resolvedDemand.label,
+        desiredBrandCode: resolvedDemand.brandCode,
+        desiredBrand: resolvedDemand.brand,
+        desiredModelKey: resolvedDemand.modelKey,
+        desiredModel: resolvedDemand.model,
+        desiredVersionCode: resolvedDemand.versionCode,
+        desiredVersion: resolvedDemand.version,
+        desiredYearMin: resolvedDemand.yearMin,
+        desiredYearMax: resolvedDemand.yearMax,
+        desiredPriceMin: resolvedDemand.priceMin,
+        desiredPriceMax: resolvedDemand.priceMax,
+        desiredSearchScope: resolvedDemand.searchScope,
+      };
+      title = "Demanda de veículo atualizada";
+      description = resolvedDemand.label;
+      metadata = {
+        previous: {
+          label: current.desiredVehicle,
+          brand: current.desiredBrand,
+          model: current.desiredModel,
+          version: current.desiredVersion,
+          yearMin: current.desiredYearMin,
+          yearMax: current.desiredYearMax,
+          priceMin: current.desiredPriceMin,
+          priceMax: current.desiredPriceMax,
+          searchScope: current.desiredSearchScope,
+        },
+        current: resolvedDemand,
+      };
     }
 
     if (command.action === "contact") {
