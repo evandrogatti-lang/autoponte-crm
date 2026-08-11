@@ -16,11 +16,7 @@ export function CoreShell({
   return (
     <main className={styles.shell}>
       <section className={styles.stage}>
-        <header className={styles.topbar}>
-          <div />
-          <div className={styles.topActions}>{actions}</div>
-        </header>
-
+        
         <div className={styles.content}>
           <div className={styles.pageHeader}>
             <div>
@@ -28,6 +24,11 @@ export function CoreShell({
               <h1>{title}</h1>
               {subtitle && <p>{subtitle}</p>}
             </div>
+            {actions ? (
+            <div className={styles.pageActions}>
+            {actions}
+          </div>
+            ) : null}
 
            </div>
 

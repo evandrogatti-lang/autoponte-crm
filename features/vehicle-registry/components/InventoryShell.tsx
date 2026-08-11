@@ -48,43 +48,7 @@ useEffect(() => {
 
     return (
       <div className={styles.workspace}>
-        <header className={styles.appHeader}>
-          <div className={styles.breadcrumb}>
-            {breadcrumb ?? (
-              <>
-                <a href="/crm">Central de Operações</a>
-                <b>›</b>
-                <span>Estoque</span>
-              </>
-            )}
-          </div>
-
-          <form
-  className={styles.globalSearch}
-  method="GET"
-  action="/busca"
->
-  <span>⌕</span>
-
-  <input
-    ref={searchRef}
-    type="search"
-    name="q"
-    aria-label="Busca global"
-    placeholder="Buscar clientes, veículos, placas..."
-  />
-
-  <button type="submit" aria-label="Buscar" title="Buscar">
-  🔍
-</button>
-</form>
-
-          <div className={styles.headerIcons}>
-            <a href="/crm" title="Notificações">●</a>
-            <a href="/crm" title="Ajuda">?</a>
-            <span className={styles.avatar}>EG</span>
-          </div>
-        </header>
+        
 
         <div className={styles.content}>{children}</div>
       </div>

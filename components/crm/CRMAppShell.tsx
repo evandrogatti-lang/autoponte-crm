@@ -63,7 +63,6 @@ const NAVIGATION: NavGroup[] = [
 
 const MOBILE_PRIMARY_HREFS = [
   "/crm",
-  "/leads",
   "/clientes",
   "/oportunidades",
   "/veiculos",
@@ -71,6 +70,7 @@ const MOBILE_PRIMARY_HREFS = [
 
 const MANAGED_PREFIXES = [
   "/crm",
+  "/busca",
   "/clientes",
   "/leads",
   "/oportunidades",
@@ -84,7 +84,7 @@ const MANAGED_PREFIXES = [
   "/configuracoes",
   "/recomendacoes",
   "/matches",
-];
+  ];
 
 
 function isManaged(pathname: string) {
@@ -135,11 +135,43 @@ function Icon({ name }: { name: string }) {
 export function CRMAppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() || "/";
   const managed = isManaged(pathname);
+  const globalSearchRef = useRef<HTMLInputElement>(null);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
+  useEffect(() => {
+  const handleShortcut = (event: KeyboardEvent) => {
+    if (
+      event.key === "/" &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey
+    ) {
+      const target = event.target as HTMLElement;
+
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      globalSearchRef.current?.focus();
+    }
+  };
+
+  window.addEventListener("keydown", handleShortcut);
+
+  return () => {
+    window.removeEventListener("keydown", handleShortcut);
+  };
+}, []);
+
 useEffect(() => {
   if (!managed) return;
+  
 
   const sidebar = sidebarRef.current;
   if (!sidebar) return;
@@ -161,13 +193,28 @@ useEffect(() => {
 
   sidebar.addEventListener("scroll", saveScroll, { passive: true });
 
+  
+  
   return () => {
     saveScroll();
     sidebar.removeEventListener("scroll", saveScroll);
   };
 }, [managed, pathname]);
 
-  if (!managed) return <>{children}</>;
+const mobilePrimaryItems = NAVIGATION
+  .flatMap((group) => group.items)
+  .filter((item) =>
+    MOBILE_PRIMARY_HREFS.includes(item.href)
+  );
+
+const mobileMoreItems = NAVIGATION
+  .flatMap((group) => group.items)
+  .filter((item) =>
+    !MOBILE_PRIMARY_HREFS.includes(item.href)
+  );
+
+if (!managed) return <>{children}</>;
+
 
   return (
     <div className={styles.shell}>
@@ -181,42 +228,38 @@ useEffect(() => {
           </span>
         </a>
 
-        <nav
-  	  className={[
-    	    styles.nav,
-   	    mobileMoreOpen ? styles.mobileMoreOpen : "",
- 	 ].filter(Boolean).join(" ")}
->
-          {NAVIGATION.map((group, groupIndex) => (
-            <div className={styles.group} key={`${group.title || "main"}-${groupIndex}`}>
-              {group.title ? <p className={styles.groupTitle}>{group.title}</p> : null}
-              {group.items.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={[
-                    activeFor(pathname, item.href) ? styles.active : "",
-                    !MOBILE_PRIMARY_HREFS.includes(item.href) ? styles.mobileSecondary : "",
-                  ].filter(Boolean).join(" ")}
-                >
-                  <span className={styles.icon}><Icon name={item.icon} /></span>
-                  <span>{item.label}</span>
-                </a>
-              ))}
-            </div>
-          ))}
-		<button
- 		 type="button"
-  		 className={styles.mobileMoreButton}
-  		 onClick={() => setMobileMoreOpen((open) => !open)}
-  		 aria-expanded={mobileMoreOpen}
-		>
- 		 <span className={styles.icon}><Icon name="settings" /></span>
-  		 <span>{mobileMoreOpen ? "Menos" : "Mais"}</span>
-		</button>
-        </nav>
+       <nav className={styles.nav}>
+  {NAVIGATION.map((group, groupIndex) => (
+    <div
+      className={styles.group}
+      key={`${group.title || "main"}-${groupIndex}`}
+    >
+      {group.title ? (
+        <p className={styles.groupTitle}>{group.title}</p>
+      ) : null}
 
-        <div className={styles.footer}>
+      {group.items.map((item) => (
+        <a
+          key={item.href}
+          href={item.href}
+          className={
+            activeFor(pathname, item.href)
+              ? styles.active
+              : ""
+          }
+        >
+          <span className={styles.icon}>
+            <Icon name={item.icon} />
+          </span>
+
+          <span>{item.label}</span>
+        </a>
+      ))}
+    </div>
+  ))}
+</nav>
+
+          <div className={styles.footer}>
           <span className={styles.user}>AP</span>
           <span>
             <strong>AutoPonte</strong>
@@ -233,6 +276,30 @@ useEffect(() => {
               {NAVIGATION.flatMap(group => group.items).find(item => activeFor(pathname, item.href))?.label || "Operação"}
             </div>
           </div>
+
+          <form
+                className={styles.globalSearch}
+                 method="GET"
+                action="/busca"
+>
+          <span>⌕</span>
+
+              <input
+                ref={globalSearchRef}
+                type="search"
+                name="q"
+                aria-label="Busca global"
+                placeholder="Buscar clientes, veículos, placas..."
+  />
+
+              <button
+                 type="submit"
+                  aria-label="Buscar"
+                   title="Buscar"
+  >
+    🔍
+              </button>
+            </form>
 
           <div className={styles.actions}>
             <a href="/recomendacoes">Recomendações IA</a>
