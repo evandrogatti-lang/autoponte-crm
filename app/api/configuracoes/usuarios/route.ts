@@ -4,6 +4,7 @@ import { getChatGPTUser } from "../../../chatgpt-auth";
 import { getDb } from "../../../../db";
 import { crmRoles, crmUsers } from "../../../../db/schema";
 import { recordAudit, requireSystemAdmin } from "../../../../lib/access-control";
+import { createSupabaseAdmin } from "../../../../lib/supabase-admin";
 
 const clean = (value: unknown, max = 180) => typeof value === "string" ? value.trim().slice(0, max) : "";
 const actorFrom = async () => {
@@ -39,8 +40,17 @@ export async function POST(request: Request) {
     if (!role) throw new Error("Perfil inválido.");
     const [duplicate] = await db.select({ id: crmUsers.id }).from(crmUsers).where(eq(crmUsers.email, email)).limit(1);
     if (duplicate) throw new Error("Já existe um usuário com este e-mail.");
+    const auth = createSupabaseAdmin();
+    const redirectTo = `${process.env.AUTOPONTE_APP_URL ?? "https://autoponte-crm.vercel.app"}/nova-senha`;
+    const { data: invitation, error: invitationError } = await auth.auth.admin.inviteUserByEmail(email, { redirectTo, data: { name } });
+    if (invitationError || !invitation.user) throw new Error(invitationError?.message ?? "Não foi possível enviar o convite.");
     const id = crypto.randomUUID();
-    await db.insert(crmUsers).values({ id, name, email, phone: clean(raw.phone, 30), storeId: clean(raw.storeId, 100), roleId, status: "invited", updatedAt: new Date() });
+    try {
+      await db.insert(crmUsers).values({ id, authUserId: invitation.user.id, name, email, phone: clean(raw.phone, 30), storeId: clean(raw.storeId, 100), roleId, status: "invited", updatedAt: new Date() });
+    } catch (error) {
+      await auth.auth.admin.deleteUser(invitation.user.id);
+      throw error;
+    }
     await recordAudit(actor, "user.invited", "crm_user", id, { email, roleId });
     revalidatePath("/configuracoes");
     return Response.json({ id, message: "Convite criado. A autenticação será vinculada quando a pessoa entrar no CRM." }, { status: 201 });
@@ -76,8 +86,12 @@ export async function DELETE(request: Request) {
     if (!id) throw new Error("Usuário inválido.");
     if (id === administrator.id) throw new Error("Você não pode excluir o seu próprio acesso.");
     const db = getDb();
-    const [user] = await db.select({ id: crmUsers.id, email: crmUsers.email }).from(crmUsers).where(eq(crmUsers.id, id)).limit(1);
+    const [user] = await db.select({ id: crmUsers.id, email: crmUsers.email, authUserId: crmUsers.authUserId }).from(crmUsers).where(eq(crmUsers.id, id)).limit(1);
     if (!user) throw new Error("Usuário não encontrado.");
+    if (user.authUserId) {
+      const { error } = await createSupabaseAdmin().auth.admin.deleteUser(user.authUserId);
+      if (error) throw new Error(`Não foi possível remover o acesso de autenticação: ${error.message}`);
+    }
     await db.delete(crmUsers).where(eq(crmUsers.id, id));
     await recordAudit(actor, "user.deleted", "crm_user", id, { email: user.email });
     revalidatePath("/configuracoes");
