@@ -2,16 +2,42 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createAuthClient } from "../../lib/supabase-auth-client";
 import styles from "./auth.module.css";
 
 export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage(mode === "login"
-      ? "Tela pronta. A validação segura da conta será ativada na próxima etapa."
-      : "Tela pronta. O envio do link seguro será ativado na próxima etapa.");
+    setLoading(true);
+    setMessage("");
+    const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "").trim().toLowerCase();
+    try {
+      const supabase = createAuthClient();
+      if (mode === "login") {
+        const password = String(form.get("password") ?? "");
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        router.replace("/crm");
+        router.refresh();
+      } else {
+        const redirectTo = `${window.location.origin}/nova-senha`;
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
+        setMessage("Se o e-mail estiver cadastrado, você receberá um link para definir uma nova senha.");
+        event.currentTarget.reset();
+      }
+    } catch (error) {
+      const text = error instanceof Error ? error.message : "Não foi possível concluir a solicitação.";
+      setMessage(text === "Invalid login credentials" ? "E-mail ou senha inválidos." : text);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return <main className={styles.page}>
@@ -33,7 +59,7 @@ export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
           <label>E-mail corporativo<input name="email" type="email" autoComplete="email" required placeholder="nome@empresa.com" /></label>
           {mode === "login" ? <label>Senha<input name="password" type="password" autoComplete="current-password" required placeholder="Digite sua senha" /></label> : null}
           {message ? <div className={styles.notice} role="status">{message}</div> : null}
-          <button type="submit">{mode === "login" ? "Entrar" : "Enviar link de recuperação"}</button>
+          <button type="submit" disabled={loading}>{loading ? "Aguarde…" : mode === "login" ? "Entrar" : "Enviar link de recuperação"}</button>
         </form>
         {mode === "login" ? <Link href="/recuperar-senha">Esqueci minha senha</Link> : <Link href="/login">Voltar para o login</Link>}
         <small className={styles.support}>Problemas com o acesso? Procure o administrador do sistema.</small>
