@@ -31,3 +31,4 @@
     width: 100%;
   }
 }
+.settingsForm{display:grid;gap:11px}.settingsForm label{display:grid;gap:5px;color:#385568;font-size:12px;font-weight:700}.settingsForm input,.settingsForm select{box-sizing:border-box;width:100%;border:1px solid #cbd8df;border-radius:9px;background:#fff;padding:10px;font:inherit;color:#0c3044}.settingsForm button{justify-self:stretch;cursor:pointer}.settingsForm button:disabled{cursor:not-allowed;opacity:.55}.action{cursor:pointer;font-size:11px}

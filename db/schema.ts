@@ -123,3 +123,48 @@ export const vehicleMatches = pgTable("vehicle_matches", {
 }, (table) => [
   uniqueIndex("vehicle_matches_source_buyer_unique").on(table.sourceType, table.sourceId, table.buyerProfileId),
 ]);
+
+/** Passwords stay exclusively with the authentication provider. */
+export const crmRoles = pgTable("crm_roles", {
+  id: text("id").primaryKey(),
+  code: text("code").notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  isSystem: boolean("is_system").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [uniqueIndex("crm_roles_code_unique").on(table.code)]);
+
+export const crmUsers = pgTable("crm_users", {
+  id: text("id").primaryKey(),
+  authUserId: text("auth_user_id").notNull().default(""),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull().default(""),
+  roleId: text("role_id").notNull().references(() => crmRoles.id),
+  storeId: text("store_id").notNull().default(""),
+  status: text("status").notNull().default("invited"),
+  lastAccessAt: timestamp("last_access_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex("crm_users_email_unique").on(table.email),
+  index("crm_users_status_idx").on(table.status),
+  index("crm_users_role_idx").on(table.roleId),
+]);
+
+export const crmRolePermissions = pgTable("crm_role_permissions", {
+  id: text("id").primaryKey(),
+  roleId: text("role_id").notNull().references(() => crmRoles.id, { onDelete: "cascade" }),
+  permission: text("permission").notNull(),
+}, (table) => [uniqueIndex("crm_role_permission_unique").on(table.roleId, table.permission)]);
+
+export const crmAuditLogs = pgTable("crm_audit_logs", {
+  id: text("id").primaryKey(),
+  actorUserId: text("actor_user_id").notNull().default(""),
+  actorEmail: text("actor_email").notNull().default(""),
+  action: text("action").notNull(),
+  entityType: text("entity_type").notNull(),
+  entityId: text("entity_id").notNull().default(""),
+  detail: text("detail").notNull().default("{}"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index("crm_audit_logs_created_idx").on(table.createdAt)]);
