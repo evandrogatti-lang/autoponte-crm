@@ -66,3 +66,23 @@ export async function PATCH(request: Request) {
     return Response.json({ error: error instanceof Error ? error.message : "Não foi possível atualizar o acesso." }, { status: 400 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const actor = await actorFrom();
+    const administrator = await requireSystemAdmin(actor);
+    const raw = await request.json() as Record<string, unknown>;
+    const id = clean(raw.id, 80);
+    if (!id) throw new Error("Usuário inválido.");
+    if (id === administrator.id) throw new Error("Você não pode excluir o seu próprio acesso.");
+    const db = getDb();
+    const [user] = await db.select({ id: crmUsers.id, email: crmUsers.email }).from(crmUsers).where(eq(crmUsers.id, id)).limit(1);
+    if (!user) throw new Error("Usuário não encontrado.");
+    await db.delete(crmUsers).where(eq(crmUsers.id, id));
+    await recordAudit(actor, "user.deleted", "crm_user", id, { email: user.email });
+    revalidatePath("/configuracoes");
+    return Response.json({ message: "Usuário excluído." });
+  } catch (error) {
+    return Response.json({ error: error instanceof Error ? error.message : "Não foi possível excluir o usuário." }, { status: 400 });
+  }
+}
