@@ -1,4 +1,5 @@
 ﻿import type { ReactNode } from "react";
+import Link from "next/link";
 
 export type Tone = "neutral" | "success" | "warning" | "danger" | "ai";
 
@@ -23,7 +24,41 @@ export function MissionControlHeader({ title, subtitle, actions }: { title: stri
 }
 
 export function EnterpriseSidebar({ items }: { items: Array<{ label: string; href: string; active?: boolean }> }) {
-  return <aside className="ap-sidebar"><strong className="ap-sidebar__brand">AutoPonte <span>OS</span></strong><nav>{items.map(item => <a key={item.label} href={item.href} className={item.active ? "is-active" : ""} aria-current={item.active ? "page" : undefined}>{item.label}</a>)}</nav></aside>;
+  return (
+    <aside className="ap-sidebar">
+      <strong className="ap-sidebar__brand">AutoPonte <span>OS</span></strong>
+      <nav>
+        {items.map((item) => {
+          const className = item.active ? "is-active" : "";
+
+          // Internal route: use Next Link
+          if (item.href && item.href.startsWith("/")) {
+            return (
+              <Link key={item.label} href={item.href} className={className} aria-current={item.active ? "page" : undefined}>
+                {item.label}
+              </Link>
+            );
+          }
+
+          // Hash or placeholder: render non-interactive span (disabled)
+          if (item.href === "#" || (item.href && item.href.startsWith("#"))) {
+            return (
+              <span key={item.label} className={"ap-sidebar__item ap-sidebar__item--disabled"} aria-disabled="true">
+                {item.label}
+              </span>
+            );
+          }
+
+          // External / mailto / tel: keep anchor
+          return (
+            <a key={item.label} href={item.href} className={className} aria-current={item.active ? "page" : undefined}>
+              {item.label}
+            </a>
+          );
+        })}
+      </nav>
+    </aside>
+  );
 }
 
 export function ContextBar({ label, children }: { label: string; children?: ReactNode }) {

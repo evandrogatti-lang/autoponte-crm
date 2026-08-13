@@ -849,7 +849,10 @@ footer p { margin: 0; }
 .ap-showcase-main { min-width: 0; padding: 36px; display: grid; gap: 24px; }
 .ap-sidebar { min-height: 100vh; padding: 28px 18px; background: var(--ap-primary-strong); color: white; position: sticky; top: 0; align-self: start; }
 .ap-sidebar__brand { display:block; margin:0 12px 32px; font-size:20px; }.ap-sidebar__brand span{color:var(--ap-accent)}
-.ap-sidebar nav{display:grid;gap:6px}.ap-sidebar a{padding:12px 14px;border-radius:10px;color:#dce9e4;text-decoration:none;font-size:14px}.ap-sidebar a:hover,.ap-sidebar a.is-active{background:rgba(200,255,61,.12);color:var(--ap-accent)}
+.ap-sidebar nav{display:grid;gap:6px}
+.ap-sidebar a, .ap-sidebar .ap-sidebar__item {padding:12px 14px;border-radius:10px;color:#dce9e4;text-decoration:none;font-size:14px}
+.ap-sidebar a:hover,.ap-sidebar a.is-active, .ap-sidebar .ap-sidebar__item.is-active{background:rgba(200,255,61,.12);color:var(--ap-accent)}
+.ap-sidebar .ap-sidebar__item.ap-sidebar__item--disabled{opacity:0.55;cursor:default;color:var(--ap-muted);background:transparent}
 .ap-mission-header{display:flex;justify-content:space-between;gap:24px;align-items:end}.ap-mission-header h1{margin:4px 0;font-size:clamp(32px,4vw,56px);letter-spacing:-.045em}.ap-mission-header p{margin:0;color:var(--ap-muted)}.ap-eyebrow{color:var(--ap-success)!important;font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:800}.ap-mission-header__actions{display:flex;gap:8px}
 .ap-button{min-height:42px;padding:0 16px;border-radius:10px;border:1px solid transparent;font-weight:800;cursor:pointer;transition:transform var(--ap-motion-fast),background var(--ap-motion-fast)}.ap-button:hover{transform:translateY(-1px)}.ap-button--primary{background:var(--ap-primary);color:white}.ap-button--secondary{background:white;border-color:var(--ap-border);color:var(--ap-ink)}.ap-button--ghost{background:transparent;color:var(--ap-primary)}.ap-button--danger{background:var(--ap-danger);color:white}
 .ap-panel{background:var(--ap-surface);border:1px solid var(--ap-border);border-radius:var(--ap-radius-md);box-shadow:0 4px 14px rgba(21,33,29,.035)}.ap-panel__header{padding:18px 20px;border-bottom:1px solid var(--ap-border);display:flex;align-items:center;justify-content:space-between}.ap-panel__header h2{margin:0;font-size:15px}.ap-panel__body{padding:20px}
