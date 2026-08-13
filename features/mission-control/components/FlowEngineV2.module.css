@@ -25,12 +25,13 @@
 .heading p {
   margin: 0;
   color: #758694;
-  font-size: 8px;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .eyebrow {
   color: #6b4be8;
-  font-size: 7px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: .13em;
 }
@@ -59,7 +60,7 @@
 .health[data-health="Atenção"] i { background: #f4b84f; box-shadow: 0 0 0 4px rgba(244, 184, 79, .14); }
 .health[data-health="Crítico"] i { background: #ef5f55; box-shadow: 0 0 0 4px rgba(239, 95, 85, .14); }
 .health strong { display: block; font-size: 22px; letter-spacing: -.05em; }
-.health span { display: block; margin-top: 2px; color: #a9bbc6; font-size: 7px; }
+.health span { display: block; margin-top: 2px; color: #a9bbc6; font-size: 10px; }
 
 .riskStrip {
   display: grid;
@@ -79,9 +80,9 @@
 }
 
 .riskStrip > div:last-child { border-right: 0; }
-.riskStrip span { color: #788995; font-size: 7px; text-transform: uppercase; letter-spacing: .06em; }
+.riskStrip span { color: #788995; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
 .riskStrip strong { font-size: 18px; line-height: 1; }
-.riskStrip small { grid-column: 1 / -1; color: #85939c; font-size: 7px; }
+.riskStrip small { grid-column: 1 / -1; color: #85939c; font-size: 10px; }
 
 .flow {
   padding: 13px 15px;
@@ -115,8 +116,8 @@
 }
 
 .stageTop { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-.stageTop > span { color: #526775; font-size: 7px; font-weight: 850; text-transform: uppercase; }
-.temperature { padding: 3px 5px; border-radius: 99px; font-size: 6px; font-style: normal; font-weight: 850; }
+.stageTop > span { color: #526775; font-size: 10px; font-weight: 850; text-transform: uppercase; }
+.temperature { padding: 3px 5px; border-radius: 99px; font-size: 9px; font-style: normal; font-weight: 850; }
 .cold { background: #edf3f7; color: #537183; }
 .warm { background: #fff2cf; color: #9a6814; }
 .hot { background: #ffead8; color: #be5f14; }
@@ -124,7 +125,7 @@
 
 .stageNumbers { margin: 10px 0 8px; display: grid; gap: 4px; }
 .stageNumbers strong { font-size: 20px; line-height: 1; }
-.stageNumbers span { color: #6f818e; font-size: 7px; }
+.stageNumbers span { color: #6f818e; font-size: 10px; }
 
 .probability {
   height: 4px;
@@ -141,7 +142,7 @@
   background: linear-gradient(90deg, #6c49ed, #a289ff);
 }
 
-.stageMeta { margin-top: 8px; display: grid; gap: 4px; color: #788995; font-size: 7px; }
+.stageMeta { margin-top: 8px; display: grid; gap: 4px; color: #788995; font-size: 10px; line-height: 1.35; }
 .stageMeta span[data-momentum=accelerating] { color: #4d971b; }
 .stageMeta span[data-momentum=decelerating] { color: #d65c3d; }
 
@@ -158,7 +159,7 @@
 .stageSignals small {
   padding: 3px 5px;
   border-radius: 5px;
-  font-size: 6px;
+  font-size: 9px;
   font-style: normal;
   font-weight: 800;
 }
@@ -172,7 +173,7 @@
   right: 7px;
   bottom: 7px;
   color: #b9681d;
-  font-size: 5px;
+  font-size: 8px;
   font-weight: 950;
   letter-spacing: .1em;
 }
@@ -195,12 +196,12 @@
 }
 
 .footer > div { display: grid; align-content: start; gap: 4px; }
-.footer span { color: #7c8a94; font-size: 7px; text-transform: uppercase; }
+.footer span { color: #7c8a94; font-size: 10px; text-transform: uppercase; }
 .footer strong { font-size: 15px; }
-.footer small { color: #8a6a3c; font-size: 7px; }
+.footer small { color: #8a6a3c; font-size: 10px; }
 .bottleneckSummary, .nextAction { padding-left: 12px; border-left: 1px solid #edf1f3; }
-.nextAction strong { font-size: 9px; line-height: 1.45; }
-.nextAction a { width: max-content; margin-top: 3px; color: #6041d5; font-size: 7px; font-weight: 850; text-decoration: none; }
+.nextAction strong { font-size: 11px; line-height: 1.45; }
+.nextAction a { width: max-content; margin-top: 3px; color: #6041d5; font-size: 11px; font-weight: 850; text-decoration: none; }
 
 @media (max-width: 1050px) {
   .flow { grid-template-columns: repeat(3, 1fr); }
