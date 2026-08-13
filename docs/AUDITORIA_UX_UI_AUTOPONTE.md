@@ -92,3 +92,12 @@ Autor: gerado por automação assistida (registrado por Evandro Gatti)
 - Pendência funcional: os destinos semanticamente questionáveis das Ações rápidas ativas permanecem inalterados e requerem decisão funcional posterior: "Novo lead" → `/oportunidades`, "Avaliar troca" → `/oportunidades`, "Buscar veículo" → `/matches` e "Nova proposta" → `/propostas`.
 - Regras de negócio: nenhuma regra de negócio, engine, integração, persistência ou dado foi alterado.
 - Status: correção de escopo aguardando validação técnica e visual; não concluída nesta etapa.
+
+16) Anchor de agenda e evolução funcional
+- Correção técnica: o anchor `/crm#agenda` foi restaurado pelo commit `181c3d8` com `id="agenda"` na seção "AGENDA DE HOJE"; a navegação por fragmento foi validada.
+- Avaliação de produto: o comportamento atual apenas desloca a página para o resumo já visível da agenda de hoje. É redundante e tem baixa utilidade operacional; não corresponde à expectativa de uma agenda completa.
+- Escopo: uma agenda completa é evolução funcional separada, fora do escopo estritamente visual desta auditoria. Nenhum modelo, banco de dados, integração, persistência ou regra operacional foi alterado.
+- Proposta futura, sem implementação: rota própria `/agenda`; visualizações diária, semanal e mensal; compromissos, tarefas, retornos, follow-ups e próximas ações; vínculo com clientes, oportunidades, responsáveis e prazos; filtros por vendedor, loja, prioridade e tipo; sincronização futura com Google Calendar.
+- Pré-requisitos para a evolução: definir modelo de dados, permissões, persistência, regras operacionais e contrato de integração antes de criar a experiência de agenda.
+- Opções temporárias avaliadas: (A) manter "Ver agenda" com o comportamento atual; (B) renomear para "Ir para agenda de hoje", alinhando o texto ao comportamento. Recomendação: B, por reduzir expectativa incorreta sem introduzir fluxo, dados ou comportamento novo. Não aplicada sem autorização.
+- Nomenclatura temporária: a opção B foi aprovada e implementada em `MissionControl.tsx`; o anchor preserva `/crm#agenda` e passa a exibir "Ir para agenda de hoje". A agenda completa permanece apenas como proposta futura, sem implementação.
