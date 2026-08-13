@@ -77,5 +77,10 @@ Autor: gerado por automação assistida (registrado por Evandro Gatti)
 13) Status Onda 1A
 - Onda 1A concluída: alterações limitadas ao `components/crm/CRMAppShell.tsx` (conversão de anchors internos para `Link` e atualização dos links do painel móvel). Commit associado: `05c7b55`. Status: concluída em produção — validação visual e funcional aprovada.
 
-14) Status Onda 1B
-- Onda 1B implementada (EnterpriseSidebar primitive): renderização condicional aplicada em `components/apdl/index.tsx`. Status: aguardando validação manual e testes de navegação/ACESSibilidade.
+14) Status Onda 1B — CONCLUÍDA
+- Commit: `92e2525` — refactor(ux): standardize EnterpriseSidebar navigation.
+- Arquivos alterados: `components/apdl/index.tsx`, `app/globals.css`, `docs/AUDITORIA_UX_UI_AUTOPONTE.md`.
+- Alterações: renderização condicional em `EnterpriseSidebar` — internos (`/…`) → `Link`; âncoras hash (`#`, `#…`) → `<span aria-disabled="true">`; externos preservados como `<a>`.
+- Validações: ESLint focal (`LINT_EXIT=0`), TypeScript `--noEmit` (`TSC_EXIT=0`), validação visual e funcional aprovada em produção pelo responsável (2026-08-13).
+- Regras de negócio: nenhuma regra de negócio, engine, integração, persistência ou dado foi alterado.
+- Status: concluída — push para `origin/main` confirmado; HEAD e origin/main em `92e2525`.
