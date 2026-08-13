@@ -107,3 +107,18 @@ Autor: gerado por automação assistida (registrado por Evandro Gatti)
 - Onda T1.1 concluída: commit `89db904` — complementação tipográfica no Conselheiro AutoPonte e no Funil Comercial. TypeScript e build aprovados; validação visual aprovada em desktop e mobile.
 - Escopo preservado: não houve alterações em cálculos, estágios, probabilidades, regras do Flow Engine ou regras de negócio. A densidade e a estrutura da experiência foram preservadas, sem regressões visuais observadas.
 - Próxima pendência: T2, referente à tipografia responsiva do `CRMAppShell` e da barra inferior mobile, permanece pendente e não iniciada. A agenda completa permanece uma evolução funcional futura.
+
+18) Fechamento operacional — 2026-08-13
+- T2A concluída e validada: legibilidade da barra inferior mobile.
+- F1 concluída: filtros operacionais para Estoque, Estoque de Parceiro e Trocas.
+- Correções F1 concluídas: limpar filtros; preservação de contexto do estoque parceiro; retorno à ficha com URL de origem; normalização de busca por acentos/caixa; status "Todos" como padrão de busca; e remoção de parâmetros vazios enviados pelo formulário.
+- Busca por placa `LT5FA89` validada em produção. Os diagnósticos temporários de console e interface foram removidos após a validação.
+- TypeScript e builds foram aprovados nas etapas publicadas. Não houve mudanças em banco, schema, APIs, IA, Flow Engine, cálculos ou regras de negócio.
+
+19) Pendências após o fechamento
+- Validação visual final da busca pelo formulário após o último deploy.
+- Filtros de Potenciais Clientes.
+- Filtros de Parceiros: busca, estado, cidade, status, tipo, integração, estoque e atualização. Bairro depende de cadastro, schema e migration futura.
+- Edição real de Veículos, Clientes e Parceiros permanece pendente como onda funcional separada.
+- T2B safe-area e T2C rail de tablet permanecem pendentes.
+- Mostrar versão/commit ativo no CRM e criar futura tela de status operacional.
