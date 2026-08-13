@@ -40,6 +40,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
   const highLiquidity = activeRows.filter((vehicle) => (daysSince(vehicle.listingDate || vehicle.createdAt) ?? 999) <= 30).length;
 
   const currentHref = buildVehicleListHref("/veiculos", { ...filters, scope });
+  const clearHref = scope === "partner" ? "/veiculos?scope=partner" : "/veiculos";
   const tab = (value: string, label: string) => <a data-active={scope === value} href={buildVehicleListHref("/veiculos", { ...filters, scope: value })}>{label}</a>;
   return <InventoryShell breadcrumb={<><a href="/crm">Mission Control</a><b>›</b><span>Estoque</span></>}>
     <div className={styles.pageHeader}>
@@ -49,7 +50,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
     <section className={styles.inventoryToolbar}>
       <nav className={styles.inventoryTabs}>{tab("all", "Todos")}{tab("autoponte", "AutoPonte")}{tab("partner", "Parceiros")}{tab("consignment", "Consignados")}{tab("trade", "Trocas")}{tab("reserved", "Reservados")}{tab("sold", "Vendidos")}</nav>
     </section>
-    <VehicleListFilters action="/veiculos" clearHref="/veiculos" filters={filters} resultCount={selected.length} totalCount={scopedRows.length} chips={[...(scope === "all" ? [] : [["Escopo", scope] as [string, string]]), ...activeVehicleFilterChips(filters, { partners: partnerMap, origins: sourceLabels, statuses: statusLabels })]} brands={[...new Set(scopedRows.map((vehicle) => vehicle.brand))].sort()} models={[...new Set(scopedRows.map((vehicle) => vehicle.model))].sort()} partners={partnerRows.map((partner) => ({ value: partner.id, label: partner.name }))} origins={Object.entries(sourceLabels).map(([value, label]) => ({ value, label }))} statuses={Object.entries(statusLabels).map(([value, label]) => ({ value, label }))} hidden={{ scope }} />
+    <VehicleListFilters action="/veiculos" clearHref={clearHref} filters={filters} resultCount={selected.length} totalCount={scopedRows.length} chips={[...(scope === "all" ? [] : [["Escopo", scope] as [string, string]]), ...activeVehicleFilterChips(filters, { partners: partnerMap, origins: sourceLabels, statuses: statusLabels })]} brands={[...new Set(scopedRows.map((vehicle) => vehicle.brand))].sort()} models={[...new Set(scopedRows.map((vehicle) => vehicle.model))].sort()} partners={partnerRows.map((partner) => ({ value: partner.id, label: partner.name }))} origins={Object.entries(sourceLabels).map(([value, label]) => ({ value, label }))} statuses={Object.entries(statusLabels).map(([value, label]) => ({ value, label }))} hidden={{ scope }} />
     <section className={styles.metricGrid}>
       <article><i>▣</i><div><span>Veículos ativos</span><strong>{activeRows.length}</strong><small>Total em estoque</small></div></article>
       <article><i>◇</i><div><span>Valor anunciado</span><strong>{money.format(totalValue)}</strong><small>Soma dos preços</small></div></article>
@@ -79,7 +80,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
 
         <div>
           <a
-            href={`/veiculos/${vehicle.id}`}
+            href={`/veiculos/${vehicle.id}?returnTo=${encodeURIComponent(currentHref)}`}
             title="Abrir ficha do veículo"
             className={styles.vehicleRowLink}
           >

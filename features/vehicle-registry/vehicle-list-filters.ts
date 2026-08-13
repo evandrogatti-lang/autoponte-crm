@@ -33,8 +33,16 @@ type FilterableVehicle = {
   sourceType: string;
 };
 
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("pt-BR")
+    .trim();
+}
+
 function textIncludes(value: string, query: string) {
-  return value.toLocaleLowerCase("pt-BR").includes(query);
+  return normalizeText(value).includes(query);
 }
 
 function numericValue(value?: string) {
@@ -58,7 +66,7 @@ export function filterVehicleList<T extends FilterableVehicle>(
   filters: VehicleFilterParams,
   partnerNames: Map<string, string> = new Map()
 ) {
-  const query = filters.q?.trim().toLocaleLowerCase("pt-BR") || "";
+  const query = filters.q ? normalizeText(filters.q) : "";
   const yearMin = numericValue(filters.yearMin);
   const yearMax = numericValue(filters.yearMax);
   const priceMin = numericValue(filters.priceMin);
@@ -79,8 +87,8 @@ export function filterVehicleList<T extends FilterableVehicle>(
       (!query || textIncludes(haystack, query)) &&
       (!filters.origin || filters.origin === "all" || vehicle.sourceType === filters.origin) &&
       statusOk &&
-      (!filters.brand || vehicle.brand === filters.brand) &&
-      (!filters.model || vehicle.model === filters.model) &&
+      (!filters.brand || normalizeText(vehicle.brand) === normalizeText(filters.brand)) &&
+      (!filters.model || normalizeText(vehicle.model) === normalizeText(filters.model)) &&
       (!filters.partner || vehicle.partnerId === filters.partner) &&
       (yearMin === null || vehicle.modelYear >= yearMin) &&
       (yearMax === null || vehicle.modelYear <= yearMax) &&
