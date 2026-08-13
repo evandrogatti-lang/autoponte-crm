@@ -345,7 +345,8 @@ if (!managed) return <>{children}</>;
           aria-label={mobileMoreOpen ? "Fechar mais opções" : "Abrir mais opções"}
           onClick={() => setMobileMoreOpen((s) => !s)}
         >
-          Mais
+          <span className={styles.icon}><Icon name="grid" /></span>
+          <span>Mais</span>
         </button>
 
         <nav

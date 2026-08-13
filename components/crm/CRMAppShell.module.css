@@ -87,6 +87,9 @@
 .icon{width:22px;display:grid;place-items:center;color:#92aab5}
 .active .icon{color:var(--ap-lime)}
 
+/* Hide mobile-only control by default; shown explicitly in mobile media query */
+.mobileMoreButton{display:none}
+
 .footer{
   margin-top:auto;
   padding:14px 9px 3px;
@@ -355,7 +358,7 @@
   display:none!important;
 }
 
-   .mobileMoreButton{    
+  .mobileMoreButton{
     display:flex;
     min-width:0;
     min-height:56px;
@@ -372,8 +375,13 @@
     font-size:8px;
     line-height:1.1;
     cursor:pointer;
-    
-}
+  }
+
+  /* Mobile behavior: match `.nav a` layout and provide an active state when expanded */
+  .mobileMoreButton[aria-expanded="true"]{
+    background:#14363d;
+    color:#fff;
+  }
 
     .mobileMorePanel{
   position:absolute;
