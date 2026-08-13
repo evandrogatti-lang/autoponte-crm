@@ -86,8 +86,9 @@ Autor: gerado por automação assistida (registrado por Evandro Gatti)
 - Status: concluída — push para `origin/main` confirmado; HEAD e origin/main em `92e2525`.
 
 15) Status Onda 1C
-- Onda 1C implementada, aguardando validação: migração exclusiva de oito anchors internos para `Link` em `components/mission-control/Shell.tsx` (2), `components/mission-control/QuickActions.tsx` (5) e `components/mission-control/PipelineLive.tsx` (1).
-- Validação técnica prévia: `APPanel.action` aceita `ReactNode`.
-- Destinos, classes, conteúdo interno, estrutura visual, ARIA e comportamento foram preservados. Nenhuma regra de negócio, engine, integração, persistência ou dado foi alterado.
-- Inconsistência registrada: a ação "Nova oportunidade" em `QuickActions` permanece direcionada para `/oportunidades`, conforme destino preexistente; não foi alterada nesta etapa.
-- Status: aguardando validação visual e funcional antes de commit ou push.
+- Commit: `588c02e` — refactor(ux): standardize Mission Control navigation.
+- Constatação de escopo: a inspeção da cadeia ativa de `/crm` confirmou que esse commit alterou componentes legados em `components/mission-control/*`, não consumidos por `/crm`; a implementação não atingiu o Mission Control exibido em produção.
+- Correção de escopo implementada, aguardando validações: `features/mission-control/components/MissionControl.tsx` passou a tratar a navegação interna ativa com `Link`; hashes foram preservados como anchors nativos.
+- Pendência funcional: os destinos semanticamente questionáveis das Ações rápidas ativas permanecem inalterados e requerem decisão funcional posterior: "Novo lead" → `/oportunidades`, "Avaliar troca" → `/oportunidades`, "Buscar veículo" → `/matches` e "Nova proposta" → `/propostas`.
+- Regras de negócio: nenhuma regra de negócio, engine, integração, persistência ou dado foi alterado.
+- Status: correção de escopo aguardando validação técnica e visual; não concluída nesta etapa.

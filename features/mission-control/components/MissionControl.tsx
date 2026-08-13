@@ -1,4 +1,5 @@
 ﻿import type { CSSProperties } from "react";
+import Link from "next/link";
 import type { MissionControlViewModel, MissionOpportunity } from "../../../lib/mission-control/model";
 import { Icons } from "./icons";
 import styles from "./MissionControl.module.css";
@@ -138,7 +139,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   {priorities.map((item, index) => {
                     const reasons = reasonLines(item, index);
                     return (
-                      <a
+                      <Link
                         className={`${styles.missionCard} ${index === 0 ? styles.primaryMission : ""}`}
                         href={`/oportunidades/${item.id}`}
                         key={item.id}
@@ -177,7 +178,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                           {index === 0 ? <Icons.Phone /> : <Icons.Arrow />}
                           {actionLabel(item, index)}
                         </span>
-                      </a>
+                      </Link>
                     );
                   })}
                 </div>
@@ -193,16 +194,16 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                         <small>O que aconteceu agora</small>
                       </span>
                     </div>
-                    <a href="/oportunidades">Ver tudo</a>
+                    <Link href="/oportunidades">Ver tudo</Link>
                   </header>
                   <div className={styles.feed}>
                     {model.recentEvents.length === 0 && <div className={styles.emptyState}>O histórico operacional aparecerá após a primeira ação.</div>}
                     {model.recentEvents.slice(0, 5).map((event, index) => (
-                      <a className={styles.feedRow} href={`/oportunidades/${event.opportunityId}`} key={event.id}>
+                      <Link className={styles.feedRow} href={`/oportunidades/${event.opportunityId}`} key={event.id}>
                         <time>{new Date(event.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time>
                         <i data-index={index} />
                         <p>{event.title}{event.description ? ` · ${event.description}` : ""}</p>
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </article>
@@ -226,17 +227,17 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   <div className={styles.insightList}>
                     {model.recommendations.length === 0 && <div className={styles.emptyState}>Sem recomendações enquanto não houver oportunidades ativas.</div>}
                     {model.recommendations.slice(0, 3).map((recommendation, index) => (
-                      <a href={`/oportunidades/${recommendation.opportunityId}`} className={styles.insight} key={recommendation.opportunityId}>
+                      <Link href={`/oportunidades/${recommendation.opportunityId}`} className={styles.insight} key={recommendation.opportunityId}>
                         <b>{index + 1}</b>
                         <p>{recommendation.text}</p>
                         <Icons.Arrow />
-                      </a>
+                      </Link>
                     ))}
                   </div>
-                  <a className={styles.advisorAction} href="/recomendacoes">
+                  <Link className={styles.advisorAction} href="/recomendacoes">
                     <Icons.Spark />
                     Ver todas as recomendações
-                  </a>
+                  </Link>
                 </div>
               </section>
 
@@ -251,11 +252,11 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                 <div className={styles.agenda}>
                   {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma ação agendada.</div>}
                   {priorities.map((item) => (
-                    <a className={styles.agendaRow} href={`/oportunidades/${item.id}`} key={item.id}>
+                    <Link className={styles.agendaRow} href={`/oportunidades/${item.id}`} key={item.id}>
                       <time>{item.nextFollowUp ? new Date(item.nextFollowUp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}</time>
                       <strong>{item.recommendation.action}</strong>
                       <span>{item.name}</span>
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </section>
@@ -268,10 +269,10 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   </div>
                 </header>
                 <div className={styles.quick}>
-                  <a href="/oportunidades"><Icons.Target />Novo lead</a>
-                  <a href="/oportunidades"><Icons.Swap />Avaliar troca</a>
-                  <a href="/matches"><Icons.Search />Buscar veículo</a>
-                  <a href="/propostas"><Icons.File />Nova proposta</a>
+                  <Link href="/oportunidades"><Icons.Target />Novo lead</Link>
+                  <Link href="/oportunidades"><Icons.Swap />Avaliar troca</Link>
+                  <Link href="/matches"><Icons.Search />Buscar veículo</Link>
+                  <Link href="/propostas"><Icons.File />Nova proposta</Link>
                 </div>
               </section>
             </aside>
