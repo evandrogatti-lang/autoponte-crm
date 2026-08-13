@@ -11,16 +11,19 @@ const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL
 const sourceLabels: Record<string, string> = { dealer_inventory: "Estoque de loja", consignment: "Consignação", trade_in: "Veículo de troca", autoponte_inventory: "Estoque AutoPonte", partner_inventory: "Estoque parceiro", new_vehicle: "Veículo 0 km" };
 const statusLabels: Record<string, string> = { available: "Disponível", evaluation: "Em avaliação", reserved: "Reservado", sold: "Vendido", unavailable: "Indisponível" };
 
-export default async function VehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function VehicleDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ returnTo?: string }> }) {
   const { id } = await params;
+  const { returnTo } = await searchParams;
   await requireChatGPTUser(`/veiculos/${id}`);
   const [vehicle] = await getDb().select().from(vehicles).where(eq(vehicles.id, id)).limit(1);
   if (!vehicle) notFound();
   const [partner] = vehicle.partnerId ? await getDb().select({ id: partners.id, name: partners.name }).from(partners).where(eq(partners.id, vehicle.partnerId)).limit(1) : [];
   const asking = vehicle.askingPrice || vehicle.fipeValue || 0;
   const margin = Math.max(0, asking - (vehicle.acquisitionCost || 0));
+  const fallbackHref = `/veiculos?scope=${vehicle.inventoryScope === "partner" ? "partner" : "autoponte"}`;
+  const returnHref = returnTo && (returnTo.startsWith("/veiculos?") || returnTo.startsWith("/trocas?") || returnTo.startsWith("/parceiros/")) ? returnTo : fallbackHref;
   return <InventoryShell breadcrumb={<><a href="/crm">Mission Control</a><b>›</b><a href="/veiculos">Estoque</a><b>›</b><span>{vehicle.brand} {vehicle.model}</span></>}>
-    <div className={styles.pageHeader}><div><p className={styles.eyebrow}>VEÍCULO</p><h1>{vehicle.brand} {vehicle.model}</h1><p>{vehicle.modelYear} · {vehicle.fuel} · FIPE {vehicle.fipeCode}</p></div><div className={styles.pageActions}><a href="/crm">← Voltar ao CRM</a><a href={`/veiculos?scope=${vehicle.inventoryScope === "partner" ? "partner" : "autoponte"}`}>Voltar ao estoque</a>{partner && <a href={`/parceiros/${partner.id}`}>Abrir parceiro</a>}<a className={styles.primaryAction} href="/oportunidades/nova">Criar oportunidade</a></div></div>
+    <div className={styles.pageHeader}><div><p className={styles.eyebrow}>VEÍCULO</p><h1>{vehicle.brand} {vehicle.model}</h1><p>{vehicle.modelYear} · {vehicle.fuel} · FIPE {vehicle.fipeCode}</p></div><div className={styles.pageActions}><a href="/crm">← Voltar ao CRM</a><a href={returnHref}>Voltar ao estoque</a>{partner && <a href={`/parceiros/${partner.id}`}>Abrir parceiro</a>}<a className={styles.primaryAction} href="/oportunidades/nova">Criar oportunidade</a></div></div>
     <section className={styles.vehicleHero}>
       <div className={styles.vehiclePhoto}>{vehicle.brand.slice(0, 1)}{vehicle.model.slice(0, 1)}</div>
       <div className={styles.vehicleIdentity}><span className={styles.statusBadge} data-status={vehicle.status}>{statusLabels[vehicle.status] ?? vehicle.status}</span><h2>{vehicle.brand} {vehicle.model}</h2><p>{vehicle.plate || "Placa não informada"} · {vehicle.color || "Cor não informada"} · {vehicle.mileage.toLocaleString("pt-BR")} km</p></div>

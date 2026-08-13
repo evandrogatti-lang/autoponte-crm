@@ -9,6 +9,8 @@
   background: #f7faf9;
 }
 
+.inventoryListLayout{display:block}
+
 .vehicleRowLink {
   color: inherit;
   text-decoration: none;

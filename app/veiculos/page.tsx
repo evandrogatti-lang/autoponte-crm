@@ -4,6 +4,8 @@ import { getDb } from "../../db";
 import { vehicles } from "../../db/vehicle-schema";
 import { partners } from "../../db/partner-schema";
 import { InventoryShell } from "../../features/vehicle-registry/components/InventoryShell";
+import { VehicleListFilters } from "../../features/vehicle-registry/components/VehicleListFilters";
+import { activeVehicleFilterChips, buildVehicleListHref, filterVehicleList, type VehicleFilterParams } from "../../features/vehicle-registry/vehicle-list-filters";
 import styles from "../../features/vehicle-registry/components/VehicleRegistry.module.css";
 
 export const dynamic = "force-dynamic";
@@ -18,20 +20,18 @@ function daysSince(value?: string | Date | null) {
   return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000));
 }
 
-export default async function VehiclesPage({ searchParams }: { searchParams: Promise<{ scope?: string; q?: string; status?: string; origin?: string }> }) {
+export default async function VehiclesPage({ searchParams }: { searchParams: Promise<{ scope?: string } & VehicleFilterParams> }) {
   await requireChatGPTUser("/veiculos");
-  const { scope = "all", q = "", status = "active", origin = "all" } = await searchParams;
+  const { scope = "all", ...queryFilters } = await searchParams;
+  const filters = { ...queryFilters, status: queryFilters.status || "active" };
   const rows = await getDb().select().from(vehicles).orderBy(desc(vehicles.updatedAt)).limit(1000);
   const partnerRows = await getDb().select({ id: partners.id, name: partners.name }).from(partners);
   const partnerMap = new Map(partnerRows.map((p) => [p.id, p.name]));
-  const query = q.trim().toLocaleLowerCase("pt-BR");
-  const selected = rows.filter((vehicle) => {
+  const scopedRows = rows.filter((vehicle) => {
     const scopeOk = scope === "all" || (scope === "partner" ? vehicle.inventoryScope === "partner" : scope === "autoponte" ? vehicle.inventoryScope !== "partner" : scope === "consignment" ? vehicle.sourceType === "consignment" : scope === "trade" ? vehicle.sourceType === "trade_in" : scope === "reserved" ? vehicle.status === "reserved" : scope === "sold" ? vehicle.status === "sold" : true);
-    const statusOk = status === "all" || (status === "active" ? !["sold", "unavailable"].includes(vehicle.status) : vehicle.status === status);
-    const originOk = origin === "all" || vehicle.sourceType === origin;
-    const haystack = [vehicle.brand, vehicle.model, vehicle.plate, vehicle.stockCode, vehicle.ownerName, partnerMap.get(vehicle.partnerId)].filter(Boolean).join(" ").toLocaleLowerCase("pt-BR");
-    return scopeOk && statusOk && originOk && (!query || haystack.includes(query));
+    return scopeOk;
   });
+  const selected = filterVehicleList(scopedRows, filters, partnerMap);
   const activeRows = rows.filter((vehicle) => !["sold", "unavailable"].includes(vehicle.status));
   const totalValue = activeRows.reduce((sum, vehicle) => sum + (vehicle.askingPrice || vehicle.fipeValue || 0), 0);
   const totalMargin = activeRows.reduce((sum, vehicle) => sum + Math.max(0, (vehicle.askingPrice || 0) - (vehicle.acquisitionCost || 0)), 0);
@@ -39,7 +39,8 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
   const averageAging = agingValues.length ? Math.round(agingValues.reduce((sum, value) => sum + value, 0) / agingValues.length) : 0;
   const highLiquidity = activeRows.filter((vehicle) => (daysSince(vehicle.listingDate || vehicle.createdAt) ?? 999) <= 30).length;
 
-  const tab = (value: string, label: string) => <a data-active={scope === value} href={`/veiculos?scope=${value}&status=${status}`}>{label}</a>;
+  const currentHref = buildVehicleListHref("/veiculos", { ...filters, scope });
+  const tab = (value: string, label: string) => <a data-active={scope === value} href={buildVehicleListHref("/veiculos", { ...filters, scope: value })}>{label}</a>;
   return <InventoryShell breadcrumb={<><a href="/crm">Mission Control</a><b>›</b><span>Estoque</span></>}>
     <div className={styles.pageHeader}>
       <div><h1>Estoque de Veículos</h1><p>Gerencie o estoque próprio, veículos de parceiros, consignados e trocas.</p></div>
@@ -47,8 +48,8 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
     </div>
     <section className={styles.inventoryToolbar}>
       <nav className={styles.inventoryTabs}>{tab("all", "Todos")}{tab("autoponte", "AutoPonte")}{tab("partner", "Parceiros")}{tab("consignment", "Consignados")}{tab("trade", "Trocas")}{tab("reserved", "Reservados")}{tab("sold", "Vendidos")}</nav>
-      <form className={styles.inlineSearch} action="/veiculos"><input type="hidden" name="scope" value={scope}/><input type="hidden" name="status" value={status}/><span>⌕</span><input name="q" defaultValue={q} placeholder="Buscar no estoque..."/><button>Buscar</button></form>
     </section>
+    <VehicleListFilters action="/veiculos" clearHref="/veiculos" filters={filters} resultCount={selected.length} totalCount={scopedRows.length} chips={[...(scope === "all" ? [] : [["Escopo", scope] as [string, string]]), ...activeVehicleFilterChips(filters, { partners: partnerMap, origins: sourceLabels, statuses: statusLabels })]} brands={[...new Set(scopedRows.map((vehicle) => vehicle.brand))].sort()} models={[...new Set(scopedRows.map((vehicle) => vehicle.model))].sort()} partners={partnerRows.map((partner) => ({ value: partner.id, label: partner.name }))} origins={Object.entries(sourceLabels).map(([value, label]) => ({ value, label }))} statuses={Object.entries(statusLabels).map(([value, label]) => ({ value, label }))} hidden={{ scope }} />
     <section className={styles.metricGrid}>
       <article><i>▣</i><div><span>Veículos ativos</span><strong>{activeRows.length}</strong><small>Total em estoque</small></div></article>
       <article><i>◇</i><div><span>Valor anunciado</span><strong>{money.format(totalValue)}</strong><small>Soma dos preços</small></div></article>
@@ -57,7 +58,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
       <article><i>⌁</i><div><span>Giro recente</span><strong>{highLiquidity}</strong><small>Até 30 dias</small></div></article>
       <article><i>◎</i><div><span>Demandas compatíveis</span><strong>—</strong><small>Será ligado ao motor de matches</small></div></article>
     </section>
-    <div className={styles.inventoryLayout}>
+    <div className={styles.inventoryListLayout}>
       <section className={styles.inventoryTableCard}>
         {selected.length === 0 ? <div className={styles.empty}>Nenhum veículo encontrado com os filtros atuais.</div> : <table className={styles.inventoryTable}>
           <thead><tr><th>Veículo</th><th>Origem</th><th>Proprietário / parceiro</th><th>Ano</th><th>Km</th><th>FIPE</th><th>Preço</th><th>Margem</th><th>Tempo em estoque</th><th>Status</th><th>Ações</th></tr></thead>
@@ -162,17 +163,10 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
     <td>
       <div className={styles.rowActions}>
         <a
-          href={`/veiculos/${vehicle.id}`}
-          title="Abrir veículo"
+          href={`/veiculos/${vehicle.id}?returnTo=${encodeURIComponent(currentHref)}`}
+          title="Abrir ficha do veículo"
         >
-          ◉
-        </a>
-
-        <a
-          href={`/veiculos/${vehicle.id}`}
-          title="Editar veículo"
-        >
-          ✎
+          Abrir ficha
         </a>
       </div>
     </td>
@@ -182,12 +176,6 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
           </table>}
           <footer className={styles.tableFooter}><span>Mostrando {selected.length} de {rows.length} veículos</span><span>Dados reais do Supabase</span></footer>
         </section>
-        <aside className={styles.filterPanel}>
-        <div><h3>Filtros aplicados</h3><a href="/veiculos">Limpar todos</a></div>
-        <span className={styles.filterChip}>Escopo: {scope === "all" ? "Todos" : scope}</span>
-        <span className={styles.filterChip}>Status: {status === "active" ? "Ativos" : status}</span>
-        <form action="/veiculos"><input type="hidden" name="scope" value={scope}/><label>Origem<select name="origin" defaultValue={origin}><option value="all">Todas</option>{Object.entries(sourceLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>Status<select name="status" defaultValue={status}><option value="active">Apenas ativos</option><option value="all">Todos</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><button>Aplicar filtros</button></form>
-      </aside>
     </div>
   </InventoryShell>;
 }
