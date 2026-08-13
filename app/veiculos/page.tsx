@@ -32,6 +32,9 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
     return scopeOk;
   });
   const selected = filterVehicleList(scopedRows, filters, partnerMap);
+  const searchDiagnostic = filters.q === "LT5FA89" ? rows.find((vehicle) => vehicle.plate === "LT5FA89") : undefined;
+  const searchDiagnosticInScope = searchDiagnostic ? scopedRows.some((vehicle) => vehicle.id === searchDiagnostic.id) : false;
+  const searchDiagnosticInSelected = searchDiagnostic ? selected.some((vehicle) => vehicle.id === searchDiagnostic.id) : false;
   const activeRows = rows.filter((vehicle) => !["sold", "unavailable"].includes(vehicle.status));
   const totalValue = activeRows.reduce((sum, vehicle) => sum + (vehicle.askingPrice || vehicle.fipeValue || 0), 0);
   const totalMargin = activeRows.reduce((sum, vehicle) => sum + Math.max(0, (vehicle.askingPrice || 0) - (vehicle.acquisitionCost || 0)), 0);
@@ -61,6 +64,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
     </section>
     <div className={styles.inventoryListLayout}>
       <section className={styles.inventoryTableCard}>
+        {filters.q === "LT5FA89" && <pre>{JSON.stringify({ q: filters.q, rows: rows.length, scopedRows: scopedRows.length, selected: selected.length, vehicle: searchDiagnostic && { brand: searchDiagnostic.brand, model: searchDiagnostic.model, plate: searchDiagnostic.plate, stockCode: searchDiagnostic.stockCode, status: searchDiagnostic.status, inventoryScope: searchDiagnostic.inventoryScope, sourceType: searchDiagnostic.sourceType }, inScopedRows: searchDiagnosticInScope, inSelected: searchDiagnosticInSelected }, null, 2)}</pre>}
         {selected.length === 0 ? <div className={styles.empty}>Nenhum veículo encontrado com os filtros atuais.</div> : <table className={styles.inventoryTable}>
           <thead><tr><th>Veículo</th><th>Origem</th><th>Proprietário / parceiro</th><th>Ano</th><th>Km</th><th>FIPE</th><th>Preço</th><th>Margem</th><th>Tempo em estoque</th><th>Status</th><th>Ações</th></tr></thead>
           <tbody>{selected.map((vehicle) => {
