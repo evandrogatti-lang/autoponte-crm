@@ -73,3 +73,6 @@ Declarações finais
 ---
 Registro gerado em: 2026-08-13
 Autor: gerado por automação assistida (registrado por Evandro Gatti)
+
+13) Status Onda 1A
+- Onda 1A implementada: alterações limitadas ao `components/crm/CRMAppShell.tsx` (conversão de anchors internos para `Link` e atualização dos links do painel móvel). Status: aguardando validação manual e testes de navegação/ACESSibilidade.

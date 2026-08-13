@@ -293,14 +293,14 @@ if (!managed) return <>{children}</>;
   return (
     <div className={styles.shell}>
      
-		<aside ref={sidebarRef} className={styles.sidebar}>
-        <a href="/crm" className={styles.brand} aria-label="AutoPonte Veículos">
+    <aside ref={sidebarRef} className={styles.sidebar}>
+        <Link href="/crm" className={styles.brand} aria-label="AutoPonte Veículos">
           <span className={styles.brandMark}>A</span>
           <span>
             <strong>AutoPonte</strong>
             <small>VEÍCULOS</small>
           </span>
-        </a>
+        </Link>
 
        <nav className={styles.nav}>
   {NAVIGATION.map((group, groupIndex) => (
@@ -317,7 +317,7 @@ if (!managed) return <>{children}</>;
         const isMobileSecondary = !MOBILE_PRIMARY_HREFS.includes(item.href);
         const classNames = [isActive ? styles.active : null, isMobileSecondary ? styles.mobileSecondary : null].filter(Boolean).join(" ");
         return (
-          <a
+          <Link
             key={item.href}
             href={item.href}
             className={classNames}
@@ -329,7 +329,7 @@ if (!managed) return <>{children}</>;
             </span>
 
             <span>{item.label}</span>
-          </a>
+          </Link>
         );
       })}
     </div>
@@ -368,7 +368,7 @@ if (!managed) return <>{children}</>;
           {mobileMoreItems.map((item) => {
             const isActive = activeFor(pathname, item.href);
             return (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileMoreOpen(false)}
@@ -376,7 +376,7 @@ if (!managed) return <>{children}</>;
               >
                 <span className={styles.icon}><Icon name={item.icon} /></span>
                 <span>{item.label}</span>
-              </a>
+              </Link>
             );
           })}
         </nav>
@@ -424,7 +424,7 @@ if (!managed) return <>{children}</>;
             </form>
 
           <div className={styles.actions}>
-            <a href="/recomendacoes">Recomendações IA</a>
+            <Link href="/recomendacoes">Recomendações IA</Link>
             <Link href="/oportunidades/nova" className={styles.primary}>+ Nova oportunidade</Link>
           </div>
         </header>
