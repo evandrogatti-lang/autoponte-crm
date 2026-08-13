@@ -74,19 +74,13 @@ export function filterVehicleList<T extends FilterableVehicle>(
   const fipeMin = numericValue(filters.fipeMin);
   const fipeMax = numericValue(filters.fipeMax);
 
-  if (filters.q === "LT5FA89") {
-    console.log({ query, totalVehicles: rows.length });
-  }
-
   return rows.filter((vehicle) => {
     const value = vehicleListValue(vehicle);
     const age = vehicleAgeDays(vehicle);
     const haystack = [vehicle.brand, vehicle.model, vehicle.plate, vehicle.stockCode, vehicle.ownerName, partnerNames.get(vehicle.partnerId)]
+      .map((value) => String(value ?? ""))
       .filter(Boolean)
       .join(" ");
-    if (filters.q === "LT5FA89" && vehicle.plate.includes("LT5")) {
-      console.log({ plate: vehicle.plate, normalizedHaystack: normalizeText(haystack), textIncludes: textIncludes(haystack, query) });
-    }
     const statusOk = !filters.status || filters.status === "all" || (filters.status === "active" ? !["sold", "unavailable"].includes(vehicle.status) : vehicle.status === filters.status);
     const ageOk = !filters.age || (filters.age === "0-30" ? age !== null && age <= 30 : filters.age === "31-60" ? age !== null && age >= 31 && age <= 60 : filters.age === "61-90" ? age !== null && age >= 61 && age <= 90 : filters.age === "91+" ? age !== null && age >= 91 : true);
 
