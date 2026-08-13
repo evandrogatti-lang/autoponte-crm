@@ -334,20 +334,29 @@ if (!managed) return <>{children}</>;
       })}
     </div>
   ))}
-</nav>
+  
+  
+  { /* end nav items */ }
 
-        <button
-          ref={mobileMoreButtonRef}
-          type="button"
-          className={styles.mobileMoreButton}
-          aria-expanded={mobileMoreOpen}
-          aria-controls="mobile-more-panel"
-          aria-label={mobileMoreOpen ? "Fechar mais opções" : "Abrir mais opções"}
-          onClick={() => setMobileMoreOpen((s) => !s)}
-        >
-          <span className={styles.icon}><Icon name="grid" /></span>
-          <span>Mais</span>
-        </button>
+  {/* mobile more button placed inside the nav so it becomes the fifth grid item on mobile */}
+  {/* end nav items */}
+
+  {/* Inject mobileMoreButton as the last direct child of nav so it occupies the fifth column in mobile grid */}
+
+  <button
+    ref={mobileMoreButtonRef}
+    type="button"
+    className={styles.mobileMoreButton}
+    aria-expanded={mobileMoreOpen}
+    aria-controls="mobile-more-panel"
+    aria-label={mobileMoreOpen ? "Fechar mais opções" : "Abrir mais opções"}
+    onClick={() => setMobileMoreOpen((s) => !s)}
+  >
+    <span className={styles.icon}><Icon name="grid" /></span>
+    <span>Mais</span>
+  </button>
+
+</nav>
 
         <nav
           id="mobile-more-panel"

@@ -356,7 +356,7 @@
   display:none!important;
 }
 
-  .shell .mobileMoreButton{
+  .mobileMoreButton{
     display:flex;
     min-width:0;
     min-height:56px;
