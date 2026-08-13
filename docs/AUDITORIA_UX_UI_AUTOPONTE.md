@@ -84,3 +84,10 @@ Autor: gerado por automação assistida (registrado por Evandro Gatti)
 - Validações: ESLint focal (`LINT_EXIT=0`), TypeScript `--noEmit` (`TSC_EXIT=0`), validação visual e funcional aprovada em produção pelo responsável (2026-08-13).
 - Regras de negócio: nenhuma regra de negócio, engine, integração, persistência ou dado foi alterado.
 - Status: concluída — push para `origin/main` confirmado; HEAD e origin/main em `92e2525`.
+
+15) Status Onda 1C
+- Onda 1C implementada, aguardando validação: migração exclusiva de oito anchors internos para `Link` em `components/mission-control/Shell.tsx` (2), `components/mission-control/QuickActions.tsx` (5) e `components/mission-control/PipelineLive.tsx` (1).
+- Validação técnica prévia: `APPanel.action` aceita `ReactNode`.
+- Destinos, classes, conteúdo interno, estrutura visual, ARIA e comportamento foram preservados. Nenhuma regra de negócio, engine, integração, persistência ou dado foi alterado.
+- Inconsistência registrada: a ação "Nova oportunidade" em `QuickActions` permanece direcionada para `/oportunidades`, conforme destino preexistente; não foi alterada nesta etapa.
+- Status: aguardando validação visual e funcional antes de commit ou push.

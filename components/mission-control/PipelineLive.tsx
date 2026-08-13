@@ -1,4 +1,5 @@
-﻿import { APPanel, PipelineCard } from "../apdl";
+﻿import Link from "next/link";
+import { APPanel, PipelineCard } from "../apdl";
 import type { MissionControlViewModel, MissionOpportunity } from "../../lib/mission-control/model";
 
 const stages: Array<{id: MissionOpportunity["stage"]; label: string}> = [
@@ -11,7 +12,7 @@ const stages: Array<{id: MissionOpportunity["stage"]; label: string}> = [
 ];
 
 export function PipelineLive({ model }: { model: MissionControlViewModel }) {
-  return <APPanel title="Funil comercial ativo" action={<a href="/oportunidades">Abrir funil completo →</a>}>
+  return <APPanel title="Funil comercial ativo" action={<Link href="/oportunidades">Abrir funil completo →</Link>}>
     <div className="mc-pipeline">
       {stages.map(stage => {
         const items = model.opportunities.filter(item => item.stage === stage.id).slice(0,3);

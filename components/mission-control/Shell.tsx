@@ -1,4 +1,5 @@
 ﻿import type { ReactNode } from "react";
+import Link from "next/link";
 import { CommandPalette, EnterpriseSidebar } from "../apdl";
 
 const navigation = [
@@ -23,8 +24,8 @@ export function MissionControlShell({ children }: { children: ReactNode }) {
       <header className="mc-topbar">
         <CommandPalette/>
         <div className="mc-topbar-actions">
-          <a className="ap-button ap-button--secondary" href="/matches">Correspondências IA</a>
-          <a className="ap-button ap-button--primary" href="/oportunidades/nova">Nova oportunidade</a>
+          <Link className="ap-button ap-button--secondary" href="/matches">Correspondências IA</Link>
+          <Link className="ap-button ap-button--primary" href="/oportunidades/nova">Nova oportunidade</Link>
         </div>
       </header>
       <div className="mc-content">{children}</div>
