@@ -241,7 +241,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                 </div>
               </section>
 
-              <section className={styles.panel}>
+              <section id="agenda" className={styles.panel}>
                 <header className={styles.panelHeader}>
                   <div>
                     <Icons.Clock />
