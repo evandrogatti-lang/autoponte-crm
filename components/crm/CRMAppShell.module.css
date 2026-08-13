@@ -76,6 +76,12 @@
   box-sizing:border-box;
 }
 
+.nav a:focus-visible{
+  outline: 3px solid rgba(200,255,46,0.12);
+  outline-offset: 2px;
+  border-radius:9px;
+}
+
 .nav a:hover{background:#0d3042;color:#fff}
 .nav a.active{background:#14363d;color:#fff;border-left-color:var(--ap-lime)}
 .icon{width:22px;display:grid;place-items:center;color:#92aab5}
@@ -138,6 +144,23 @@
   font-weight:800;
   border:1px solid #d1dde2;
   background:#fff;
+}
+.actions a:focus-visible{
+  outline: 3px solid rgba(18,52,72,0.12);
+  outline-offset: 2px;
+  border-radius:9px;
+}
+
+/* Focus-visible for mobile more button and panel links */
+.mobileMoreButton:focus-visible{
+  outline: 3px solid rgba(200,255,46,0.18);
+  outline-offset: 2px;
+  border-radius:9px;
+}
+.mobileMorePanel a:focus-visible{
+  outline: 3px solid rgba(200,255,46,0.12);
+  outline-offset: 2px;
+  border-radius:8px;
 }
 .actions .primary{
   background:var(--ap-lime);

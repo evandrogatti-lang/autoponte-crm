@@ -23,7 +23,7 @@ export function MissionControlHeader({ title, subtitle, actions }: { title: stri
 }
 
 export function EnterpriseSidebar({ items }: { items: Array<{ label: string; href: string; active?: boolean }> }) {
-  return <aside className="ap-sidebar"><strong className="ap-sidebar__brand">AutoPonte <span>OS</span></strong><nav>{items.map(item => <a key={item.label} href={item.href} className={item.active ? "is-active" : ""}>{item.label}</a>)}</nav></aside>;
+  return <aside className="ap-sidebar"><strong className="ap-sidebar__brand">AutoPonte <span>OS</span></strong><nav>{items.map(item => <a key={item.label} href={item.href} className={item.active ? "is-active" : ""} aria-current={item.active ? "page" : undefined}>{item.label}</a>)}</nav></aside>;
 }
 
 export function ContextBar({ label, children }: { label: string; children?: ReactNode }) {
