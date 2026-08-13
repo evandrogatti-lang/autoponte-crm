@@ -101,3 +101,9 @@ Autor: gerado por automação assistida (registrado por Evandro Gatti)
 - Pré-requisitos para a evolução: definir modelo de dados, permissões, persistência, regras operacionais e contrato de integração antes de criar a experiência de agenda.
 - Opções temporárias avaliadas: (A) manter "Ver agenda" com o comportamento atual; (B) renomear para "Ir para agenda de hoje", alinhando o texto ao comportamento. Recomendação: B, por reduzir expectativa incorreta sem introduzir fluxo, dados ou comportamento novo. Não aplicada sem autorização.
 - Nomenclatura temporária: a opção B foi aprovada e implementada em `MissionControl.tsx`; o anchor preserva `/crm#agenda` e passa a exibir "Ir para agenda de hoje". A agenda completa permanece apenas como proposta futura, sem implementação.
+
+17) Ondas tipográficas T1 e T1.1
+- Onda T1 concluída: commit `60a4f11` — melhoria da legibilidade dos textos operacionais do Mission Control. TypeScript e build aprovados; validação visual aprovada.
+- Onda T1.1 concluída: commit `89db904` — complementação tipográfica no Conselheiro AutoPonte e no Funil Comercial. TypeScript e build aprovados; validação visual aprovada em desktop e mobile.
+- Escopo preservado: não houve alterações em cálculos, estágios, probabilidades, regras do Flow Engine ou regras de negócio. A densidade e a estrutura da experiência foram preservadas, sem regressões visuais observadas.
+- Próxima pendência: T2, referente à tipografia responsiva do `CRMAppShell` e da barra inferior mobile, permanece pendente e não iniciada. A agenda completa permanece uma evolução funcional futura.
