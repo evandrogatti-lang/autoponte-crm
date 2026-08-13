@@ -23,7 +23,7 @@ function daysSince(value?: string | Date | null) {
 export default async function VehiclesPage({ searchParams }: { searchParams: Promise<{ scope?: string } & VehicleFilterParams> }) {
   await requireChatGPTUser("/veiculos");
   const { scope = "all", ...queryFilters } = await searchParams;
-  const filters = { ...queryFilters, status: queryFilters.status || "active" };
+  const filters = { ...queryFilters, status: queryFilters.status || "all" };
   const rows = await getDb().select().from(vehicles).orderBy(desc(vehicles.updatedAt)).limit(1000);
   const partnerRows = await getDb().select({ id: partners.id, name: partners.name }).from(partners);
   const partnerMap = new Map(partnerRows.map((p) => [p.id, p.name]));
