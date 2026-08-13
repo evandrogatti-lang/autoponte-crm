@@ -52,6 +52,7 @@
 .brand small{display:block;font-size:7px;letter-spacing:.24em;color:#9cb2bd;margin-top:3px}
 
 .nav{display:grid;gap:10px}
+.mobileMoreButton{display:none}
 .group{display:grid;gap:3px}
 .groupTitle{
   margin:8px 11px 4px;
@@ -86,9 +87,6 @@
 .nav a.active{background:#14363d;color:#fff;border-left-color:var(--ap-lime)}
 .icon{width:22px;display:grid;place-items:center;color:#92aab5}
 .active .icon{color:var(--ap-lime)}
-
-/* Hide mobile-only control by default; shown explicitly in mobile media query */
-.mobileMoreButton{display:none}
 
 .footer{
   margin-top:auto;
@@ -358,7 +356,7 @@
   display:none!important;
 }
 
-  .mobileMoreButton{
+  .shell .mobileMoreButton{
     display:flex;
     min-width:0;
     min-height:56px;
