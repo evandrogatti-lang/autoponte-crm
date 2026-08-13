@@ -1,3 +1,6 @@
+"use client";
+
+import type { FormEvent } from "react";
 import type { VehicleFilterParams } from "../vehicle-list-filters";
 import styles from "./VehicleListFilters.module.css";
 
@@ -20,6 +23,17 @@ type VehicleListFiltersProps = {
 
 export function VehicleListFilters({ action, clearHref, filters, resultCount, totalCount, chips, brands, models, partners, origins, statuses, hidden = {} }: VehicleListFiltersProps) {
   const advancedActive = Boolean(filters.brand || filters.model || filters.partner || filters.yearMin || filters.yearMax || filters.priceMin || filters.priceMax || filters.fipeMin || filters.fipeMax || filters.condition || filters.age);
+  const applyFilters = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const params = new URLSearchParams();
+
+    for (const [name, value] of new FormData(event.currentTarget)) {
+      if (typeof value === "string" && value) params.set(name, value);
+    }
+
+    const query = params.toString();
+    window.location.assign(query ? `${action}?${query}` : action);
+  };
 
   return <section className={styles.filters} aria-label="Filtros da lista">
     <div className={styles.summary}>
@@ -27,7 +41,7 @@ export function VehicleListFilters({ action, clearHref, filters, resultCount, to
       <span>de {totalCount}</span>
       <a href={clearHref}>Limpar filtros</a>
     </div>
-    <form action={action} className={styles.form}>
+    <form action={action} className={styles.form} onSubmit={applyFilters}>
       {Object.entries(hidden).map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)}
       <label className={styles.search}><span>Busca</span><input name="q" defaultValue={filters.q} placeholder="Buscar por veículo, placa ou código" /></label>
       <label><span>Status</span><select name="status" defaultValue={filters.status || "all"}><option value="all">Todos</option>{statuses.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
