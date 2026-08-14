@@ -292,6 +292,18 @@
   }
 }
 @media(max-width:760px){
+  @media (min-height:501px) {
+    .topbar{
+      isolation:isolate;
+      z-index:110;
+    }
+
+    .globalSearch{
+      position:relative;
+      z-index:1;
+    }
+  }
+
   .shell{
     display:block;
     min-height:100vh;
