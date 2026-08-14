@@ -291,18 +291,22 @@
     top:0;
   }
 }
-@media(max-width:760px){
-  @media (min-height:501px) {
-    .topbar{
-      isolation:isolate;
-      z-index:110;
-    }
-
-    .globalSearch{
-      position:relative;
-      z-index:1;
-    }
+@media (max-width:760px) and (orientation:portrait){
+  .topbar{
+    position:relative;
+    z-index:1000;
+    isolation:isolate;
+    pointer-events:auto;
   }
+
+  .globalSearch{
+    position:relative;
+    z-index:1;
+    pointer-events:auto;
+  }
+}
+
+@media(max-width:760px){
 
   .shell{
     display:block;
