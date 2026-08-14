@@ -20,3 +20,159 @@
   inset: 0;
   z-index: 1;
 }
+
+.filterPanel {
+  padding: 14px;
+  border-bottom: 1px solid #e5eaed;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.filterForm {
+  flex: 1;
+  min-width: 0;
+}
+
+.primaryFilters,
+.secondaryFilters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.secondaryFilters {
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  margin-top: 12px;
+}
+
+.searchField,
+.selectField,
+.numberField,
+.dateField {
+  display: grid;
+  gap: 5px;
+  color: #526570;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.searchField input,
+.selectField select,
+.numberField input,
+.dateField input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid #d8e0e5;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #1b3441;
+  background: #fff;
+  font: inherit;
+}
+
+.moreFilters {
+  margin-top: 12px;
+}
+
+.moreFilters summary {
+  width: fit-content;
+  color: #087a5e;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.submitButton {
+  margin-top: 12px;
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  background: #087a5e;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.resultCount {
+  flex: 0 0 auto;
+  padding-top: 21px;
+  color: #71828d;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.activeFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5eaed;
+}
+
+.filterChip,
+.clearFilters {
+  position: relative;
+  z-index: 2;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: #1b5660;
+  background: #e8f4f0;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.clearFilters {
+  color: #8b352c;
+  background: #fbeceb;
+}
+
+.tableWrapper {
+  width: 100%;
+}
+
+.leadsTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.leadsTable th,
+.leadsTable td {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .secondaryFilters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .filterPanel {
+    display: block;
+  }
+
+  .primaryFilters,
+  .secondaryFilters {
+    grid-template-columns: 1fr;
+  }
+
+  .resultCount {
+    display: block;
+    padding-top: 12px;
+  }
+
+  .optionalColumn {
+    display: none;
+  }
+
+  .leadsTable {
+    font-size: 12px;
+  }
+}

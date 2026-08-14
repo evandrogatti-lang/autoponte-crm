@@ -1,5 +1,6 @@
 ﻿import styles from "./Leads.module.css";
 import { desc } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import { requireChatGPTUser } from "../chatgpt-auth";
 import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
@@ -25,15 +26,72 @@ const priorityLabels: Record<string, string> = {
   review: "Requer análise",
 };
 
+const filterKeys = [
+  "q",
+  "status",
+  "priority",
+  "city",
+  "interest",
+  "probabilityMin",
+  "probabilityMax",
+  "valueMin",
+  "valueMax",
+  "updatedFrom",
+  "updatedTo",
+] as const;
+
+type LeadFilters = Record<(typeof filterKeys)[number], string>;
+
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR");
+}
+
+function toNumber(value: string) {
+  const normalized = value.trim();
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<Partial<Record<(typeof filterKeys)[number], string | string[]>>>;
 }) {
   await requireChatGPTUser("/leads");
 
-  const { q = "" } = await searchParams;
-  const query = q.trim().toLocaleLowerCase("pt-BR");
+  const requestedParams = await searchParams;
+  const filters = filterKeys.reduce((result, key) => {
+    const value = requestedParams[key];
+    result[key] = (Array.isArray(value) ? value[0] : value ?? "").trim();
+    return result;
+  }, {} as LeadFilters);
+
+  const canonicalParams = new URLSearchParams();
+  filterKeys.forEach((key) => {
+    if (filters[key]) canonicalParams.set(key, filters[key]);
+  });
+  const requestedQuery = new URLSearchParams(
+    Object.entries(requestedParams).flatMap(([key, value]) =>
+      Array.isArray(value) ? value.map((item) => [key, item]) : value ? [[key, value]] : []
+    )
+  ).toString();
+  const canonicalQuery = canonicalParams.toString();
+
+  if (requestedQuery !== canonicalQuery) {
+    redirect(canonicalQuery ? `/leads?${canonicalQuery}` : "/leads");
+  }
+
+  const query = normalizeText(filters.q);
+  const probabilityMin = toNumber(filters.probabilityMin);
+  const probabilityMax = toNumber(filters.probabilityMax);
+  const valueMin = toNumber(filters.valueMin);
+  const valueMax = toNumber(filters.valueMax);
+  const updatedFrom = filters.updatedFrom ? new Date(`${filters.updatedFrom}T00:00:00`) : null;
+  const updatedTo = filters.updatedTo ? new Date(`${filters.updatedTo}T23:59:59.999`) : null;
 
   const rows = await getDb()
     .select()
@@ -47,24 +105,41 @@ export default async function LeadsPage({
   );
 
   const filteredRows = leadRows.filter((row) => {
-    if (!query) return true;
+    const interest = row.desiredVehicle || `${row.brand} ${row.model}`;
+    const haystack = normalizeText(
+      [row.name, row.whatsapp, row.email, row.city, interest, row.nextAction]
+        .filter(Boolean)
+        .join(" ")
+    );
+    const updatedAt = new Date(row.updatedAt);
 
-    const haystack = [
-      row.name,
-      row.whatsapp,
-      row.email,
-      row.city,
-      row.desiredVehicle,
-      row.brand,
-      row.model,
-      row.nextAction,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLocaleLowerCase("pt-BR");
-
-    return haystack.includes(query);
+    return (
+      (!query || haystack.includes(query)) &&
+      (!filters.city || row.city === filters.city) &&
+      (!filters.interest || interest === filters.interest) &&
+      (!filters.status || row.status === filters.status) &&
+      (!filters.priority || row.leadCategory === filters.priority) &&
+      (probabilityMin === null || row.probability >= probabilityMin) &&
+      (probabilityMax === null || row.probability <= probabilityMax) &&
+      (valueMin === null || row.desiredPriceMax >= valueMin) &&
+      (valueMax === null || row.desiredPriceMin <= valueMax) &&
+      (!updatedFrom || updatedAt >= updatedFrom) &&
+      (!updatedTo || updatedAt <= updatedTo)
+    );
   });
+
+  const cities = [...new Set(leadRows.map((row) => row.city).filter(Boolean))].sort((first, second) =>
+    first.localeCompare(second, "pt-BR")
+  );
+  const interests = [
+    ...new Set(
+      leadRows
+        .map((row) => row.desiredVehicle || `${row.brand} ${row.model}`)
+        .filter(Boolean)
+    ),
+  ].sort((first, second) => first.localeCompare(second, "pt-BR"));
+  const activeFilters = filterKeys.filter((key) => filters[key]);
+  const currentHref = canonicalQuery ? `/leads?${canonicalQuery}` : "/leads";
 
   const highPriority = leadRows.filter(
     (row) => row.leadCategory === "hot"
@@ -188,62 +263,94 @@ export default async function LeadsPage({
             overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              padding: "14px",
-              borderBottom: "1px solid #e5eaed",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: "14px",
-            }}
-          >
-            <form
-              method="GET"
-              action="/leads"
-              style={{
-                display: "flex",
-                gap: "8px",
-                flex: 1,
-                maxWidth: "520px",
-              }}
-            >
+          <div className={styles.filterPanel}>
+            <form method="GET" action="/leads" className={styles.filterForm}>
+              <div className={styles.primaryFilters}>
+                <label className={styles.searchField}>
+                  <span>Busca</span>
               <input
                 type="search"
                 name="q"
-                defaultValue={q}
-                placeholder="Buscar nome, telefone, e-mail, cidade ou interesse..."
+                    defaultValue={filters.q}
+                    placeholder="Cliente, telefone, e-mail, cidade, interesse ou próxima ação"
                 aria-label="Buscar potenciais clientes"
-                style={{
-                  flex: 1,
-                  border: "1px solid #d8e0e5",
-                  borderRadius: "8px",
-                  padding: "10px 12px",
-                  font: "inherit",
-                }}
               />
+                </label>
+
+                <label className={styles.selectField}>
+                  <span>Etapa</span>
+                  <select name="status" defaultValue={filters.status}>
+                    <option value="">Todas</option>
+                    {Object.entries(stageLabels).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={styles.selectField}>
+                  <span>Prioridade</span>
+                  <select name="priority" defaultValue={filters.priority}>
+                    <option value="">Todas</option>
+                    {Object.entries(priorityLabels).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <details className={styles.moreFilters} open={activeFilters.some((key) => !["q", "status", "priority"].includes(key))}>
+                <summary>Mais filtros</summary>
+                <div className={styles.secondaryFilters}>
+                  <label className={styles.selectField}>
+                    <span>Cidade</span>
+                    <select name="city" defaultValue={filters.city}>
+                      <option value="">Todas</option>
+                      {cities.map((city) => <option key={city} value={city}>{city}</option>)}
+                    </select>
+                  </label>
+
+                  <label className={styles.selectField}>
+                    <span>Interesse / veículo desejado</span>
+                    <select name="interest" defaultValue={filters.interest}>
+                      <option value="">Todos</option>
+                      {interests.map((interest) => <option key={interest} value={interest}>{interest}</option>)}
+                    </select>
+                  </label>
+
+                  <label className={styles.numberField}><span>Probabilidade mínima</span><input type="number" name="probabilityMin" min="0" max="100" defaultValue={filters.probabilityMin} /></label>
+                  <label className={styles.numberField}><span>Probabilidade máxima</span><input type="number" name="probabilityMax" min="0" max="100" defaultValue={filters.probabilityMax} /></label>
+                  <label className={styles.numberField}><span>Valor desejado mínimo</span><input type="number" name="valueMin" min="0" step="1000" defaultValue={filters.valueMin} /></label>
+                  <label className={styles.numberField}><span>Valor desejado máximo</span><input type="number" name="valueMax" min="0" step="1000" defaultValue={filters.valueMax} /></label>
+                  <label className={styles.dateField}><span>Atualizado a partir de</span><input type="date" name="updatedFrom" defaultValue={filters.updatedFrom} /></label>
+                  <label className={styles.dateField}><span>Atualizado até</span><input type="date" name="updatedTo" defaultValue={filters.updatedTo} /></label>
+                </div>
+              </details>
 
               <button
                 type="submit"
-                style={{
-                  border: 0,
-                  borderRadius: "8px",
-                  padding: "10px 14px",
-                  background: "#087a5e",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
+                className={styles.submitButton}
               >
-                Buscar
+                Aplicar filtros
               </button>
             </form>
 
-            <span style={{ fontSize: "12px", color: "#71828d" }}>
+            <span className={styles.resultCount}>
               {filteredRows.length} resultado
               {filteredRows.length === 1 ? "" : "s"}
             </span>
           </div>
+
+          {activeFilters.length > 0 && (
+            <div className={styles.activeFilters} aria-label="Filtros ativos">
+              {activeFilters.map((key) => {
+                const params = new URLSearchParams(canonicalParams);
+                params.delete(key);
+                const href = params.size ? `/leads?${params}` : "/leads";
+                return <a key={key} href={href} className={styles.filterChip}>{filterLabel(key, filters[key])} <span aria-hidden="true">×</span></a>;
+              })}
+              <a href="/leads" className={styles.clearFilters}>Limpar filtros</a>
+            </div>
+          )}
 
           {filteredRows.length === 0 ? (
             <div
@@ -262,19 +369,15 @@ export default async function LeadsPage({
               </span>
             </div>
           ) : (
-            <div style={{ overflowX: "auto" }}>
+            <div className={styles.tableWrapper}>
               <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "13px",
-                }}
+                className={styles.leadsTable}
               >
                 <thead>
                   <tr style={{ background: "#fbfcfd" }}>
                     <th style={thStyle}>Cliente</th>
-                    <th style={thStyle}>Cidade</th>
-                    <th style={thStyle}>Interesse</th>
+                    <th style={thStyle} className={styles.optionalColumn}>Cidade</th>
+                    <th style={thStyle} className={styles.optionalColumn}>Interesse</th>
                     <th style={thStyle}>Etapa</th>
                     <th style={thStyle}>Prioridade</th>
                     <th style={thStyle}>Probabilidade</th>
@@ -287,7 +390,7 @@ export default async function LeadsPage({
               <tr key={lead.id} className={styles.clickableRow}>
                   <td style={tdStyle}>
                     <a
-                  href={`/oportunidades/${lead.id}`}
+                  href={`/oportunidades/${lead.id}?returnTo=${encodeURIComponent(currentHref)}`}
                   className={styles.rowLink}
                 >
                   {lead.name}
@@ -298,11 +401,11 @@ export default async function LeadsPage({
                         </small>
                       </td>
 
-                      <td style={tdStyle}>
+                      <td style={tdStyle} className={styles.optionalColumn}>
                         {lead.city || "Não informada"}
                       </td>
 
-                      <td style={tdStyle}>
+                      <td style={tdStyle} className={styles.optionalColumn}>
                         {lead.desiredVehicle ||
                           (lead.brand && lead.model
                             ? `${lead.brand} ${lead.model}`
@@ -335,6 +438,24 @@ export default async function LeadsPage({
       </main>
     </InventoryShell>
   );
+}
+
+function filterLabel(key: keyof LeadFilters, value: string) {
+  const labels: Record<keyof LeadFilters, string> = {
+    q: `Busca: ${value}`,
+    status: `Etapa: ${stageLabels[value] ?? value}`,
+    priority: `Prioridade: ${priorityLabels[value] ?? value}`,
+    city: `Cidade: ${value}`,
+    interest: `Interesse: ${value}`,
+    probabilityMin: `Probabilidade a partir de ${value}%`,
+    probabilityMax: `Probabilidade até ${value}%`,
+    valueMin: `Valor a partir de ${value}`,
+    valueMax: `Valor até ${value}`,
+    updatedFrom: `Atualizado desde ${value}`,
+    updatedTo: `Atualizado até ${value}`,
+  };
+
+  return labels[key];
 }
 
 const metricStyle = {
