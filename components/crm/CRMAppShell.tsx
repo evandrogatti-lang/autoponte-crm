@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./CRMAppShell.module.css";
@@ -137,7 +138,10 @@ export function CRMAppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() || "/";
   const managed = isManaged(pathname);
   const globalSearchRef = useRef<HTMLInputElement>(null);
+  const mobileSearchRef = useRef<HTMLInputElement>(null);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [isAppleTouch, setIsAppleTouch] = useState(false);
   const mobileMoreButtonRef = useRef<HTMLButtonElement | null>(null);
   const mobileMorePanelRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
@@ -161,7 +165,11 @@ export function CRMAppShell({ children }: { children: ReactNode }) {
       }
 
       event.preventDefault();
-      globalSearchRef.current?.focus();
+      if (isAppleTouch) {
+        setMobileSearchOpen(true);
+      } else {
+        globalSearchRef.current?.focus();
+      }
     }
   };
 
@@ -170,7 +178,28 @@ export function CRMAppShell({ children }: { children: ReactNode }) {
   return () => {
     window.removeEventListener("keydown", handleShortcut);
   };
+}, [isAppleTouch]);
+
+useEffect(() => {
+  const appleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const iPadDesktopMode = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  setIsAppleTouch(appleMobile || iPadDesktopMode);
 }, []);
+
+useEffect(() => {
+  if (!mobileSearchOpen) return;
+
+  const focusId = requestAnimationFrame(() => mobileSearchRef.current?.focus());
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape" || event.key === "Esc") setMobileSearchOpen(false);
+  };
+  window.addEventListener("keydown", onKeyDown);
+
+  return () => {
+    cancelAnimationFrame(focusId);
+    window.removeEventListener("keydown", onKeyDown);
+  };
+}, [mobileSearchOpen]);
 
 useEffect(() => {
   if (!managed) return;
@@ -289,9 +318,39 @@ const mobileMoreItems = NAVIGATION
 
 if (!managed) return <>{children}</>;
 
+const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
+  ? createPortal(
+      <div
+        className={styles.mobileSearchOverlay}
+        role="presentation"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) setMobileSearchOpen(false);
+        }}
+      >
+        <section className={styles.mobileSearchDialog} role="dialog" aria-modal="true" aria-label="Busca global">
+          <div className={styles.mobileSearchHeader}>
+            <strong>Buscar</strong>
+            <button type="button" aria-label="Fechar busca" onClick={() => setMobileSearchOpen(false)}>×</button>
+          </div>
+          <form className={styles.mobileSearchForm} method="GET" action="/busca">
+            <input
+              ref={mobileSearchRef}
+              type="search"
+              name="q"
+              aria-label="Busca global"
+              placeholder="Buscar clientes, veículos, placas..."
+            />
+            <button type="submit" aria-label="Buscar" title="Buscar">🔍</button>
+          </form>
+        </section>
+      </div>,
+      document.body
+    )
+  : null;
 
-  return (
-    <div className={styles.shell}>
+
+  return <>
+    <div className={`${styles.shell} ${isAppleTouch ? styles.appleTouch : ""}`}>
      
     <aside ref={sidebarRef} className={styles.sidebar}>
         <Link href="/crm" className={styles.brand} aria-label="AutoPonte Veículos">
@@ -423,6 +482,16 @@ if (!managed) return <>{children}</>;
               </button>
             </form>
 
+          <button
+            type="button"
+            className={styles.mobileSearchTrigger}
+            aria-label="Abrir busca global"
+            onClick={() => setMobileSearchOpen(true)}
+          >
+            <span>Buscar clientes, veículos, placas...</span>
+            <span aria-hidden="true">🔍</span>
+          </button>
+
           <div className={styles.actions}>
             <Link href="/recomendacoes">Recomendações IA</Link>
             <Link href="/oportunidades/nova" className={styles.primary}>+ Nova oportunidade</Link>
@@ -432,7 +501,8 @@ if (!managed) return <>{children}</>;
         <div className={styles.content}>{children}</div>
       </section>
     </div>
-  );
+    {mobileSearchModal}
+  </>;
 }
 
 
