@@ -1,0 +1,193 @@
+.queue,
+.side {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.queue {
+  min-width: 0;
+}
+
+.queueHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.eyebrow,
+.kicker {
+  color: #7a6b5b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.queueHeader h2,
+.side h2 {
+  margin: 4px 0 0;
+  color: #27221e;
+  font-size: 20px;
+}
+
+.counter {
+  color: #7a6b5b;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.opportunityList,
+.sellerList {
+  display: grid;
+  gap: 10px;
+}
+
+.opportunity,
+.seller {
+  border: 1px solid #e4ddd4;
+  background: #fffdf9;
+  padding: 16px;
+}
+
+.opportunity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, .7fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.opportunity h3 {
+  margin: 6px 0 4px;
+  color: #27221e;
+  font-size: 17px;
+}
+
+.opportunity p,
+.side p {
+  margin: 0;
+  color: #746b62;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.assignment,
+.assignBox {
+  display: grid;
+  gap: 8px;
+}
+
+.assignment strong {
+  color: #9b5d25;
+  font-size: 13px;
+}
+
+.assignBox select,
+.form input,
+.form select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #d8cec3;
+  background: #fff;
+  color: #322a24;
+  padding: 9px 10px;
+  font: inherit;
+}
+
+.assignBox button,
+.actions button,
+.form button {
+  border: 1px solid #b76b2d;
+  background: transparent;
+  color: #984f1e;
+  cursor: pointer;
+  padding: 8px 11px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.assignBox button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.assignBox small {
+  color: #9c4d42;
+  font-size: 11px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.form label {
+  display: grid;
+  gap: 5px;
+  color: #554b42;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.primary {
+  background: #29231e !important;
+  border-color: #29231e !important;
+  color: #fff !important;
+}
+
+.seller {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.seller strong,
+.seller small {
+  display: block;
+}
+
+.seller strong {
+  color: #302923;
+  font-size: 13px;
+}
+
+.seller small {
+  margin-top: 3px;
+  color: #81766c;
+  font-size: 11px;
+}
+
+.available,
+.unavailable {
+  padding: 4px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.available {
+  background: #e4f1e6;
+  color: #367044;
+}
+
+.unavailable {
+  background: #f6e3df;
+  color: #9c4d42;
+}
+
+@media (max-width: 900px) {
+  .opportunity {
+    grid-template-columns: 1fr;
+  }
+}

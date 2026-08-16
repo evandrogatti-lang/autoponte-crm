@@ -168,3 +168,66 @@ export const crmAuditLogs = pgTable("crm_audit_logs", {
   detail: text("detail").notNull().default("{}"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index("crm_audit_logs_created_idx").on(table.createdAt)]);
+
+export const sellerProfiles = pgTable("seller_profiles", {
+  id: text("id").primaryKey(),
+  crmUserId: text("crm_user_id").notNull().references(() => crmUsers.id, { onDelete: "cascade" }),
+  partnerId: text("partner_id").notNull().default(""),
+  status: text("status").notNull().default("active"),
+  availabilityStatus: text("availability_status").notNull().default("available"),
+  capacity: integer("capacity").notNull().default(1),
+  notes: text("notes").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex("seller_profiles_crm_user_unique").on(table.crmUserId),
+  index("seller_profiles_partner_status_idx").on(table.partnerId, table.status),
+]);
+
+export const sellerSpecialties = pgTable("seller_specialties", {
+  id: text("id").primaryKey(),
+  sellerProfileId: text("seller_profile_id").notNull().references(() => sellerProfiles.id, { onDelete: "cascade" }),
+  specialty: text("specialty").notNull(),
+  active: boolean("active").notNull().default(true),
+}, (table) => [uniqueIndex("seller_specialties_profile_value_unique").on(table.sellerProfileId, table.specialty)]);
+
+export const sellerAvailability = pgTable("seller_availability", {
+  id: text("id").primaryKey(),
+  sellerProfileId: text("seller_profile_id").notNull().references(() => sellerProfiles.id, { onDelete: "cascade" }),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  status: text("status").notNull().default("available"),
+  source: text("source").notNull().default("autoponte"),
+  note: text("note").notNull().default(""),
+}, (table) => [index("seller_availability_profile_time_idx").on(table.sellerProfileId, table.startsAt)]);
+
+export const sellerAppointments = pgTable("seller_appointments", {
+  id: text("id").primaryKey(),
+  opportunityId: text("opportunity_id").notNull().references(() => tradeIns.id, { onDelete: "cascade" }),
+  sellerProfileId: text("seller_profile_id").notNull().references(() => sellerProfiles.id),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  status: text("status").notNull().default("scheduled"),
+  source: text("source").notNull().default("autoponte"),
+  note: text("note").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index("seller_appointments_seller_time_idx").on(table.sellerProfileId, table.startsAt)]);
+
+export const sellerAssignments = pgTable("seller_assignments", {
+  id: text("id").primaryKey(),
+  opportunityId: text("opportunity_id").notNull().references(() => tradeIns.id, { onDelete: "cascade" }),
+  sellerProfileId: text("seller_profile_id").notNull().references(() => sellerProfiles.id),
+  assignedByUserId: text("assigned_by_user_id").notNull().default(""),
+  status: text("status").notNull().default("assigned"),
+  outcome: text("outcome").notNull().default(""),
+  reason: text("reason").notNull().default(""),
+  assignedAt: timestamp("assigned_at", { withTimezone: true }).notNull().defaultNow(),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+  firstContactAt: timestamp("first_contact_at", { withTimezone: true }),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("seller_assignments_opportunity_status_idx").on(table.opportunityId, table.status),
+  index("seller_assignments_seller_status_idx").on(table.sellerProfileId, table.status),
+]);
