@@ -1,0 +1,162 @@
+/*
+ * Safari / iOS touch fix
+ *
+ * `-webkit-overflow-scrolling: touch` promueve el contenedor a su propia capa
+ * de composición en WebKit. Quando um ancestral de uma tabela ou painel de
+ * filtros possui essa camada, os eventos de toque iOS podem cair no lugar
+ * errado — fazendo inputs, selects, botões e links parecerem insensíveis ao
+ * toque, mesmo com z-index aparentemente correto.
+ *
+ * A `@supports (-webkit-touch-callout: none)` só é reconhecida por Safari /
+ * WebKit, portanto não afeta Chrome/Android nem navegadores desktop.
+ *
+ * Estratégia:
+ *  1. Neutralizar `-webkit-overflow-scrolling: touch` nos wrappers de
+ *     tabela e filtros (usa `auto` em vez de `touch`).
+ *  2. Garantir `position: relative` + `z-index` coerente + `pointer-events:
+ *     auto` nesses containers e em seus elementos interativos.
+ *  3. Não alterar `overflow` em si — apenas o comportamento de camada.
+ */
+
+@supports (-webkit-touch-callout: none) {
+
+  /* ─── Wrappers de tabela / scroll horizontal ──────────────────────────── */
+
+  /* CoreShell — .tableWrap */
+  .tableWrap {
+    -webkit-overflow-scrolling: auto;
+    position: relative;
+    z-index: 0;
+    pointer-events: auto;
+  }
+
+  /* Leads — .tableWrapper */
+  .tableWrapper {
+    -webkit-overflow-scrolling: auto;
+    position: relative;
+    z-index: 0;
+    pointer-events: auto;
+  }
+
+  /* VehicleRegistry — card que envolve a tabela de inventário */
+  .inventoryTableCard {
+    -webkit-overflow-scrolling: auto;
+    position: relative;
+    z-index: 0;
+    pointer-events: auto;
+  }
+
+  /* globals.css — painéis laterais de cliente (dense layout) */
+  .client-list-scroll,
+  .client-detail-panel {
+    -webkit-overflow-scrolling: auto;
+  }
+
+  /* globals.css — tabs de progresso de jornada / funil de pipeline */
+  .owner-tabs,
+  .stage-track,
+  .ap-funnel,
+  .pipelineStats {
+    -webkit-overflow-scrolling: auto;
+  }
+
+  /* MissionControl — scroll horizontal do painel de pipeline */
+  .pipelineStats {
+    -webkit-overflow-scrolling: auto;
+    position: relative;
+    z-index: 0;
+    pointer-events: auto;
+  }
+
+  /* CRMAppShell — nav mobile (barra inferior) */
+  .nav {
+    -webkit-overflow-scrolling: auto;
+  }
+
+  /* CRMAppShell — painel "mais" do mobile */
+  .mobileMorePanel {
+    -webkit-overflow-scrolling: auto;
+  }
+
+  /* ─── Painéis de filtros ──────────────────────────────────────────────── */
+
+  /*
+   * Leads / VehicleRegistry — .filterPanel
+   * OpportunityWorkspace e outros módulos — .filterPanel
+   */
+  .filterPanel {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+    -webkit-overflow-scrolling: auto;
+  }
+
+  /* Elementos interativos dentro de qualquer painel de filtros */
+  .filterPanel input,
+  .filterPanel select,
+  .filterPanel button,
+  .filterPanel a,
+  .filterPanel summary,
+  .filterForm input,
+  .filterForm select,
+  .filterForm button,
+  .filterForm a {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+  }
+
+  /* Chips de filtro ativos (Leads) */
+  .filterChip,
+  .clearFilters {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+  }
+
+  /* ─── globals.css — classes de filtro/form genéricas ────────────────── */
+
+  /* .form (VehicleRegistry inline, PartnerRegistry, etc.) */
+  .form input,
+  .form select,
+  .form textarea,
+  .form button {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+  }
+
+  /* ─── Links e ações dentro de células de tabela ──────────────────────── */
+
+  /*
+   * .rowLink::after cria um pseudo-elemento de área clicável que cobre a
+   * linha inteira (inset: 0). No Safari iOS, se o ancestral virou camada
+   * composta, o pseudo-elemento pode capturar toques em vez do elemento
+   * original. Garantir z-index consistente.
+   */
+  .rowLink {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+  }
+
+  .rowLink::after {
+    z-index: 1;
+    pointer-events: auto;
+  }
+
+  /* .actionLink fica acima do rowLink::after */
+  .actionLink {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+  }
+
+  /* CoreShell / globals — links de tabela genéricos */
+  .table a,
+  .leadsTable a {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+  }
+}
