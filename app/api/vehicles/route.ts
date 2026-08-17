@@ -25,11 +25,47 @@ export async function PUT(request: Request) {
  if (!id) return Response.json({ error: "Informe o veículo a ser atualizado." }, { status: 400 });
 
  try {
-  const [existing] = await getDb().select({ id: vehicles.id }).from(vehicles).where(eq(vehicles.id, id)).limit(1);
+  const [existing] = await getDb()
+   .select({
+    id: vehicles.id,
+    brandCode: vehicles.brandCode,
+    modelCode: vehicles.modelCode,
+    yearCode: vehicles.yearCode,
+    brand: vehicles.brand,
+    model: vehicles.model,
+    modelYear: vehicles.modelYear,
+    fuel: vehicles.fuel,
+    fipeCode: vehicles.fipeCode,
+    fipeReferenceMonth: vehicles.fipeReferenceMonth,
+    fipeValue: vehicles.fipeValue,
+   })
+   .from(vehicles)
+   .where(eq(vehicles.id, id))
+   .limit(1);
   if (!existing) return Response.json({ error: "Veículo não encontrado." }, { status: 404 });
 
-  const input = parseVehicleRegistrationInput(await request.json() as Record<string, unknown>);
-  const resolved = await resolveVehicleRegistration(input);
+  const raw = await request.json() as Record<string, unknown>;
+  const rawBrandCode = typeof raw.brandCode === "string" ? raw.brandCode.trim() : String(raw.brandCode ?? "").trim();
+  const rawModelCode = typeof raw.modelCode === "string" ? raw.modelCode.trim() : String(raw.modelCode ?? "").trim();
+  const rawYearCode = typeof raw.yearCode === "string" ? raw.yearCode.trim() : String(raw.yearCode ?? "").trim();
+  const isKeepingExistingFipeSelection =
+   rawBrandCode === existing.brandCode &&
+   rawModelCode === existing.modelCode &&
+   rawYearCode === existing.yearCode;
+
+  const input = parseVehicleRegistrationInput(
+   raw,
+   isKeepingExistingFipeSelection
+    ? {
+      allowedLegacyFipe: {
+       brandCode: existing.brandCode,
+       modelCode: existing.modelCode,
+       yearCode: existing.yearCode,
+      },
+     }
+    : undefined
+  );
+  const resolved = isKeepingExistingFipeSelection ? null : await resolveVehicleRegistration(input);
 
   if (input.plate) {
    const duplicate = await getDb()
@@ -66,13 +102,13 @@ export async function PUT(request: Request) {
     brandCode: input.brandCode,
     modelCode: input.modelCode,
     yearCode: input.yearCode,
-    brand: resolved.quote.brand,
-    model: resolved.quote.model,
-    modelYear: resolved.quote.modelYear,
-    fuel: resolved.quote.fuel,
-    fipeCode: resolved.quote.fipeCode,
-    fipeReferenceMonth: resolved.quote.referenceMonth,
-    fipeValue: resolved.quote.price,
+    brand: resolved ? resolved.quote.brand : existing.brand,
+    model: resolved ? resolved.quote.model : existing.model,
+    modelYear: resolved ? resolved.quote.modelYear : existing.modelYear,
+    fuel: resolved ? resolved.quote.fuel : existing.fuel,
+    fipeCode: resolved ? resolved.quote.fipeCode : existing.fipeCode,
+    fipeReferenceMonth: resolved ? resolved.quote.referenceMonth : existing.fipeReferenceMonth,
+    fipeValue: resolved ? resolved.quote.price : existing.fipeValue,
     mileage: input.mileage,
     color: input.color,
     transmission: input.transmission,

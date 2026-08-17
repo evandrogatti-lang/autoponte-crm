@@ -35,6 +35,9 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
   const [years, setYears] = useState<Option[]>([]);
   const [loading, setLoading] = useState("");
   const [error, setError] = useState("");
+  const hasStrictBrandCode = /^\d+$/.test(value.brandCode);
+  const hasStrictModelCode = /^\d+$/.test(value.modelCode);
+  const hasStrictYearCode = /^\d{4,5}-\d+$/.test(value.yearCode);
 
   useEffect(() => {
     setLoading("brands");
@@ -45,22 +48,37 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
   }, []);
 
   useEffect(() => {
-    if (!value.brandCode || models.length > 0) return;
+    if (!value.brandCode || models.length > 0 || !hasStrictBrandCode) return;
     setLoading("models");
     load<Option[]>(`/api/fipe?resource=models&brand=${encodeURIComponent(value.brandCode)}`)
       .then((items) => setModels(items.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))))
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Não foi possível carregar os modelos."))
       .finally(() => setLoading(""));
-  }, [models.length, value.brandCode]);
+  }, [hasStrictBrandCode, models.length, value.brandCode]);
 
   useEffect(() => {
-    if (!value.brandCode || !value.modelCode || years.length > 0) return;
+    if (!value.brandCode || !value.modelCode || years.length > 0 || !hasStrictBrandCode || !hasStrictModelCode) return;
     setLoading("years");
     load<Option[]>(`/api/fipe?resource=years&brand=${encodeURIComponent(value.brandCode)}&model=${encodeURIComponent(value.modelCode)}`)
       .then((items) => setYears(items))
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Não foi possível carregar os anos."))
       .finally(() => setLoading(""));
-  }, [value.brandCode, value.modelCode, years.length]);
+  }, [hasStrictBrandCode, hasStrictModelCode, value.brandCode, value.modelCode, years.length]);
+
+  const visibleBrands = value.brandCode && !brands.some((item) => item.codigo === value.brandCode)
+    ? [{ codigo: value.brandCode, nome: value.brand || `Marca legado (${value.brandCode})` }, ...brands]
+    : brands;
+  const visibleModels = value.modelCode && !models.some((item) => item.codigo === value.modelCode)
+    ? [{ codigo: value.modelCode, nome: value.model || `Modelo legado (${value.modelCode})` }, ...models]
+    : models;
+  const visibleYears = value.yearCode && !years.some((item) => item.codigo === value.yearCode)
+    ? [{
+      codigo: value.yearCode,
+      nome: value.modelYear
+        ? `${value.modelYear} ${value.fuel ? `- ${value.fuel}` : ""}`.trim()
+        : (hasStrictYearCode ? value.yearCode : `Ano legado (${value.yearCode})`),
+     }, ...years]
+    : years;
 
   async function onBrand(event: ChangeEvent<HTMLSelectElement>) {
     const brandCode = event.target.value;
@@ -101,9 +119,9 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
   return <div className={styles.fipeBlock}>
     {error && <div className={styles.error}>{error}</div>}
     <div className={styles.grid3}>
-      <label><span>Marca *</span><select value={value.brandCode} onChange={onBrand} disabled={disabled || loading === "brands"} required><option value="">{loading === "brands" ? "Carregando..." : "Selecione"}</option>{brands.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
-      <label><span>Modelo / versão *</span><select value={value.modelCode} onChange={onModel} disabled={disabled || !value.brandCode || loading === "models"} required><option value="">{loading === "models" ? "Carregando..." : "Selecione"}</option>{models.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
-      <label><span>Ano / combustível *</span><select value={value.yearCode} onChange={onYear} disabled={disabled || !value.modelCode || loading === "years"} required><option value="">{loading === "years" ? "Carregando..." : "Selecione"}</option>{years.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
+      <label><span>Marca *</span><select value={value.brandCode} onChange={onBrand} disabled={disabled || loading === "brands"} required><option value="">{loading === "brands" ? "Carregando..." : "Selecione"}</option>{visibleBrands.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
+      <label><span>Modelo / versão *</span><select value={value.modelCode} onChange={onModel} disabled={disabled || !value.brandCode || loading === "models"} required><option value="">{loading === "models" ? "Carregando..." : "Selecione"}</option>{visibleModels.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
+      <label><span>Ano / combustível *</span><select value={value.yearCode} onChange={onYear} disabled={disabled || !value.modelCode || loading === "years"} required><option value="">{loading === "years" ? "Carregando..." : "Selecione"}</option>{visibleYears.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
     </div>
     <div className={styles.fipeSummary}>{loading === "quote" ? "Consultando FIPE..." : value.fipeCode ? <><strong>{value.brand} {value.model}</strong><span>{value.modelYear} · {value.fuel} · FIPE {value.fipeCode} · {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value.price)} · {value.referenceMonth}</span></> : "Selecione marca, modelo e ano para preencher a identificação oficial."}</div>
   </div>;
