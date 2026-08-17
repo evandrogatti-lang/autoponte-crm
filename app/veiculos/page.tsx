@@ -63,7 +63,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
     <div className={styles.inventoryListLayout}>
       <section className={styles.inventoryTableCard}>
         {selected.length === 0 ? <div className={styles.empty}>Nenhum veículo encontrado com os filtros atuais.</div> : <table className={styles.inventoryTable}>
-          <thead><tr><th>Veículo</th><th>Origem</th><th>Proprietário / parceiro</th><th>Ano</th><th>Km</th><th>FIPE</th><th>Preço</th><th>Margem</th><th>Tempo em estoque</th><th>Status</th><th>Ações</th></tr></thead>
+          <thead><tr><th>Veículo</th><th>Origem</th><th>Proprietário / parceiro</th><th>Ano</th><th>Km</th><th>FIPE</th><th>Preço</th><th>Margem</th><th>Tempo em estoque</th><th>Status</th></tr></thead>
           <tbody>{selected.map((vehicle) => {
             const asking = vehicle.askingPrice || vehicle.fipeValue || 0;
             const margin = Math.max(0, asking - (vehicle.acquisitionCost || 0));
@@ -162,16 +162,6 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
       </span>
     </td>
 
-    <td>
-      <div className={styles.rowActions}>
-        <Link
-          href={`/veiculos/${vehicle.id}?returnTo=${encodeURIComponent(currentHref)}`}
-          title="Abrir ficha do veículo"
-        >
-          Abrir ficha
-        </Link>
-      </div>
-    </td>
   </tr>
 );
             })}</tbody>

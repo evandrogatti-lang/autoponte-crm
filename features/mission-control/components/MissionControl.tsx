@@ -226,7 +226,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   <p>Minha análise aponta onde você pode ganhar mais hoje:</p>
                   <div className={styles.insightList}>
                     {model.recommendations.length === 0 && <div className={styles.emptyState}>Sem recomendações enquanto não houver oportunidades ativas.</div>}
-                    {model.recommendations.slice(0, 3).map((recommendation, index) => (
+                    {model.recommendations.slice(0, 6).map((recommendation, index) => (
                       <Link href={`/oportunidades/${recommendation.opportunityId}`} className={styles.insight} key={recommendation.opportunityId}>
                         <b>{index + 1}</b>
                         <p>{recommendation.text}</p>
@@ -284,6 +284,5 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
     </main>
   );
 }
-
 
 

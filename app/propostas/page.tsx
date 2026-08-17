@@ -54,7 +54,6 @@ export default async function PropostasPage() {
                 <th>Etapa</th>
                 <th>Probabilidade</th>
                 <th>Próxima ação</th>
-                <th>Ação</th>
               </tr>
             </thead>
 
@@ -85,14 +84,6 @@ export default async function PropostasPage() {
         {row.nextAction || row.nextFollowUp || "—"}
       </td>
 
-      <td>
-        <Link
-          href={`/oportunidades/${row.id}`}
-          className={proposalStyles.actionLink}
-        >
-          Abrir oportunidade
-        </Link>
-      </td>
     </tr>
   ))}
 </tbody>

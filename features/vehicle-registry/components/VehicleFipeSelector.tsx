@@ -44,6 +44,24 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
       .finally(() => setLoading(""));
   }, []);
 
+  useEffect(() => {
+    if (!value.brandCode || models.length > 0) return;
+    setLoading("models");
+    load<Option[]>(`/api/fipe?resource=models&brand=${encodeURIComponent(value.brandCode)}`)
+      .then((items) => setModels(items.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))))
+      .catch((cause) => setError(cause instanceof Error ? cause.message : "Não foi possível carregar os modelos."))
+      .finally(() => setLoading(""));
+  }, [models.length, value.brandCode]);
+
+  useEffect(() => {
+    if (!value.brandCode || !value.modelCode || years.length > 0) return;
+    setLoading("years");
+    load<Option[]>(`/api/fipe?resource=years&brand=${encodeURIComponent(value.brandCode)}&model=${encodeURIComponent(value.modelCode)}`)
+      .then((items) => setYears(items))
+      .catch((cause) => setError(cause instanceof Error ? cause.message : "Não foi possível carregar os anos."))
+      .finally(() => setLoading(""));
+  }, [value.brandCode, value.modelCode, years.length]);
+
   async function onBrand(event: ChangeEvent<HTMLSelectElement>) {
     const brandCode = event.target.value;
     const brand = brands.find((item) => item.codigo === brandCode)?.nome ?? "";
