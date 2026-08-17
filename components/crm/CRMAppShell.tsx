@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -145,6 +145,12 @@ export function CRMAppShell({ children }: { children: ReactNode }) {
   const mobileMoreButtonRef = useRef<HTMLButtonElement | null>(null);
   const mobileMorePanelRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
+  const closeMobileMore = useCallback((restoreFocus = false) => {
+    setMobileMoreOpen(false);
+    if (restoreFocus) {
+      requestAnimationFrame(() => mobileMoreButtonRef.current?.focus());
+    }
+  }, []);
 
   useEffect(() => {
   const handleShortcut = (event: KeyboardEvent) => {
@@ -240,10 +246,18 @@ useEffect(() => {
 
 // Close mobile more panel on route change
 useEffect(() => {
-  // always close on route change (no dependency on mobileMoreOpen)
-  const id = requestAnimationFrame(() => setMobileMoreOpen(false));
+  closeMobileMore(false);
+}, [closeMobileMore, pathname]);
+
+// Move focus to first item when opening mobile more panel
+useEffect(() => {
+  if (!mobileMoreOpen) return;
+  const id = requestAnimationFrame(() => {
+    const firstLink = mobileMorePanelRef.current?.querySelector<HTMLAnchorElement>('a[href]');
+    firstLink?.focus();
+  });
   return () => cancelAnimationFrame(id);
-}, [pathname]);
+}, [mobileMoreOpen]);
 
 // Handle Esc key and click outside when mobileMoreOpen
 useEffect(() => {
@@ -251,9 +265,7 @@ useEffect(() => {
 
   const onKey = (e: KeyboardEvent) => {
     if (e.key === "Escape" || e.key === "Esc") {
-      setMobileMoreOpen(false);
-      // return focus to button
-      requestAnimationFrame(() => mobileMoreButtonRef.current?.focus());
+      closeMobileMore(true);
     }
   };
 
@@ -262,7 +274,7 @@ useEffect(() => {
     const btn = mobileMoreButtonRef.current;
     const target = e.target as Node;
     if (panel && !panel.contains(target) && btn && !btn.contains(target)) {
-      setMobileMoreOpen(false);
+      closeMobileMore(false);
     }
   };
 
@@ -273,14 +285,14 @@ useEffect(() => {
     window.removeEventListener("keydown", onKey);
     window.removeEventListener("click", onClick, true);
   };
-}, [mobileMoreOpen]);
+}, [closeMobileMore, mobileMoreOpen]);
 
 // Close panel on hashchange (e.g., /crm#agenda)
 useEffect(() => {
-  const onHash = () => setMobileMoreOpen(false);
+  const onHash = () => closeMobileMore(false);
   window.addEventListener("hashchange", onHash);
   return () => window.removeEventListener("hashchange", onHash);
-}, []);
+}, [closeMobileMore]);
 
 // Close panel when leaving mobile breakpoint
 useEffect(() => {
@@ -289,7 +301,7 @@ useEffect(() => {
 
   const changeListener = (ev: Event) => {
     const mqlEvent = ev as MediaQueryListEvent;
-    if (!mqlEvent.matches) setMobileMoreOpen(false);
+    if (!mqlEvent.matches) closeMobileMore(false);
   };
 
   // modern browsers: addEventListener
@@ -300,13 +312,20 @@ useEffect(() => {
 
   // legacy: addListener
   if (typeof mq.addListener === "function") {
-    const legacyListener = (e: MediaQueryListEvent) => { if (!e.matches) setMobileMoreOpen(false); };
+    const legacyListener = (e: MediaQueryListEvent) => { if (!e.matches) closeMobileMore(false); };
     mq.addListener(legacyListener);
     return () => mq.removeListener(legacyListener);
   }
 
   return () => {};
-}, []);
+}, [closeMobileMore]);
+
+// Close panel on mobile orientation changes
+useEffect(() => {
+  const onOrientationChange = () => closeMobileMore(false);
+  window.addEventListener("orientationchange", onOrientationChange);
+  return () => window.removeEventListener("orientationchange", onOrientationChange);
+}, [closeMobileMore]);
 
 // primary mobile items are used implicitly by MOBILE_PRIMARY_HREFS; no separate variable needed
 
@@ -381,7 +400,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
             href={item.href}
             className={classNames}
             aria-current={isActive ? "page" : undefined}
-            onClick={() => setMobileMoreOpen(false)}
+            onClick={() => closeMobileMore(false)}
           >
             <span className={styles.icon}>
               <Icon name={item.icon} />
@@ -409,7 +428,13 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
     aria-expanded={mobileMoreOpen}
     aria-controls="mobile-more-panel"
     aria-label={mobileMoreOpen ? "Fechar mais opções" : "Abrir mais opções"}
-    onClick={() => setMobileMoreOpen((s) => !s)}
+    onClick={() => {
+      if (mobileMoreOpen) {
+        closeMobileMore(false);
+        return;
+      }
+      setMobileMoreOpen(true);
+    }}
   >
     <span className={styles.icon}><Icon name="grid" /></span>
     <span>Mais</span>
@@ -430,7 +455,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setMobileMoreOpen(false)}
+                onClick={() => closeMobileMore(false)}
                 className={isActive ? styles.mobileMoreActive : ""}
                 aria-current={isActive ? "page" : undefined}
               >
