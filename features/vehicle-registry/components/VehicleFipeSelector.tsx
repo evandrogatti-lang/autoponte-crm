@@ -5,6 +5,7 @@ import type { ChangeEvent } from "react";
 import styles from "./VehicleRegistry.module.css";
 
 type Option = { codigo: string; nome: string };
+type RawOption = { codigo: string | number; nome: string };
 type Quote = { price: number; brand: string; model: string; modelYear: number; fuel: string; fipeCode: string; referenceMonth: string };
 
 export type VehicleFipeValue = {
@@ -29,6 +30,10 @@ async function load<T>(url: string): Promise<T> {
   return body as T;
 }
 
+function normalizeOptions(items: RawOption[]): Option[] {
+  return items.map((item) => ({ codigo: String(item.codigo), nome: item.nome }));
+}
+
 export function VehicleFipeSelector({ value, onChange, disabled = false }: { value: VehicleFipeValue; onChange: (value: VehicleFipeValue) => void; disabled?: boolean }) {
   const [brands, setBrands] = useState<Option[]>([]);
   const [models, setModels] = useState<Option[]>([]);
@@ -41,8 +46,8 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
 
   useEffect(() => {
     setLoading("brands");
-    load<Option[]>("/api/fipe?resource=brands")
-      .then((items) => setBrands(items.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))))
+    load<RawOption[]>("/api/fipe?resource=brands")
+      .then((items) => setBrands(normalizeOptions(items).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))))
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Não foi possível carregar as marcas."))
       .finally(() => setLoading(""));
   }, []);
@@ -50,8 +55,8 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
   useEffect(() => {
     if (!value.brandCode || models.length > 0 || !hasStrictBrandCode) return;
     setLoading("models");
-    load<Option[]>(`/api/fipe?resource=models&brand=${encodeURIComponent(value.brandCode)}`)
-      .then((items) => setModels(items.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))))
+    load<RawOption[]>(`/api/fipe?resource=models&brand=${encodeURIComponent(value.brandCode)}`)
+      .then((items) => setModels(normalizeOptions(items).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))))
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Não foi possível carregar os modelos."))
       .finally(() => setLoading(""));
   }, [hasStrictBrandCode, models.length, value.brandCode]);
@@ -59,8 +64,8 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
   useEffect(() => {
     if (!value.brandCode || !value.modelCode || years.length > 0 || !hasStrictBrandCode || !hasStrictModelCode) return;
     setLoading("years");
-    load<Option[]>(`/api/fipe?resource=years&brand=${encodeURIComponent(value.brandCode)}&model=${encodeURIComponent(value.modelCode)}`)
-      .then((items) => setYears(items))
+    load<RawOption[]>(`/api/fipe?resource=years&brand=${encodeURIComponent(value.brandCode)}&model=${encodeURIComponent(value.modelCode)}`)
+      .then((items) => setYears(normalizeOptions(items)))
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Não foi possível carregar os anos."))
       .finally(() => setLoading(""));
   }, [hasStrictBrandCode, hasStrictModelCode, value.brandCode, value.modelCode, years.length]);
@@ -87,7 +92,7 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
     setModels([]); setYears([]); setError("");
     if (!brandCode) return;
     setLoading("models");
-    try { setModels((await load<Option[]>(`/api/fipe?resource=models&brand=${encodeURIComponent(brandCode)}`)).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))); }
+    try { setModels(normalizeOptions(await load<RawOption[]>(`/api/fipe?resource=models&brand=${encodeURIComponent(brandCode)}`)).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível carregar os modelos."); }
     finally { setLoading(""); }
   }
@@ -99,7 +104,7 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
     setYears([]); setError("");
     if (!modelCode || !value.brandCode) return;
     setLoading("years");
-    try { setYears(await load<Option[]>(`/api/fipe?resource=years&brand=${encodeURIComponent(value.brandCode)}&model=${encodeURIComponent(modelCode)}`)); }
+    try { setYears(normalizeOptions(await load<RawOption[]>(`/api/fipe?resource=years&brand=${encodeURIComponent(value.brandCode)}&model=${encodeURIComponent(modelCode)}`))); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível carregar os anos."); }
     finally { setLoading(""); }
   }
@@ -119,9 +124,9 @@ export function VehicleFipeSelector({ value, onChange, disabled = false }: { val
   return <div className={styles.fipeBlock}>
     {error && <div className={styles.error}>{error}</div>}
     <div className={styles.grid3}>
-      <label><span>Marca *</span><select value={value.brandCode} onChange={onBrand} disabled={disabled || loading === "brands"} required><option value="">{loading === "brands" ? "Carregando..." : "Selecione"}</option>{visibleBrands.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
-      <label><span>Modelo / versão *</span><select value={value.modelCode} onChange={onModel} disabled={disabled || !value.brandCode || loading === "models"} required><option value="">{loading === "models" ? "Carregando..." : "Selecione"}</option>{visibleModels.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
-      <label><span>Ano / combustível *</span><select value={value.yearCode} onChange={onYear} disabled={disabled || !value.modelCode || loading === "years"} required><option value="">{loading === "years" ? "Carregando..." : "Selecione"}</option>{visibleYears.map((item) => <option key={item.codigo} value={item.codigo}>{item.nome}</option>)}</select></label>
+      <label><span>Marca *</span><select value={value.brandCode} onChange={onBrand} disabled={disabled || loading === "brands"} required><option value="">{loading === "brands" ? "Carregando..." : "Selecione"}</option>{visibleBrands.map((item, index) => <option key={`${item.codigo}:${item.nome}:${index}`} value={item.codigo}>{item.nome}</option>)}</select></label>
+      <label><span>Modelo / versão *</span><select value={value.modelCode} onChange={onModel} disabled={disabled || !value.brandCode || loading === "models"} required><option value="">{loading === "models" ? "Carregando..." : "Selecione"}</option>{visibleModels.map((item, index) => <option key={`${item.codigo}:${item.nome}:${index}`} value={item.codigo}>{item.nome}</option>)}</select></label>
+      <label><span>Ano / combustível *</span><select value={value.yearCode} onChange={onYear} disabled={disabled || !value.modelCode || loading === "years"} required><option value="">{loading === "years" ? "Carregando..." : "Selecione"}</option>{visibleYears.map((item, index) => <option key={`${item.codigo}:${item.nome}:${index}`} value={item.codigo}>{item.nome}</option>)}</select></label>
     </div>
     <div className={styles.fipeSummary}>{loading === "quote" ? "Consultando FIPE..." : value.fipeCode ? <><strong>{value.brand} {value.model}</strong><span>{value.modelYear} · {value.fuel} · FIPE {value.fipeCode} · {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value.price)} · {value.referenceMonth}</span></> : "Selecione marca, modelo e ano para preencher a identificação oficial."}</div>
   </div>;
