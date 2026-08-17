@@ -3,6 +3,7 @@ import { requireChatGPTUser } from "../chatgpt-auth";
 import { getDb } from "../../db";
 import { buyerProfiles, tradeIns } from "../../db/schema";
 import { buildGmailComposeUrl, buildWhatsAppUrl, formatBrazilianPhone, normalizeEmail } from "../../lib/contact";
+import { matchesClientNamePrefix } from "../../lib/clients/search";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -83,17 +84,10 @@ const rows = [...clients.values()].sort(
   (a, b) => b.latestAt.getTime() - a.latestAt.getTime()
 );
 
-const searchTerm = (query.q ?? "").trim().toLowerCase();
+const searchTerm = (query.q ?? "").trim();
 
 const filteredRows = searchTerm
-  ? rows.filter((row) =>
-      [
-        row.name,
-        row.whatsapp,
-        row.email,
-        row.city,
-      ].some((value) => value?.toLowerCase().includes(searchTerm))
-    )
+  ? rows.filter((row) => matchesClientNamePrefix(row.name, searchTerm))
   : rows;
 
 const selected =
@@ -119,7 +113,7 @@ const selected =
     type="search"
     name="q"
     defaultValue={query.q ?? ""}
-    placeholder="Buscar cliente, telefone ou e-mail"
+    placeholder="Buscar por nome"
     aria-label="Buscar clientes"
   />
 </form>

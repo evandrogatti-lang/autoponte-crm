@@ -52,4 +52,8 @@
   .commercialGrid { grid-template-columns: 1fr !important; }
   .actionField,
   .notesField { grid-column: auto; }
+
+  .compactForm :global(.form-footer button) {
+    width: 100%;
+  }
 }

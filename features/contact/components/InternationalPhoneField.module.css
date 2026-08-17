@@ -1,7 +1,8 @@
-.field { min-width: 0; }
+.field { min-width: 0; width: 100%; }
 .row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; }
 .ddiWrap { position: relative; min-width: 0; }
 .ddiWrap > span { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-weight: 800; color: #36504b; pointer-events: none; }
 .ddiWrap input { padding-left: 24px !important; width: 100%; }
+.row > input { min-width: 0; width: 100%; }
 .field small { display: block; margin-top: 5px; color: #6b7b78; font-size: 11px; }
 @media (max-width: 520px) { .row { grid-template-columns: 82px minmax(0, 1fr); } }

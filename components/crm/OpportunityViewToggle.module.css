@@ -1,0 +1,46 @@
+.toggle { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.toggle button { border: 1px solid #dfe6ea; border-radius: 999px; background: #fff; color: #36515d; padding: 8px 14px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.toggle button.activeToggle { border-color: #0d5b52; background: #eaf7f3; color: #0b3b36; box-shadow: inset 0 0 0 1px rgba(13,91,82,.15); }
+.list, .details { display: grid; gap: 8px; }
+.listRow, .detailRow, .card { color: inherit; text-decoration: none; background: #fff; border: 1px solid #dfe6ea; border-radius: 12px; box-shadow: 0 8px 20px rgba(25,51,74,.04); }
+.listRow, .detailRow { display: grid; align-items: center; gap: 14px; padding: 12px 14px; }
+.listRow { grid-template-columns: minmax(160px,1.2fr) minmax(200px,1.4fr) minmax(170px,1fr) minmax(145px,.8fr); }
+.detailRow { grid-template-columns: minmax(180px,1.2fr) minmax(190px,1fr) minmax(180px,1fr) auto; min-height: 112px; }
+.primary { display: grid; min-width: 0; gap: 4px; }
+.primary strong, .action strong, .context strong, .cardContext strong { overflow: hidden; color: #0d2233; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.primary span, .primary small, .action span, .followUp span, .followUp small, .context span, .context small, .cardContext span, .cardContext small { overflow: hidden; color: #647886; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: #647886; font-size: 11px; }
+.stage, .priority { border-radius: 999px; padding: 4px 7px; font-size: 9px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+.stage { background: #eef3f7; color: #36515d; }
+.priority { background: #edf7db; color: #2d4a1b; }
+.meta > strong, .probability { color: #0b5d50; font-size: 13px; }
+.action, .context { display: grid; min-width: 0; gap: 4px; }
+.followUp { display: grid; gap: 4px; }
+.followUp small, .context small { font-size: 10px; }
+.open { border-radius: 8px; background: #0b2a41; color: #fff; padding: 8px 10px; font-size: 11px; font-weight: 900; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,340px)); gap: 14px; }
+.card { display: grid; gap: 12px; padding: 14px; min-height: 205px; }
+.cardHeader { display: flex; justify-content: space-between; gap: 10px; min-width: 0; }
+.cardHeader .primary { flex: 1; }
+.cardContext { display: grid; gap: 4px; padding: 10px; border-radius: 9px; background: #f5f8fa; }
+.cardFooter { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #647886; font-size: 11px; }
+.cardFooter b { color: #174864; font-size: 11px; }
+
+@media (max-width: 900px) {
+  .listRow { grid-template-columns: minmax(150px,1fr) minmax(180px,1fr) minmax(160px,1fr); }
+  .listRow .followUp { display: none; }
+  .detailRow { grid-template-columns: minmax(160px,1fr) minmax(180px,1fr) auto; }
+  .detailRow .context { display: none; }
+}
+
+@media (max-width: 600px) {
+  .listRow, .detailRow { grid-template-columns: 1fr; gap: 8px; }
+  .listRow .meta, .detailRow .meta { order: 2; }
+  .listRow .action, .detailRow .context { display: grid; order: 3; }
+  .listRow .followUp { display: grid; order: 4; }
+  .detailRow .open { justify-self: start; order: 5; }
+  .cards { grid-template-columns: 1fr; }
+  .card { min-height: 0; }
+  .primary strong, .action strong, .context strong, .cardContext strong { white-space: normal; overflow: visible; }
+  .followUp { display: flex; gap: 8px; flex-wrap: wrap; }
+}
