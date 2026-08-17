@@ -126,37 +126,54 @@
     pointer-events: auto;
   }
 
-  /* ─── Links e ações dentro de células de tabela ──────────────────────── */
+  /* ─── Overlay de linha clicável — causa raiz do bug iOS ─────────────── */
 
   /*
-   * .rowLink::after cria um pseudo-elemento de área clicável que cobre a
-   * linha inteira (inset: 0). No Safari iOS, se o ancestral virou camada
-   * composta, o pseudo-elemento pode capturar toques em vez do elemento
-   * original. Garantir z-index consistente.
+   * CAUSA RAIZ: `.rowLink::after` e `.vehicleRowLink::after` usam
+   * `position: absolute; inset: 0` para criar uma área clicável invisível
+   * que cobre a linha inteira. No Safari/iOS, quando o wrapper com overflow
+   * vira camada de composição WebKit, o hitTest desse pseudo-elemento falha:
+   * ele se expande para fora dos limites do <tr> pai e captura toques de
+   * linhas vizinhas — fazendo o toque "cair direto no primeiro item".
+   *
+   * Solução: desativar o pseudo-elemento expansivo no iOS/Safari.
+   * O `<a>` real dentro da célula permanece visível e tocável.
+   * Desktop e Android não são afetados (fora do @supports).
    */
-  .rowLink {
+
+  /* Desativar overlay expansivo — /leads (.rowLink) e /veiculos (.vehicleRowLink) */
+  .rowLink::after,
+  .vehicleRowLink::after,
+  .clickableRow::after,
+  .actionLink::after {
+    content: none;
+    display: none;
+    pointer-events: none;
+  }
+
+  /* Apenas o próprio link/botão recebe toque */
+  .rowLink,
+  .clickableRow,
+  .actionLink,
+  .vehicleRowLink {
     position: relative;
     z-index: 1;
     pointer-events: auto;
+    cursor: pointer;
   }
 
-  .rowLink::after {
-    z-index: 1;
-    pointer-events: auto;
-  }
+  /* ─── Elementos nativos interativos — sempre tocáveis no iOS ─────────── */
 
-  /* .actionLink fica acima do rowLink::after */
-  .actionLink {
-    position: relative;
-    z-index: 3;
-    pointer-events: auto;
-  }
-
-  /* CoreShell / globals — links de tabela genéricos */
-  .table a,
-  .leadsTable a {
-    position: relative;
-    z-index: 3;
+  /*
+   * Garante que inputs, selects, botões, labels, anchors e summary nunca
+   * sejam bloqueados por camadas de composição ou z-index de ancestrais.
+   */
+  input,
+  select,
+  button,
+  summary,
+  label,
+  a {
     pointer-events: auto;
   }
 }
