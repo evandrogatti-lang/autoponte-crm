@@ -24,6 +24,21 @@
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease;
+}
+
+.pageActions a:hover,
+.pageActions button:hover {
+  background: #f3f7f9;
+}
+
+.pageActions a:focus-visible,
+.pageActions button:focus-visible,
+.settingsForm button:focus-visible,
+.settingsForm input:focus-visible,
+.settingsForm select:focus-visible {
+  outline: 3px solid rgba(79, 140, 255, 0.45);
+  outline-offset: 2px;
 }
 
 @media (max-width: 760px) {

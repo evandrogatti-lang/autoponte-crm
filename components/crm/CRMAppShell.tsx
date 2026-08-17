@@ -340,7 +340,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
               aria-label="Busca global"
               placeholder="Buscar clientes, veículos, placas..."
             />
-            <button type="submit" aria-label="Buscar" title="Buscar">🔍</button>
+            <button type="submit" aria-label="Buscar" title="Buscar"><span aria-hidden="true">🔍</span></button>
           </form>
         </section>
       </div>,
@@ -432,6 +432,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
                 href={item.href}
                 onClick={() => setMobileMoreOpen(false)}
                 className={isActive ? styles.mobileMoreActive : ""}
+                aria-current={isActive ? "page" : undefined}
               >
                 <span className={styles.icon}><Icon name={item.icon} /></span>
                 <span>{item.label}</span>
@@ -463,7 +464,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
                  method="GET"
                 action="/busca"
 >
-          <span>⌕</span>
+          <span aria-hidden="true">⌕</span>
 
               <input
                 ref={globalSearchRef}
@@ -504,5 +505,3 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
     {mobileSearchModal}
   </>;
 }
-
-
