@@ -35,7 +35,10 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
   const selected = filterVehicleList(scopedRows, filters, partnerMap);
   const activeRows = rows.filter((vehicle) => !["sold", "unavailable"].includes(vehicle.status));
   const totalValue = activeRows.reduce((sum, vehicle) => sum + (vehicle.askingPrice || vehicle.fipeValue || 0), 0);
-  const totalMargin = activeRows.reduce((sum, vehicle) => sum + Math.max(0, (vehicle.askingPrice || 0) - (vehicle.acquisitionCost || 0)), 0);
+  const totalMargin = activeRows.reduce((sum, vehicle) => {
+    const totalCost = (vehicle.acquisitionCost || 0) + (vehicle.additionalCosts || 0);
+    return sum + ((vehicle.askingPrice || 0) - totalCost);
+  }, 0);
   const agingValues = activeRows.map((vehicle) => daysSince(vehicle.listingDate || vehicle.acquisitionDate || vehicle.createdAt)).filter((value): value is number => value !== null);
   const averageAging = agingValues.length ? Math.round(agingValues.reduce((sum, value) => sum + value, 0) / agingValues.length) : 0;
   const highLiquidity = activeRows.filter((vehicle) => (daysSince(vehicle.listingDate || vehicle.createdAt) ?? 999) <= 30).length;
@@ -66,8 +69,9 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
           <thead><tr><th>Veículo</th><th>Origem</th><th>Proprietário / parceiro</th><th>Ano</th><th>Km</th><th>FIPE</th><th>Preço</th><th>Margem</th><th>Tempo em estoque</th><th>Status</th></tr></thead>
           <tbody>{selected.map((vehicle) => {
             const asking = vehicle.askingPrice || vehicle.fipeValue || 0;
-            const margin = Math.max(0, asking - (vehicle.acquisitionCost || 0));
-            const marginPct = vehicle.acquisitionCost ? (margin / vehicle.acquisitionCost) * 100 : null;
+            const totalCost = (vehicle.acquisitionCost || 0) + (vehicle.additionalCosts || 0);
+            const margin = asking - totalCost;
+            const marginPct = asking > 0 ? (margin / asking) * 100 : null;
             const aging = daysSince(vehicle.listingDate || vehicle.acquisitionDate || vehicle.createdAt);
             const owner = vehicle.inventoryScope === "partner" ? partnerMap.get(vehicle.partnerId) || vehicle.ownerName || "Parceiro não informado" : vehicle.ownerName || "AutoPonte Veículos";
               return (

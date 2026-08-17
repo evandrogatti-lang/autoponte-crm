@@ -11,7 +11,7 @@ export async function POST(request:Request){
  try{const input=parseVehicleRegistrationInput(await request.json() as Record<string,unknown>);const resolved=await resolveVehicleRegistration(input);
  if(input.plate){const duplicate=await getDb().select({id:vehicles.id}).from(vehicles).where(eq(vehicles.plate,input.plate)).limit(1);if(duplicate.length)return Response.json({error:"Esta placa já está cadastrada."},{status:409});}
  if(input.partnerId){const [partner]=await getDb().select({id:partners.id,status:partners.status}).from(partners).where(eq(partners.id,input.partnerId)).limit(1);if(!partner||partner.status!=="active")throw new Error("Parceiro inválido ou inativo.");}
- const id=crypto.randomUUID();await getDb().insert(vehicles).values({id,inventoryScope:input.inventoryScope,partnerId:input.partnerId,sourceType:input.sourceType,status:input.status,plate:input.plate,chassis:input.chassis,stockCode:input.stockCode,brandCode:input.brandCode,modelCode:input.modelCode,yearCode:input.yearCode,brand:resolved.quote.brand,model:resolved.quote.model,modelYear:resolved.quote.modelYear,fuel:resolved.quote.fuel,fipeCode:resolved.quote.fipeCode,fipeReferenceMonth:resolved.quote.referenceMonth,fipeValue:resolved.quote.price,mileage:input.mileage,color:input.color,transmission:input.transmission,bodyType:input.bodyType,doors:input.doors,engine:input.engine,power:input.power,renavam:input.renavam,registrationState:input.registrationState,documentStatus:input.documentStatus,vehicleCondition:input.vehicleCondition,inspectionStatus:input.inspectionStatus,acquisitionDate:input.acquisitionDate,listingDate:input.listingDate,optionalItems:input.optionalItems,city:input.city,ownerName:input.ownerName,askingPrice:input.askingPrice,acquisitionCost:input.acquisitionCost,notes:input.notes,updatedAt:new Date()});
+ const id=crypto.randomUUID();await getDb().insert(vehicles).values({id,inventoryScope:input.inventoryScope,partnerId:input.partnerId,sourceType:input.sourceType,status:input.status,plate:input.plate,chassis:input.chassis,stockCode:input.stockCode,brandCode:input.brandCode,modelCode:input.modelCode,yearCode:input.yearCode,brand:resolved.quote.brand,model:resolved.quote.model,modelYear:resolved.quote.modelYear,fuel:resolved.quote.fuel,fipeCode:resolved.quote.fipeCode,fipeReferenceMonth:resolved.quote.referenceMonth,fipeValue:resolved.quote.price,mileage:input.mileage,color:input.color,transmission:input.transmission,bodyType:input.bodyType,doors:input.doors,engine:input.engine,power:input.power,renavam:input.renavam,registrationState:input.registrationState,documentStatus:input.documentStatus,vehicleCondition:input.vehicleCondition,inspectionStatus:input.inspectionStatus,acquisitionDate:input.acquisitionDate||undefined,listingDate:input.listingDate||undefined,optionalItems:input.optionalItems,city:input.city,ownerName:input.ownerName,askingPrice:input.askingPrice,acquisitionCost:input.acquisitionCost,additionalCosts:input.additionalCosts,notes:input.notes,updatedAt:new Date()});
  revalidatePath("/veiculos");revalidatePath("/parceiros");return Response.json({id,href:`/veiculos/${id}`},{status:201});
  }catch(error){console.error("vehicle registration failed",error);return Response.json({error:error instanceof Error?error.message:"Não foi possível cadastrar o veículo."},{status:400});}
 }
@@ -121,13 +121,14 @@ export async function PUT(request: Request) {
     documentStatus: input.documentStatus,
     vehicleCondition: input.vehicleCondition,
     inspectionStatus: input.inspectionStatus,
-    acquisitionDate: input.acquisitionDate,
-    listingDate: input.listingDate,
+    acquisitionDate: input.acquisitionDate || undefined,
+    listingDate: input.listingDate || undefined,
     optionalItems: input.optionalItems,
     city: input.city,
     ownerName: input.ownerName,
     askingPrice: input.askingPrice,
     acquisitionCost: input.acquisitionCost,
+    additionalCosts: input.additionalCosts,
     notes: input.notes,
     updatedAt: new Date(),
    })

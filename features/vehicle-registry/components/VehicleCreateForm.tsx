@@ -1,16 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   emptyVehicleFipeValue,
   type VehicleFipeValue,
   VehicleFipeSelector,
 } from "./VehicleFipeSelector";
+import { VehicleOptionalsField } from "./VehicleOptionalsField";
+import { BR_STATES, findStateByInput, normalizeUf, stateLabel } from "../../../lib/locations/br-locations";
 import styles from "./VehicleRegistry.module.css";
 
 type PartnerOption = { id: string; name: string };
+type CityResponse = { uf: string; cities: string[] };
+
+function parseMoneyValue(value: string) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric >= 0 ? Math.round(numeric) : 0;
+}
+const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 export type VehicleFormInitialData = {
   inventoryScope: "autoponte" | "partner";
@@ -39,6 +48,7 @@ export type VehicleFormInitialData = {
   ownerName: string;
   askingPrice: number;
   acquisitionCost: number;
+  additionalCosts: number;
   notes: string;
   fipe: VehicleFipeValue;
 };
@@ -70,6 +80,7 @@ const defaultInitialData: VehicleFormInitialData = {
   ownerName: "",
   askingPrice: 0,
   acquisitionCost: 0,
+  additionalCosts: 0,
   notes: "",
   fipe: emptyVehicleFipeValue,
 };
@@ -89,8 +100,14 @@ export function VehicleCreateForm({
 }) {
   const router = useRouter();
   const params = useSearchParams();
+  const ufListId = useId();
+  const cityListId = useId();
+
   const initialPartner = params.get("partner") || initialData.partnerId || "";
   const returnTo = params.get("returnTo") || "";
+  const initialUf = normalizeUf(initialData.registrationState);
+  const initialUfState = BR_STATES.find((item) => item.code === initialUf);
+
   const [fipe, setFipe] = useState(initialData.fipe);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -100,12 +117,93 @@ export function VehicleCreateForm({
   );
   const [partnerId, setPartnerId] = useState(initialPartner);
 
+  const [registrationState, setRegistrationState] = useState(initialUfState?.code ?? initialUf);
+  const [ufInput, setUfInput] = useState(initialUfState ? `${initialUfState.code} - ${initialUfState.name}` : initialUf);
+  const [cityInput, setCityInput] = useState(initialData.city);
+  const [cities, setCities] = useState<string[]>([]);
+  const [cityLoading, setCityLoading] = useState(false);
+  const [cityError, setCityError] = useState("");
+
+  const [askingPriceInput, setAskingPriceInput] = useState(
+    initialData.askingPrice > 0 ? String(initialData.askingPrice) : ""
+  );
+  const [acquisitionCostInput, setAcquisitionCostInput] = useState(
+    initialData.acquisitionCost > 0 ? String(initialData.acquisitionCost) : ""
+  );
+  const [additionalCostsInput, setAdditionalCostsInput] = useState(
+    initialData.additionalCosts > 0 ? String(initialData.additionalCosts) : ""
+  );
+
   const sourceDefault = useMemo(
     () => (scope === "partner" ? "partner_inventory" : "autoponte_inventory"),
     [scope]
   );
   const computedCancelHref =
     cancelHref || (mode === "edit" && vehicleId ? `/veiculos/${vehicleId}` : "/veiculos");
+
+  const askingPrice = parseMoneyValue(askingPriceInput);
+  const acquisitionCost = parseMoneyValue(acquisitionCostInput);
+  const additionalCosts = parseMoneyValue(additionalCostsInput);
+  const totalCost = acquisitionCost + additionalCosts;
+  const grossMargin = askingPrice - totalCost;
+  const marginPercent = askingPrice > 0 ? (grossMargin / askingPrice) * 100 : null;
+
+  useEffect(() => {
+    if (!registrationState) {
+      setCities([]);
+      setCityError("");
+      return;
+    }
+    let active = true;
+    setCityLoading(true);
+    setCityError("");
+    fetch(`/api/locations/cities?uf=${encodeURIComponent(registrationState)}&limit=700`)
+      .then(async (response) => {
+        const body = (await response.json()) as Partial<CityResponse> & { error?: string };
+        if (!response.ok) throw new Error(body.error || "Não foi possível carregar as cidades.");
+        return body.cities ?? [];
+      })
+      .then((items) => {
+        if (!active) return;
+        setCities(items);
+      })
+      .catch((cause) => {
+        if (!active) return;
+        setCityError(cause instanceof Error ? cause.message : "Não foi possível carregar as cidades.");
+      })
+      .finally(() => {
+        if (!active) return;
+        setCityLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [registrationState]);
+
+  const suggestedCities = useMemo(() => {
+    const query = cityInput
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLocaleLowerCase("pt-BR")
+      .trim();
+    if (!query) return cities.slice(0, 120);
+    return cities
+      .filter((city) =>
+        city
+          .normalize("NFD")
+          .replace(/\p{Diacritic}/gu, "")
+          .toLocaleLowerCase("pt-BR")
+          .startsWith(query)
+      )
+      .slice(0, 120);
+  }, [cities, cityInput]);
+
+  function resolveUf(inputValue: string) {
+    const state = findStateByInput(inputValue);
+    if (!state) return;
+    setRegistrationState(state.code);
+    setUfInput(`${state.code} - ${state.name}`);
+  }
 
   async function submit(formData: FormData) {
     setSaving(true);
@@ -306,12 +404,62 @@ export function VehicleCreateForm({
             <input name="renavam" inputMode="numeric" defaultValue={initialData.renavam} />
           </label>
           <label>
+            <span>Proprietário / loja</span>
+            <input name="ownerName" defaultValue={initialData.ownerName} />
+          </label>
+        </div>
+      </section>
+
+      <section className={styles.card}>
+        <header>
+          <div>
+            <span>LOCALIZAÇÃO</span>
+            <h2>UF e cidade do veículo</h2>
+          </div>
+        </header>
+        <div className={styles.grid4}>
+          <label>
             <span>UF</span>
-            <input name="registrationState" maxLength={2} defaultValue={initialData.registrationState} />
+            <input
+              list={ufListId}
+              value={ufInput}
+              onChange={(event) => {
+                const value = event.target.value;
+                setUfInput(value);
+                resolveUf(value);
+              }}
+              onBlur={(event) => resolveUf(event.target.value)}
+              placeholder="SP - São Paulo"
+              disabled={saving}
+            />
+            <datalist id={ufListId}>
+              {BR_STATES.map((state) => (
+                <option key={state.code} value={`${state.code} - ${state.name}`} />
+              ))}
+            </datalist>
+            <input type="hidden" name="registrationState" value={registrationState} />
           </label>
           <label>
             <span>Cidade</span>
-            <input name="city" defaultValue={initialData.city} />
+            <input
+              list={cityListId}
+              name="city"
+              value={cityInput}
+              onChange={(event) => setCityInput(event.target.value)}
+              placeholder={registrationState ? "Digite as primeiras letras" : "Selecione uma UF primeiro"}
+              disabled={saving || !registrationState}
+            />
+            <datalist id={cityListId}>
+              {suggestedCities.map((city) => (
+                <option key={city} value={city} />
+              ))}
+            </datalist>
+            {cityLoading ? <small>Carregando cidades...</small> : null}
+            {cityError ? <small className={styles.inlineError}>{cityError}</small> : null}
+          </label>
+          <label>
+            <span>UF selecionada</span>
+            <input value={registrationState ? stateLabel(registrationState) : "Não selecionada"} readOnly />
           </label>
         </div>
       </section>
@@ -352,17 +500,17 @@ export function VehicleCreateForm({
             </select>
           </label>
           <label>
-            <span>Data de aquisição</span>
+            <span>Data de entrada / aquisição</span>
             <input name="acquisitionDate" type="date" defaultValue={initialData.acquisitionDate} />
           </label>
           <label>
-            <span>Data de anúncio</span>
+            <span>Data do anúncio</span>
             <input name="listingDate" type="date" defaultValue={initialData.listingDate} />
           </label>
         </div>
         <label className={styles.full}>
           <span>Opcionais e equipamentos</span>
-          <textarea name="optionalItems" rows={2} defaultValue={initialData.optionalItems} />
+          <VehicleOptionalsField initialValue={initialData.optionalItems} disabled={saving} />
         </label>
       </section>
 
@@ -370,17 +518,19 @@ export function VehicleCreateForm({
         <header>
           <div>
             <span>COMERCIAL</span>
-            <h2>Valores e responsável</h2>
+            <h2>Valores e margem</h2>
           </div>
         </header>
         <div className={styles.grid4}>
           <label>
-            <span>Proprietário / loja</span>
-            <input name="ownerName" defaultValue={initialData.ownerName} />
-          </label>
-          <label>
-            <span>Preço pedido</span>
-            <input name="askingPrice" type="number" min="0" defaultValue={initialData.askingPrice || ""} />
+            <span>Preço de venda</span>
+            <input
+              name="askingPrice"
+              type="number"
+              min="0"
+              value={askingPriceInput}
+              onChange={(event) => setAskingPriceInput(event.target.value)}
+            />
           </label>
           <label>
             <span>Custo de aquisição</span>
@@ -388,12 +538,35 @@ export function VehicleCreateForm({
               name="acquisitionCost"
               type="number"
               min="0"
-              defaultValue={initialData.acquisitionCost || ""}
+              value={acquisitionCostInput}
+              onChange={(event) => setAcquisitionCostInput(event.target.value)}
             />
+          </label>
+          <label>
+            <span>Custos adicionais</span>
+            <input
+              name="additionalCosts"
+              type="number"
+              min="0"
+              value={additionalCostsInput}
+              onChange={(event) => setAdditionalCostsInput(event.target.value)}
+            />
+          </label>
+          <label>
+            <span>Custo total</span>
+            <input value={money.format(totalCost)} readOnly />
+          </label>
+          <label>
+            <span>Margem bruta estimada</span>
+            <input value={money.format(grossMargin)} readOnly />
+          </label>
+          <label>
+            <span>Margem %</span>
+            <input value={marginPercent === null ? "—" : `${marginPercent.toFixed(2)}%`} readOnly />
           </label>
         </div>
         <label className={styles.full}>
-          <span>Observações</span>
+          <span>Observações comerciais</span>
           <textarea name="notes" rows={3} defaultValue={initialData.notes} />
         </label>
       </section>

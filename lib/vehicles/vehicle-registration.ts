@@ -11,7 +11,7 @@ export type VehicleRegistrationInput = {
   mileage:number; color:string; transmission:string; bodyType:string; doors:number; engine:string; power:string;
   renavam:string; registrationState:string; documentStatus:string; vehicleCondition:string; inspectionStatus:string;
   acquisitionDate:string; listingDate:string; optionalItems:string; city:string; ownerName:string;
-  askingPrice:number; acquisitionCost:number; notes:string;
+  askingPrice:number; acquisitionCost:number; additionalCosts:number; notes:string;
 };
 type ParseVehicleRegistrationOptions = {
   allowedLegacyFipe?: {
@@ -23,6 +23,7 @@ type ParseVehicleRegistrationOptions = {
 const cleanText=(value:unknown,max=180)=>typeof value==="string"?value.trim().slice(0,max):"";
 const cleanMoney=(value:unknown)=>{const numeric=Number(value??0);return Number.isFinite(numeric)&&numeric>=0?Math.round(numeric):0};
 const cleanMileage=(value:unknown)=>{const numeric=Number(value??0);if(!Number.isFinite(numeric)||numeric<0||numeric>2_000_000)throw new Error("Quilometragem inválida.");return Math.round(numeric)};
+const cleanDate=(value:unknown)=>{const raw=cleanText(value,10);if(!raw)return "";if(!/^\d{4}-\d{2}-\d{2}$/.test(raw)||Number.isNaN(new Date(`${raw}T00:00:00Z`).getTime()))throw new Error("Data inválida.");return raw};
 export function normalizePlate(value:unknown){const plate=cleanText(value,8).toUpperCase().replace(/[^A-Z0-9]/g,"");if(plate&&!/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(plate))throw new Error("Placa inválida. Use o padrão ABC1D23 ou ABC1234.");return plate}
 export function parseVehicleRegistrationInput(
   raw: Record<string, unknown>,
@@ -45,6 +46,6 @@ export function parseVehicleRegistrationInput(
         yearCode === options.allowedLegacyFipe.yearCode
       : false;
   if(!hasStrictFipeCodes && !hasAllowedLegacyFipe)throw new Error("Selecione marca, modelo e ano pela FIPE.");
-  return {inventoryScope,partnerId:inventoryScope==="partner"?partnerId:"",sourceType,status,plate:normalizePlate(raw.plate),chassis:cleanText(raw.chassis,24).toUpperCase().replace(/[^A-Z0-9]/g,""),stockCode:cleanText(raw.stockCode,40).toUpperCase(),brandCode,modelCode,yearCode,mileage:cleanMileage(raw.mileage),color:cleanText(raw.color,60),transmission:cleanText(raw.transmission,40),bodyType:cleanText(raw.bodyType,60),doors:Math.max(0,Math.min(8,Math.round(Number(raw.doors??0)||0))),engine:cleanText(raw.engine,80),power:cleanText(raw.power,40),renavam:cleanText(raw.renavam,20).replace(/\D/g,""),registrationState:cleanText(raw.registrationState,2).toUpperCase(),documentStatus:cleanText(raw.documentStatus,40)||"regular",vehicleCondition:cleanText(raw.vehicleCondition,40)||"good",inspectionStatus:cleanText(raw.inspectionStatus,40)||"pending",acquisitionDate:cleanText(raw.acquisitionDate,10),listingDate:cleanText(raw.listingDate,10),optionalItems:cleanText(raw.optionalItems,2000),city:cleanText(raw.city,100),ownerName:cleanText(raw.ownerName,160),askingPrice:cleanMoney(raw.askingPrice),acquisitionCost:cleanMoney(raw.acquisitionCost),notes:cleanText(raw.notes,2000)};
+  return {inventoryScope,partnerId:inventoryScope==="partner"?partnerId:"",sourceType,status,plate:normalizePlate(raw.plate),chassis:cleanText(raw.chassis,24).toUpperCase().replace(/[^A-Z0-9]/g,""),stockCode:cleanText(raw.stockCode,40).toUpperCase(),brandCode,modelCode,yearCode,mileage:cleanMileage(raw.mileage),color:cleanText(raw.color,60),transmission:cleanText(raw.transmission,40),bodyType:cleanText(raw.bodyType,60),doors:Math.max(0,Math.min(8,Math.round(Number(raw.doors??0)||0))),engine:cleanText(raw.engine,80),power:cleanText(raw.power,40),renavam:cleanText(raw.renavam,20).replace(/\D/g,""),registrationState:cleanText(raw.registrationState,2).toUpperCase(),documentStatus:cleanText(raw.documentStatus,40)||"regular",vehicleCondition:cleanText(raw.vehicleCondition,40)||"good",inspectionStatus:cleanText(raw.inspectionStatus,40)||"pending",acquisitionDate:cleanDate(raw.acquisitionDate),listingDate:cleanDate(raw.listingDate),optionalItems:cleanText(raw.optionalItems,4000),city:cleanText(raw.city,100),ownerName:cleanText(raw.ownerName,160),askingPrice:cleanMoney(raw.askingPrice),acquisitionCost:cleanMoney(raw.acquisitionCost),additionalCosts:cleanMoney(raw.additionalCosts),notes:cleanText(raw.notes,2000)};
 }
 export async function resolveVehicleRegistration(input:VehicleRegistrationInput){const quote=await getFipeQuote(input.brandCode,input.modelCode,input.yearCode);return {...input,quote}}

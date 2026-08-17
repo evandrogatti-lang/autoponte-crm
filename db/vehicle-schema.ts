@@ -38,6 +38,7 @@ export const vehicles = pgTable("vehicles", {
   ownerName: text("owner_name").notNull().default(""),
   askingPrice: integer("asking_price").notNull().default(0),
   acquisitionCost: integer("acquisition_cost").notNull().default(0),
+  additionalCosts: integer("additional_costs").notNull().default(0),
   notes: text("notes").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

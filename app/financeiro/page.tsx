@@ -30,7 +30,7 @@ export default async function FinanceiroPage() {
   );
 
   const cost = active.reduce(
-    (total, vehicle) => total + (vehicle.acquisitionCost || 0),
+    (total, vehicle) => total + (vehicle.acquisitionCost || 0) + (vehicle.additionalCosts || 0),
     0
   );
 
