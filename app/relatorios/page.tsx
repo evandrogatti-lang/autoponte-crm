@@ -6,6 +6,7 @@ import {
   CoreShell,
   coreStyles as styles,
 } from "../../components/crm/CoreShell";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export default async function RelatoriosPage() {
       activeHref="/relatorios"
       title="Relatórios"
       subtitle="Visão consolidada dos principais indicadores da operação."
-      actions={<a href="/oportunidades">Funil comercial</a>}
+      actions={<Link href="/oportunidades">Funil comercial</Link>}
     >
       <div className={styles.metrics}>
         <div className={styles.metric}>

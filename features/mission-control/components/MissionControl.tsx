@@ -247,7 +247,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                     <Icons.Clock />
                     <span><h2>AGENDA DE HOJE</h2></span>
                   </div>
-                  <a href="/crm#agenda">Ir para agenda de hoje</a>
+                  <Link href="/crm#agenda">Ir para agenda de hoje</Link>
                 </header>
                 <div className={styles.agenda}>
                   {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma ação agendada.</div>}
@@ -284,7 +284,6 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
     </main>
   );
 }
-
 
 
 

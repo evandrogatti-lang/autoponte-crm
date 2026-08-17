@@ -7,6 +7,7 @@ import { InventoryShell } from "../../features/vehicle-registry/components/Inven
 import { VehicleListFilters } from "../../features/vehicle-registry/components/VehicleListFilters";
 import { activeVehicleFilterChips, buildVehicleListHref, filterVehicleList, type VehicleFilterParams } from "../../features/vehicle-registry/vehicle-list-filters";
 import styles from "../../features/vehicle-registry/components/VehicleRegistry.module.css";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -41,11 +42,11 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
 
   const currentHref = buildVehicleListHref("/veiculos", { ...filters, scope });
   const clearHref = scope === "partner" ? "/veiculos?scope=partner" : "/veiculos";
-  const tab = (value: string, label: string) => <a data-active={scope === value} href={buildVehicleListHref("/veiculos", { ...filters, scope: value })}>{label}</a>;
-  return <InventoryShell breadcrumb={<><a href="/crm">Mission Control</a><b>›</b><span>Estoque</span></>}>
+  const tab = (value: string, label: string) => <Link data-active={scope === value} href={buildVehicleListHref("/veiculos", { ...filters, scope: value })}>{label}</Link>;
+  return <InventoryShell breadcrumb={<><Link href="/crm">Mission Control</Link><b>›</b><span>Estoque</span></>}>
     <div className={styles.pageHeader}>
       <div><h1>Estoque de Veículos</h1><p>Gerencie o estoque próprio, veículos de parceiros, consignados e trocas.</p></div>
-      <div className={styles.pageActions}><a href="/crm">← Voltar ao CRM</a><a href="/parceiros">Cadastrar parceiro</a><a className={styles.primaryAction} href="/veiculos/novo">＋ Cadastrar veículo</a></div>
+      <div className={styles.pageActions}><Link href="/crm">← Voltar ao CRM</Link><Link href="/parceiros">Cadastrar parceiro</Link><Link className={styles.primaryAction} href="/veiculos/novo">＋ Cadastrar veículo</Link></div>
     </div>
     <section className={styles.inventoryToolbar}>
       <nav className={styles.inventoryTabs}>{tab("all", "Todos")}{tab("autoponte", "AutoPonte")}{tab("partner", "Parceiros")}{tab("consignment", "Consignados")}{tab("trade", "Trocas")}{tab("reserved", "Reservados")}{tab("sold", "Vendidos")}</nav>
@@ -79,7 +80,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
         </div>
 
         <div>
-          <a
+          <Link
             href={`/veiculos/${vehicle.id}?returnTo=${encodeURIComponent(currentHref)}`}
             title="Abrir ficha do veículo"
             className={styles.vehicleRowLink}
@@ -87,7 +88,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
             <strong>
               {vehicle.brand} {vehicle.model}
             </strong>
-          </a>
+          </Link>
 
           <small>
             {vehicle.plate || vehicle.stockCode || "Sem placa"} ·{" "}
@@ -163,12 +164,12 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
 
     <td>
       <div className={styles.rowActions}>
-        <a
+        <Link
           href={`/veiculos/${vehicle.id}?returnTo=${encodeURIComponent(currentHref)}`}
           title="Abrir ficha do veículo"
         >
           Abrir ficha
-        </a>
+        </Link>
       </div>
     </td>
   </tr>

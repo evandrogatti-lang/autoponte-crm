@@ -48,7 +48,11 @@ useEffect(() => {
 
     return (
       <div className={styles.workspace}>
-        
+        {breadcrumb ? (
+          <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+            {breadcrumb}
+          </nav>
+        ) : null}
 
         <div className={styles.content}>{children}</div>
       </div>

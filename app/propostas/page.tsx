@@ -7,6 +7,7 @@ import {
   coreStyles as styles,
 } from "../../components/crm/CoreShell";
 import proposalStyles from "./Propostas.module.css";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export default async function PropostasPage() {
       activeHref="/propostas"
       title="Propostas"
       subtitle="Oportunidades em negociação que podem gerar propostas comerciais."
-      actions={<a href="/oportunidades">Abrir funil comercial</a>}
+      actions={<Link href="/oportunidades">Abrir funil comercial</Link>}
     >
       <h2 className={styles.sectionTitle}>Oportunidades elegíveis</h2>
 
@@ -61,12 +62,12 @@ export default async function PropostasPage() {
   {proposalCandidates.map((row) => (
     <tr key={row.id} className={proposalStyles.clickableRow}>
       <td>
-        <a
+        <Link
           href={`/oportunidades/${row.id}`}
           className={proposalStyles.rowLink}
         >
           <strong>{row.name}</strong>
-        </a>
+        </Link>
 
         <br />
         <small>{row.city}</small>
@@ -85,12 +86,12 @@ export default async function PropostasPage() {
       </td>
 
       <td>
-        <a
+        <Link
           href={`/oportunidades/${row.id}`}
           className={proposalStyles.actionLink}
         >
           Abrir oportunidade
-        </a>
+        </Link>
       </td>
     </tr>
   ))}

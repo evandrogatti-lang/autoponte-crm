@@ -5,6 +5,7 @@ import { requireChatGPTUser } from "../chatgpt-auth";
 import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
 import { InventoryShell } from "../../features/vehicle-registry/components/InventoryShell";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -197,7 +198,7 @@ export default async function LeadsPage({
           </div>
 
           <div style={{ display: "flex", gap: "10px" }}>
-            <a
+            <Link
               href="/crm"
               style={{
                 textDecoration: "none",
@@ -208,9 +209,9 @@ export default async function LeadsPage({
               }}
             >
               ← Voltar ao CRM
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/oportunidades/nova"
               style={{
                 textDecoration: "none",
@@ -222,7 +223,7 @@ export default async function LeadsPage({
               }}
             >
               + Novo potencial cliente
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -346,9 +347,9 @@ export default async function LeadsPage({
                 const params = new URLSearchParams(canonicalParams);
                 params.delete(key);
                 const href = params.size ? `/leads?${params}` : "/leads";
-                return <a key={key} href={href} className={styles.filterChip}>{filterLabel(key, filters[key])} <span aria-hidden="true">×</span></a>;
+                return <Link key={key} href={href} className={styles.filterChip}>{filterLabel(key, filters[key])} <span aria-hidden="true">×</span></Link>;
               })}
-              <a href="/leads" className={styles.clearFilters}>Limpar filtros</a>
+              <Link href="/leads" className={styles.clearFilters}>Limpar filtros</Link>
             </div>
           )}
 
@@ -389,12 +390,12 @@ export default async function LeadsPage({
                   {filteredRows.map((lead) => (
               <tr key={lead.id} className={styles.clickableRow}>
                   <td style={tdStyle}>
-                    <a
+                    <Link
                   href={`/oportunidades/${lead.id}?returnTo=${encodeURIComponent(currentHref)}`}
                   className={styles.rowLink}
                 >
                   {lead.name}
-               </a>
+               </Link>
 
                         <small style={smallStyle}>
                           {lead.whatsapp || lead.email || "Sem contato"}

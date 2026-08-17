@@ -6,6 +6,7 @@ import { vehicles } from "../../../db/vehicle-schema";
 import { partners } from "../../../db/partner-schema";
 import { InventoryShell } from "../../../features/vehicle-registry/components/InventoryShell";
 import styles from "../../../features/vehicle-registry/components/VehicleRegistry.module.css";
+import Link from "next/link";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const sourceLabels: Record<string, string> = { dealer_inventory: "Estoque de loja", consignment: "Consignação", trade_in: "Veículo de troca", autoponte_inventory: "Estoque AutoPonte", partner_inventory: "Estoque parceiro", new_vehicle: "Veículo 0 km" };
@@ -22,8 +23,8 @@ export default async function VehicleDetailPage({ params, searchParams }: { para
   const margin = Math.max(0, asking - (vehicle.acquisitionCost || 0));
   const fallbackHref = `/veiculos?scope=${vehicle.inventoryScope === "partner" ? "partner" : "autoponte"}`;
   const returnHref = returnTo && (returnTo.startsWith("/veiculos?") || returnTo.startsWith("/trocas?") || returnTo.startsWith("/parceiros/")) ? returnTo : fallbackHref;
-  return <InventoryShell breadcrumb={<><a href="/crm">Mission Control</a><b>›</b><a href="/veiculos">Estoque</a><b>›</b><span>{vehicle.brand} {vehicle.model}</span></>}>
-    <div className={styles.pageHeader}><div><p className={styles.eyebrow}>VEÍCULO</p><h1>{vehicle.brand} {vehicle.model}</h1><p>{vehicle.modelYear} · {vehicle.fuel} · FIPE {vehicle.fipeCode}</p></div><div className={styles.pageActions}><a href="/crm">← Voltar ao CRM</a><a href={returnHref}>Voltar ao estoque</a>{partner && <a href={`/parceiros/${partner.id}`}>Abrir parceiro</a>}<a className={styles.primaryAction} href="/oportunidades/nova">Criar oportunidade</a></div></div>
+  return <InventoryShell breadcrumb={<><Link href="/crm">Mission Control</Link><b>›</b><Link href="/veiculos">Estoque</Link><b>›</b><span>{vehicle.brand} {vehicle.model}</span></>}>
+    <div className={styles.pageHeader}><div><p className={styles.eyebrow}>VEÍCULO</p><h1>{vehicle.brand} {vehicle.model}</h1><p>{vehicle.modelYear} · {vehicle.fuel} · FIPE {vehicle.fipeCode}</p></div><div className={styles.pageActions}><Link href="/crm">← Voltar ao CRM</Link><Link href={returnHref}>Voltar ao estoque</Link>{partner && <Link href={`/parceiros/${partner.id}`}>Abrir parceiro</Link>}<Link className={styles.primaryAction} href="/oportunidades/nova">Criar oportunidade</Link></div></div>
     <section className={styles.vehicleHero}>
       <div className={styles.vehiclePhoto}>{vehicle.brand.slice(0, 1)}{vehicle.model.slice(0, 1)}</div>
       <div className={styles.vehicleIdentity}><span className={styles.statusBadge} data-status={vehicle.status}>{statusLabels[vehicle.status] ?? vehicle.status}</span><h2>{vehicle.brand} {vehicle.model}</h2><p>{vehicle.plate || "Placa não informada"} · {vehicle.color || "Cor não informada"} · {vehicle.mileage.toLocaleString("pt-BR")} km</p></div>

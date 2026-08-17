@@ -4,6 +4,7 @@ import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
 import { opportunityStageLabels, statusToStage } from "../../lib/opportunities";
 import type { OpportunityStage } from "../../lib/ade";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function OpportunitiesPage({ searchParams }: OpportunitiesP
   const rows = allRows.filter((row) => matchesStage(row.status, selectedStage));
 
   return <main className="crm-page">
-    <header className="crm-header"><a className="brand" href="/crm"><span>AutoPonte</span> Veículos</a><div><strong>Carteira de oportunidades</strong><a href="/clientes">Clientes</a><a href="/crm">Mission Control</a><a className="crm-header-cta" href="/oportunidades/nova">+ Nova oportunidade</a></div></header>
+    <header className="crm-header"><Link className="brand" href="/crm"><span>AutoPonte</span> Veículos</Link><div><strong>Carteira de oportunidades</strong><Link href="/clientes">Clientes</Link><Link href="/crm">Mission Control</Link><Link className="crm-header-cta" href="/oportunidades/nova">+ Nova oportunidade</Link></div></header>
     <section className="crm-summary">
       <div><span>Cadastros reais</span><strong>{allRows.length}</strong></div>
       <div><span>Alta prioridade</span><strong>{allRows.filter((row) => row.leadCategory === "hot" && row.status !== "lost" && row.status !== "closed").length}</strong></div>
@@ -47,12 +48,12 @@ export default async function OpportunitiesPage({ searchParams }: OpportunitiesP
     <section className="crm-content">
       <div className="crm-title"><div><h1>{selectedStage ? `${opportunityStageLabels[selectedStage]} · ${rows.length}` : "Oportunidades operacionais"}</h1></div><p>Clique em qualquer card para abrir dados, inteligência, ações e histórico persistente.</p></div>
       <nav className="opportunity-filters" aria-label="Filtrar por etapa">
-        <a className={!selectedStage ? "active" : ""} href="/oportunidades">Todas</a>
-        {Array.from(validStages).map((stage) => <a className={selectedStage === stage ? "active" : ""} href={`/oportunidades?stage=${stage}`} key={stage}>{opportunityStageLabels[stage]}</a>)}
+        <Link className={!selectedStage ? "active" : ""} href="/oportunidades">Todas</Link>
+        {Array.from(validStages).map((stage) => <Link className={selectedStage === stage ? "active" : ""} href={`/oportunidades?stage=${stage}`} key={stage}>{opportunityStageLabels[stage]}</Link>)}
       </nav>
-      {rows.length === 0 ? <div className="crm-empty client-empty"><strong>Nenhuma oportunidade real nesta etapa.</strong><span>Cadastre uma oportunidade para iniciar o fluxo operacional.</span><a href="/oportunidades/nova">+ Nova oportunidade</a></div> : <div className="opportunity-grid">{rows.map((item) => {
+      {rows.length === 0 ? <div className="crm-empty client-empty"><strong>Nenhuma oportunidade real nesta etapa.</strong><span>Cadastre uma oportunidade para iniciar o fluxo operacional.</span><Link href="/oportunidades/nova">+ Nova oportunidade</Link></div> : <div className="opportunity-grid">{rows.map((item) => {
         const photos = safePhotos(item.photoKeys);
-        return <a className="opportunity-card opportunity-card-link" href={`/oportunidades/${item.id}`} key={item.id}>
+        return <Link className="opportunity-card opportunity-card-link" href={`/oportunidades/${item.id}`} key={item.id}>
           {photos[0] ? <img src={`/api/opportunities/photo?key=${encodeURIComponent(photos[0])}`} alt={`${item.brand} ${item.model}`} /> : <div className="opportunity-placeholder">Sem foto</div>}
           <div className="opportunity-body">
             <div className="opportunity-tags"><span className={`lead-${item.leadCategory}`}>{labels[item.leadCategory] ?? labels.new}</span><span>{item.status.replaceAll("_", " ")}</span></div>
@@ -62,12 +63,11 @@ export default async function OpportunitiesPage({ searchParams }: OpportunitiesP
             <p className="contact-name">{item.name}</p><p className="contact-date">Recebido em {item.createdAt.toLocaleDateString("pt-BR")} • próximo retorno {item.nextFollowUp ? new Date(item.nextFollowUp).toLocaleDateString("pt-BR") : "a definir"}</p>
             <span className="open-workspace">Abrir oportunidade →</span>
           </div>
-        </a>;
+        </Link>;
       })}</div>}
     </section>
   </main>;
 }
-
 
 
 

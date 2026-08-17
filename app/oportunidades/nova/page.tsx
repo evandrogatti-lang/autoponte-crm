@@ -1,5 +1,6 @@
 import { requireChatGPTUser } from "../../chatgpt-auth";
 import { OpportunityCreateForm } from "../../../features/opportunity-create";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -7,8 +8,8 @@ export default async function NewOpportunityPage() {
   await requireChatGPTUser("/oportunidades/nova");
   return <main className="crm-page operational-create-page">
     <header className="crm-header">
-      <a className="brand" href="/crm"><span>AutoPonte</span> Veículos</a>
-      <div><a href="/clientes">Clientes</a><a href="/oportunidades">Oportunidades</a><a href="/crm">Mission Control</a></div>
+      <Link className="brand" href="/crm"><span>AutoPonte</span> Veículos</Link>
+      <div><Link href="/clientes">Clientes</Link><Link href="/oportunidades">Oportunidades</Link><Link href="/crm">Mission Control</Link></div>
     </header>
     <section className="operational-create-shell">
       <div className="crm-title">
