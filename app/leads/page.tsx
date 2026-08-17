@@ -381,8 +381,8 @@ export default async function LeadsPage({
                     <th style={thStyle} className={styles.optionalColumn}>Interesse</th>
                     <th style={thStyle}>Etapa</th>
                     <th style={thStyle}>Prioridade</th>
-                    <th style={thStyle}>Probabilidade</th>
                     <th style={thStyle}>Próxima ação</th>
+                    <th style={thStyle}>Probabilidade</th>
                   </tr>
                 </thead>
 
@@ -423,11 +423,13 @@ export default async function LeadsPage({
                       </td>
 
                       <td style={tdStyle}>
-                        <strong>{lead.probability}%</strong>
+                        <strong style={{ color: lead.nextAction ? "#0d2233" : "#6a7d8b" }}>
+                          {lead.nextAction || "Sem próxima ação definida"}
+                        </strong>
                       </td>
 
                       <td style={tdStyle}>
-                        {lead.nextAction || "Sem próxima ação definida"}
+                        <strong>{lead.probability}%</strong>
                       </td>
                     </tr>
                   ))}

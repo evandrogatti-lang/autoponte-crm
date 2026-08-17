@@ -162,9 +162,9 @@ const selected =
             <article className="client-section-card">
               <header><div><span>CONTEXTO</span><h3>Leitura rápida</h3></div></header>
               <div className="client-context-grid">
-                <div><span>Canal preferencial</span><strong>{whatsappUrl ? "WhatsApp" : email ? "E-mail" : "Não definido"}</strong></div>
+               <div><span>Próxima ação</span><strong>{primaryOpportunity?.nextAction || "Sem compromisso agendado"}</strong></div>
                 <div><span>Demanda principal</span><strong>{primaryOpportunity?.desiredVehicle || "Ainda não definida"}</strong></div>
-                <div><span>Próxima ação</span><strong>{primaryOpportunity?.nextAction || "Sem compromisso agendado"}</strong></div>
+               <div><span>Canal preferencial</span><strong>{whatsappUrl ? "WhatsApp" : email ? "E-mail" : "Não definido"}</strong></div>
                 <div><span>Etapa atual</span><strong>{primaryOpportunity ? statusLabel(primaryOpportunity.status) : "Sem oportunidade"}</strong></div>
               </div>
             </article>

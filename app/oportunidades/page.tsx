@@ -5,6 +5,7 @@ import { tradeIns } from "../../db/schema";
 import { opportunityStageLabels, statusToStage } from "../../lib/opportunities";
 import type { OpportunityStage } from "../../lib/ade";
 import Link from "next/link";
+import { OpportunityViewList } from "../../components/crm/OpportunityViewToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -51,20 +52,7 @@ export default async function OpportunitiesPage({ searchParams }: OpportunitiesP
         <Link className={!selectedStage ? "active" : ""} href="/oportunidades">Todas</Link>
         {Array.from(validStages).map((stage) => <Link className={selectedStage === stage ? "active" : ""} href={`/oportunidades?stage=${stage}`} key={stage}>{opportunityStageLabels[stage]}</Link>)}
       </nav>
-      {rows.length === 0 ? <div className="crm-empty client-empty"><strong>Nenhuma oportunidade real nesta etapa.</strong><span>Cadastre uma oportunidade para iniciar o fluxo operacional.</span><Link href="/oportunidades/nova">+ Nova oportunidade</Link></div> : <div className="opportunity-grid">{rows.map((item) => {
-        const photos = safePhotos(item.photoKeys);
-        return <Link className="opportunity-card opportunity-card-link" href={`/oportunidades/${item.id}`} key={item.id}>
-          {photos[0] ? <img src={`/api/opportunities/photo?key=${encodeURIComponent(photos[0])}`} alt={`${item.brand} ${item.model}`} /> : <div className="opportunity-placeholder">Sem foto</div>}
-          <div className="opportunity-body">
-            <div className="opportunity-tags"><span className={`lead-${item.leadCategory}`}>{labels[item.leadCategory] ?? labels.new}</span><span>{item.status.replaceAll("_", " ")}</span></div>
-            <h2>{item.brand && item.model ? `${item.brand} ${item.model}` : item.desiredVehicle || "Oportunidade comercial"}</h2><p>{item.brand && item.model ? `${item.year} • ${item.mileage.toLocaleString("pt-BR")} km • ${item.city}` : `Compra direta • ${item.city}`}</p>
-            <dl><div><dt>FIPE</dt><dd>{item.referencePrice > 0 ? brl.format(item.referencePrice) : "Não informada"}</dd></div><div><dt>Faixa de troca</dt><dd>{item.estimatedMax > 0 ? `${brl.format(item.estimatedMin)}–${brl.format(item.estimatedMax)}` : "Sem troca"}</dd></div></dl>
-            <p className="desired"><strong>Interesse:</strong> {item.desiredVehicle || "A definir"}</p>
-            <p className="contact-name">{item.name}</p><p className="contact-date">Recebido em {item.createdAt.toLocaleDateString("pt-BR")} • próximo retorno {item.nextFollowUp ? new Date(item.nextFollowUp).toLocaleDateString("pt-BR") : "a definir"}</p>
-            <span className="open-workspace">Abrir oportunidade →</span>
-          </div>
-        </Link>;
-      })}</div>}
+      {rows.length === 0 ? <div className="crm-empty client-empty"><strong>Nenhuma oportunidade real nesta etapa.</strong><span>Cadastre uma oportunidade para iniciar o fluxo operacional.</span><Link href="/oportunidades/nova">+ Nova oportunidade</Link></div> : <OpportunityViewList rows={rows as any} />}
     </section>
   </main>;
 }
