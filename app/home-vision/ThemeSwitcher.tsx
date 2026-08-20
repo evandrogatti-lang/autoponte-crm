@@ -5,20 +5,18 @@ import styles from "./home-vision.module.css";
 
 type Theme = "light" | "slate" | "dark";
 
-const bodyClasses: Record<Theme, string> = {
-  light: "apThemeLight",
-  slate: "apThemeSlate",
-  dark: "apThemeDark",
-};
-
 export default function ThemeSwitcher() {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const body = document.body;
-    Object.values(bodyClasses).forEach((name) => body.classList.remove(name));
-    body.classList.add(bodyClasses[theme]);
-    return () => body.classList.remove(bodyClasses[theme]);
+    const page = document.querySelector(`main.${styles.page}`);
+    if (!(page instanceof HTMLElement)) return;
+
+    page.classList.remove(styles.themeSlate, styles.themeDark);
+    if (theme === "slate") page.classList.add(styles.themeSlate);
+    if (theme === "dark") page.classList.add(styles.themeDark);
+
+    return () => page.classList.remove(styles.themeSlate, styles.themeDark);
   }, [theme]);
 
   return (
