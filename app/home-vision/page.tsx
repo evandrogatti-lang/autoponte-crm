@@ -2,6 +2,6 @@ import { listPublicMarketplaceVehicles } from "../../lib/marketplace/public-vehi
 import AutoPonteExperience from "./experience";
 
 export default async function HomeVisionPreview() {
-  const vehicles = await listPublicMarketplaceVehicles(8);
+  const vehicles = await listPublicMarketplaceVehicles(20);
   return <AutoPonteExperience initialVehicles={vehicles} />;
 }
