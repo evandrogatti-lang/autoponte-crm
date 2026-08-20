@@ -11,6 +11,13 @@ function number(value: unknown) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function vehicleImage(bodyType: string) {
+  const type = bodyType.toLowerCase();
+  if (type.includes("sedan")) return "/vehicle-sedan.png";
+  if (type.includes("hatch")) return "/vehicle-hatch.png";
+  return "/vehicle-suv.png";
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json() as Record<string, unknown>;
@@ -77,10 +84,22 @@ export async function POST(request: Request) {
       alerts_consent: data.alertsConsent ? 1 : 0,
     };
 
-    const [existingMatches, recommendations] = await Promise.all([
+    const [existingMatches, rankedMarketplace] = await Promise.all([
       createMatchesForBuyer(profile),
       rankMarketplaceVehicles(profile, 60),
     ]);
+
+    const recommendations = rankedMarketplace.map(({ vehicle, score, reasons }) => ({
+      score,
+      reasons,
+      vehicle: {
+        ...vehicle,
+        name: `${vehicle.brand} ${vehicle.model}`,
+        year: String(vehicle.modelYear),
+        km: `${vehicle.mileage.toLocaleString("pt-BR")} km`,
+        image: vehicleImage(vehicle.bodyType),
+      },
+    }));
 
     return Response.json(
       {
