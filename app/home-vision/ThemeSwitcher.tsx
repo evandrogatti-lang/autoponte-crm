@@ -4,19 +4,23 @@ import { useEffect, useState } from "react";
 import styles from "./home-vision.module.css";
 
 type Theme = "light" | "slate" | "dark";
+const storageKey = "autoponte-home-theme";
 
 export default function ThemeSwitcher() {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const page = document.querySelector(`main.${styles.page}`);
-    if (!(page instanceof HTMLElement)) return;
+    const saved = window.localStorage.getItem(storageKey);
+    if (saved === "light" || saved === "slate" || saved === "dark") setTheme(saved);
+  }, []);
 
-    page.classList.remove(styles.themeSlate, styles.themeDark);
-    if (theme === "slate") page.classList.add(styles.themeSlate);
-    if (theme === "dark") page.classList.add(styles.themeDark);
-
-    return () => page.classList.remove(styles.themeSlate, styles.themeDark);
+  useEffect(() => {
+    const body = document.body;
+    body.classList.remove("apThemeSlate", "apThemeDark");
+    if (theme === "slate") body.classList.add("apThemeSlate");
+    if (theme === "dark") body.classList.add("apThemeDark");
+    window.localStorage.setItem(storageKey, theme);
+    return () => body.classList.remove("apThemeSlate", "apThemeDark");
   }, [theme]);
 
   return (
