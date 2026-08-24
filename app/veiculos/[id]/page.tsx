@@ -7,8 +7,10 @@ import { vehicles } from "../../../db/vehicle-schema";
 import { partners } from "../../../db/partner-schema";
 import { stateLabel } from "../../../lib/locations/br-locations";
 import { parseVehicleOptionalItems } from "../../../lib/vehicles/vehicle-optionals";
+import { calculateVehicleIntelligence } from "../../../lib/vehicle-intelligence/scoring";
 import { InventoryShell } from "../../../features/vehicle-registry/components/InventoryShell";
 import { VehicleCreateForm } from "../../../features/vehicle-registry/components/VehicleCreateForm";
+import { VehicleIntelligenceScores } from "../../../features/vehicle-registry/components/VehicleIntelligenceScores";
 import styles from "../../../features/vehicle-registry/components/VehicleRegistry.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -57,6 +59,7 @@ export default async function VehicleDetailPage({
   const margin = asking - totalCost;
   const marginPercent = asking > 0 ? (margin / asking) * 100 : null;
   const optionalItems = parseVehicleOptionalItems(vehicle.optionalItems);
+  const intelligenceScores = calculateVehicleIntelligence(vehicle);
 
   const fallbackHref = `/veiculos?scope=${vehicle.inventoryScope === "partner" ? "partner" : "autoponte"}`;
   const returnHref =
@@ -237,6 +240,7 @@ export default async function VehicleDetailPage({
               </div>
             </div>
           </section>
+          <VehicleIntelligenceScores scores={intelligenceScores} />
         </div>
 
         <aside className={styles.detailAside}>
