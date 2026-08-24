@@ -20,7 +20,7 @@ export const vehicleScores = pgTable("vehicle_scores", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   uniqueIndex("vehicle_scores_vehicle_type_version_calculator_hash_unique").on(table.vehicleId, table.scoreType, table.version, table.calculatorVersion, table.inputSnapshotHash),
-  uniqueIndex("vehicle_scores_vehicle_type_version_calculated_unique").on(table.vehicleId, table.scoreType, table.version, table.calculatedAt),
+  index("vehicle_scores_vehicle_type_version_calculated_idx").on(table.vehicleId, table.scoreType, table.version, table.calculatedAt),
   index("vehicle_scores_vehicle_calculated_idx").on(table.vehicleId, table.calculatedAt),
 ]);
 
