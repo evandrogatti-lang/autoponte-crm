@@ -1,4 +1,6 @@
-export const SCORE_CALCULATOR_VERSION = "vehicle-intelligence-4a.1";
+import { createHash } from "node:crypto";
+
+export const SCORE_CALCULATOR_VERSION = "vehicle-intelligence-4b.1";
 
 export type ScoreType = "DCI" | "DCQ" | "VQI" | "CVI";
 export type ScoreStatus = "INSUFFICIENT_DATA" | "PROVISIONAL" | "RELIABLE" | "VERIFIED";
@@ -33,8 +35,8 @@ export type VehicleIntelligenceInput = {
   documentStatus?: string;
   vehicleCondition?: string;
   inspectionStatus?: string;
-  acquisitionDate?: string;
-  listingDate?: string;
+  acquisitionDate?: Date | string | null;
+  listingDate?: Date | string | null;
   optionalItems?: string;
   city?: string;
   ownerName?: string;
@@ -71,6 +73,7 @@ export type VehicleScore = {
   missingEvidence: string[];
   calculatedAt: string;
   inputSnapshot: Record<string, unknown>;
+  inputSnapshotHash: string;
 };
 
 export type VehicleIntelligenceResult = Record<ScoreType, VehicleScore>;
@@ -106,12 +109,136 @@ const CVI_WEIGHTS = [
   ["configuration_attractiveness", "Atratividade da configuração", 5],
 ] as const;
 
+const SNAPSHOT_FIELDS = [
+  "id",
+  "sourceType",
+  "plate",
+  "chassis",
+  "stockCode",
+  "brand",
+  "model",
+  "modelYear",
+  "fuel",
+  "mileage",
+  "color",
+  "transmission",
+  "bodyType",
+  "doors",
+  "engine",
+  "power",
+  "renavam",
+  "registrationState",
+  "documentStatus",
+  "vehicleCondition",
+  "inspectionStatus",
+  "acquisitionDate",
+  "listingDate",
+  "optionalItems",
+  "city",
+  "ownerName",
+  "askingPrice",
+  "acquisitionCost",
+  "additionalCosts",
+  "fipeValue",
+] as const;
+
+const SNAPSHOT_PROVENANCE_FIELDS = new Set([
+  ...DCI_COMPONENTS.flatMap(([, , , fields]) => fields),
+  "mechanical",
+  "structural",
+  "wear",
+  "provenance_maintenance",
+]);
+
+const SNAPSHOT_DATE_FIELDS = new Set(["acquisitionDate", "listingDate"]);
+
 const clamp = (value: number) => Math.round(Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0)));
 const isText = (value: unknown) => typeof value === "string" && value.trim() !== "" && value.trim().toLowerCase() !== "unknown";
 const isNumber = (value: unknown) => typeof value === "number" && Number.isFinite(value) && value > 0;
 
+export function normalizeVehicleDate(value: Date | string | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string") {
+    const calendarDate = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (calendarDate) {
+      const [, year, month, day] = calendarDate;
+      const calendarCheck = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+      if (
+        calendarCheck.getUTCFullYear() !== Number(year) ||
+        calendarCheck.getUTCMonth() !== Number(month) - 1 ||
+        calendarCheck.getUTCDate() !== Number(day)
+      ) {
+        return null;
+      }
+    }
+  }
+  const parsed = value instanceof Date ? value : new Date(value.trim());
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toISOString().slice(0, 10);
+}
+
+function canonicalizeJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map((entry) => canonicalizeJson(entry)).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>).sort(([left], [right]) => left.localeCompare(right));
+    return `{${entries.map(([key, nestedValue]) => `${JSON.stringify(key)}:${canonicalizeJson(nestedValue)}`).join(",")}}`;
+  }
+  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "number") return Number.isFinite(value) ? String(value) : "null";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  return "null";
+}
+
+export function calculateInputSnapshotHash(inputSnapshot: Record<string, unknown>): string {
+  return createHash("sha256").update(canonicalizeJson(inputSnapshot)).digest("hex");
+}
+
+export function buildVehicleInputSnapshot(input: Record<string, unknown> | VehicleIntelligenceInput): Record<string, unknown> {
+  const record = input as Record<string, unknown>;
+  const snapshot = Object.fromEntries(
+    SNAPSHOT_FIELDS.flatMap((field) => {
+      if (SNAPSHOT_DATE_FIELDS.has(field)) {
+        return [[field, normalizeVehicleDate(record[field] as Date | string | null | undefined)]];
+      }
+      return record[field] === undefined ? [] : [[field, record[field]]];
+    }),
+  );
+  const provenance = record.provenance && typeof record.provenance === "object"
+    ? Object.entries(record.provenance as Record<string, unknown>)
+        .filter(([field]) => SNAPSHOT_PROVENANCE_FIELDS.has(field))
+        .sort(([left], [right]) => left.localeCompare(right))
+    : [];
+  return {
+    ...snapshot,
+    provenance: Object.fromEntries(provenance),
+  };
+}
+
+export function createVehicleScoreSnapshotIdentity({
+  vehicleId,
+  scoreType,
+  version,
+  calculatorVersion,
+  inputSnapshot,
+}: {
+  vehicleId: string;
+  scoreType: string;
+  version: string;
+  calculatorVersion: string;
+  inputSnapshot: Record<string, unknown>;
+}): { vehicleId: string; scoreType: string; version: string; calculatorVersion: string; inputSnapshotHash: string } {
+  return {
+    vehicleId,
+    scoreType,
+    version,
+    calculatorVersion,
+    inputSnapshotHash: calculateInputSnapshotHash(inputSnapshot),
+  };
+}
+
 function hasField(input: VehicleIntelligenceInput, field: string): boolean {
   const value = input[field as keyof VehicleIntelligenceInput];
+  if (field === "acquisitionDate" || field === "listingDate") return normalizeVehicleDate(value as Date | string | null | undefined) !== null;
   if (field === "inspectionStatus" && ["pending", "unknown"].includes(String(value ?? "").trim().toLowerCase())) return false;
   if (field === "mileage" && input.sourceType === "new_vehicle") return typeof value === "number" && value >= 0;
   if (field === "doors") return typeof value === "number" && value > 0;
@@ -149,19 +276,23 @@ function confidenceFromCoverage(components: ScoreComponent[]): number {
 
 function baseScore(input: VehicleIntelligenceInput, scoreType: ScoreType, components: ScoreComponent[], reasonCodes: string[], missingEvidence: string[]): VehicleScore {
   const confidence = confidenceFromCoverage(components);
+  const version = `${scoreType.toLowerCase()}-v${scoreType === "DCI" ? "2" : "1"}`;
+  const inputSnapshot = buildVehicleInputSnapshot(input);
+  const inputSnapshotHash = calculateInputSnapshotHash(inputSnapshot);
   return {
     vehicleId: input.id,
     scoreType,
     score: scoreFromAvailable(components),
     confidence,
     status: statusFor(confidence),
-    version: `${scoreType.toLowerCase()}-v${scoreType === "DCI" ? "2" : "1"}`,
+    version,
     calculatorVersion: SCORE_CALCULATOR_VERSION,
     components,
     reasonCodes: [...new Set(reasonCodes)].sort(),
     missingEvidence: [...new Set(missingEvidence)].sort(),
     calculatedAt: input.calculatedAt ?? new Date().toISOString(),
-    inputSnapshot: { vehicleId: input.id, sourceType: input.sourceType ?? "", evidenceFields: Object.keys(input.provenance ?? {}).sort() },
+    inputSnapshot,
+    inputSnapshotHash,
   };
 }
 
@@ -218,7 +349,10 @@ export function calculateDcq(input: VehicleIntelligenceInput): VehicleScore {
 
 function conditionScore(input: VehicleIntelligenceInput, field: "vehicleCondition" | "documentStatus"): number | null {
   const evidence = input.provenance?.[field];
-  if (!evidence) return null;
+  const trustedSource = field === "documentStatus"
+    ? evidence?.source === "document"
+    : evidence?.source === "inspection" || evidence?.source === "photo_ai";
+  if (!evidence?.verified || !trustedSource) return null;
   const normalized = String(input[field] ?? "").trim().toLowerCase();
   if (["critical", "rejected", "irregular", "bad"].includes(normalized)) return 20;
   if (["attention", "fair", "pending"].includes(normalized)) return 55;
@@ -238,9 +372,13 @@ export function calculateVqi(input: VehicleIntelligenceInput): VehicleScore {
     if (key === "documentation_history") score = documentation;
     if (key === "exterior" || key === "interior") score = condition;
     if (key === "mechanical" || key === "structural" || key === "wear") {
-      score = completedInspection && input.provenance?.[key] ? clamp(input.provenance[key].confidence) : null;
+      const evidence = input.provenance?.[key];
+      score = completedInspection && evidence?.verified && evidence.source === "inspection" ? clamp(evidence.confidence) : null;
     }
-    if (key === "provenance_maintenance") score = input.provenance?.[key] ? clamp(input.provenance[key].confidence) : null;
+    if (key === "provenance_maintenance") {
+      const evidence = input.provenance?.[key];
+      score = evidence?.verified && ["document", "manufacturer"].includes(evidence.source) ? clamp(evidence.confidence) : null;
+    }
     const available = score !== null;
     if (!available) missingEvidence.push(`VQI_${key.toUpperCase()}_UNAVAILABLE`);
     return { key, label, weight, score, available };
@@ -256,10 +394,8 @@ export function calculateCvi(input: VehicleIntelligenceInput): VehicleScore {
   const asking = input.askingPrice ?? 0;
   const fipe = input.fipeValue ?? 0;
   const cost = (input.acquisitionCost ?? 0) + (input.additionalCosts ?? 0);
-  const listingDateValue = input.listingDate;
-  const listingDate = typeof listingDateValue === "string" && listingDateValue.trim() !== "" && listingDateValue.trim().toLowerCase() !== "unknown"
-    ? new Date(listingDateValue).getTime()
-    : Number.NaN;
+  const normalizedListingDate = normalizeVehicleDate(input.listingDate);
+  const listingDate = normalizedListingDate ? new Date(`${normalizedListingDate}T00:00:00.000Z`).getTime() : Number.NaN;
   const calculationInstant = input.calculatedAt ?? new Date().toISOString();
   const calculatedAt = new Date(calculationInstant).getTime();
   const components = CVI_WEIGHTS.map(([key, label, weight]) => {
