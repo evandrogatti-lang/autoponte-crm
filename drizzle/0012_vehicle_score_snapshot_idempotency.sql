@@ -13,6 +13,10 @@ alter table public.vehicle_scores
   alter column input_snapshot_hash set not null,
   alter column input_snapshot_hash set default '';
 
+-- Remove the legacy calculated-at uniqueness before semantic uniqueness is installed.
+-- 0014 repeats this idempotently for databases whose migration history already passed 0012.
+drop index if exists vehicle_scores_vehicle_type_version_calculated_unique;
+
 create unique index if not exists vehicle_scores_semantic_snapshot_unique
   on public.vehicle_scores(vehicle_id, score_type, version, calculator_version, input_snapshot_hash);
 
