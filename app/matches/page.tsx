@@ -1,8 +1,10 @@
-import { asc, desc, eq, isNull, or } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { requireChatGPTUser } from "../chatgpt-auth";
 import { getDb } from "../../db";
 import { buyerProfiles, vehicleMatches } from "../../db/schema";
 import { buildWhatsAppUrl, cleanContactText, formatBrazilianPhone, normalizeEmail } from "../../lib/contact";
+
+export const dynamic = "force-dynamic";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
@@ -19,12 +21,15 @@ export default async function MatchesPage() {
   await requireChatGPTUser("/matches");
   const rows = await getDb().select({
     id: vehicleMatches.id, vehicle_label: vehicleMatches.vehicleLabel, vehicle_price: vehicleMatches.vehiclePrice,
-    score: vehicleMatches.score, reasons: vehicleMatches.reasons, message_draft: vehicleMatches.messageDraft,
+    score: vehicleMatches.score, match_fit_score: vehicleMatches.matchFitScore,
+    opportunity_score: vehicleMatches.opportunityScore, opportunity_override: vehicleMatches.opportunityOverride,
+    ranking_position: vehicleMatches.rankingPosition, evaluation_run_id: vehicleMatches.evaluationRunId,
+    scoring_version: vehicleMatches.scoringVersion, reasons: vehicleMatches.reasons, message_draft: vehicleMatches.messageDraft,
     status: vehicleMatches.status, source_type: vehicleMatches.sourceType, created_at: vehicleMatches.createdAt,
     name: buyerProfiles.name, whatsapp: buyerProfiles.whatsapp, email: buyerProfiles.email,
     city: buyerProfiles.city, alerts_consent: buyerProfiles.alertsConsent,
   }).from(vehicleMatches).innerJoin(buyerProfiles, eq(buyerProfiles.id, vehicleMatches.buyerProfileId))
-    .where(or(isNull(vehicleMatches.hardConstraintPass),eq(vehicleMatches.hardConstraintPass,true)))
+    .where(eq(vehicleMatches.hardConstraintPass,true))
     .orderBy(desc(vehicleMatches.hardConstraintPass),asc(vehicleMatches.rankingPosition),desc(vehicleMatches.score),desc(vehicleMatches.createdAt)).limit(200);
 
   return <main className="crm-page"><header className="crm-header"><a className="brand" href="/"><span>AutoPonte</span> Veículos</a><div><strong>AutoPonte Match</strong><a href="/crm">CRM integrado</a><a href="/oportunidades">Avaliações</a><a href="/">Voltar ao site</a></div></header>
@@ -36,7 +41,7 @@ export default async function MatchesPage() {
         const whatsappDisplay = formatBrazilianPhone(row.whatsapp);
         const email = normalizeEmail(row.email);
         const canContact = row.status === "review_pending" && row.alerts_consent && whatsappUrl;
-        return <article className="match-card" key={row.id}><div className="match-card-score"><strong>{row.score}%</strong><span>compatível</span></div><div className="match-card-body"><div className="opportunity-tags"><span>{row.source_type === "trade_in" ? "Possível troca" : "Pré-consignação"}</span><span className={row.status === "review_pending" ? "lead-warm" : "lead-review"}>{row.status === "review_pending" ? "Revisar contato" : "Uso interno"}</span></div><h2>{row.vehicle_label}</h2><p>{brl.format(row.vehicle_price)} • potencial comprador em {row.city}</p><h3>{row.name}</h3><p>{whatsappDisplay || "WhatsApp não informado"} • {email || "E-mail não informado"}</p><ul>{reasons.map((reason) => <li key={reason}>✓ {reason}</li>)}</ul><blockquote>{cleanContactText(row.message_draft) || "Mensagem ainda não preparada."}</blockquote>{canContact ? <a className="review-contact" href={whatsappUrl} target="_blank" rel="noreferrer">Revisar e abrir WhatsApp</a> : <p className="no-consent">{row.alerts_consent ? "WhatsApp válido não informado." : "Sem autorização para alertas."}</p>}</div></article>;
+        return <article className="match-card" key={row.id}><div className="match-card-score"><strong>{row.match_fit_score ?? row.score}%</strong><span>Match Fit</span><small>Oportunidade: {row.opportunity_score ?? 0}%{row.opportunity_override ? " · override" : ""}</small></div><div className="match-card-body"><div className="opportunity-tags"><span>{row.source_type === "trade_in" ? "Possível troca" : "Pré-consignação"}</span><span className={row.status === "review_pending" ? "lead-warm" : "lead-review"}>{row.status === "review_pending" ? "Revisar contato" : "Uso interno"}</span></div><h2>{row.vehicle_label}</h2><p>{brl.format(row.vehicle_price)} • potencial comprador em {row.city}</p><p><small>Ranking #{row.ranking_position ?? "—"} · versão {row.scoring_version ?? "legada"} · execução {row.evaluation_run_id?.slice(0, 8) ?? "—"}</small></p><h3>{row.name}</h3><p>{whatsappDisplay || "WhatsApp não informado"} • {email || "E-mail não informado"}</p><ul>{reasons.map((reason) => <li key={reason}>✓ {reason}</li>)}</ul><blockquote>{cleanContactText(row.message_draft) || "Mensagem ainda não preparada."}</blockquote>{canContact ? <a className="review-contact" href={whatsappUrl} target="_blank" rel="noreferrer">Revisar e abrir WhatsApp</a> : <p className="no-consent">{row.alerts_consent ? "WhatsApp válido não informado." : "Sem autorização para alertas."}</p>}</div></article>;
       })}</div>}
     </section></main>;
 }
