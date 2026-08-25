@@ -231,3 +231,5 @@ export const sellerAssignments = pgTable("seller_assignments", {
   index("seller_assignments_opportunity_status_idx").on(table.opportunityId, table.status),
   index("seller_assignments_seller_status_idx").on(table.sellerProfileId, table.status),
 ]);
+
+export { vehicleDataProvenance, vehicleScores } from "./vehicle-intelligence-schema.ts";

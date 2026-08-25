@@ -3,12 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "../../chatgpt-auth";
 import { getDb } from "../../../db";
+import { vehicleDataProvenance } from "../../../db/vehicle-intelligence-schema";
 import { vehicles } from "../../../db/vehicle-schema";
 import { partners } from "../../../db/partner-schema";
 import { stateLabel } from "../../../lib/locations/br-locations";
 import { parseVehicleOptionalItems } from "../../../lib/vehicles/vehicle-optionals";
+import { attachVehicleProvenance } from "../../../lib/vehicle-intelligence/provenance";
+import { calculateVehicleIntelligence } from "../../../lib/vehicle-intelligence/scoring";
 import { InventoryShell } from "../../../features/vehicle-registry/components/InventoryShell";
 import { VehicleCreateForm } from "../../../features/vehicle-registry/components/VehicleCreateForm";
+import { VehicleIntelligenceScores } from "../../../features/vehicle-registry/components/VehicleIntelligenceScores";
 import styles from "../../../features/vehicle-registry/components/VehicleRegistry.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -42,6 +46,11 @@ export default async function VehicleDetailPage({
   const [vehicle] = await getDb().select().from(vehicles).where(eq(vehicles.id, id)).limit(1);
   if (!vehicle) notFound();
 
+  const provenanceRows = await getDb()
+    .select()
+    .from(vehicleDataProvenance)
+    .where(eq(vehicleDataProvenance.vehicleId, id));
+
   const [partner] = vehicle.partnerId
     ? await getDb().select({ id: partners.id, name: partners.name }).from(partners).where(eq(partners.id, vehicle.partnerId)).limit(1)
     : [];
@@ -57,6 +66,7 @@ export default async function VehicleDetailPage({
   const margin = asking - totalCost;
   const marginPercent = asking > 0 ? (margin / asking) * 100 : null;
   const optionalItems = parseVehicleOptionalItems(vehicle.optionalItems);
+  const intelligenceScores = calculateVehicleIntelligence(attachVehicleProvenance(vehicle, provenanceRows));
 
   const fallbackHref = `/veiculos?scope=${vehicle.inventoryScope === "partner" ? "partner" : "autoponte"}`;
   const returnHref =
@@ -237,6 +247,7 @@ export default async function VehicleDetailPage({
               </div>
             </div>
           </section>
+          <VehicleIntelligenceScores scores={intelligenceScores} />
         </div>
 
         <aside className={styles.detailAside}>
