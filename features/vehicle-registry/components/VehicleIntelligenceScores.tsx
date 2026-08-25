@@ -1,4 +1,5 @@
 import { type VehicleIntelligenceResult, type VehicleScore, vqiClassification } from "../../../lib/vehicle-intelligence/scoring";
+import { formatVehicleIntelligenceCode } from "../../../lib/vehicle-intelligence/presentation";
 import styles from "./VehicleRegistry.module.css";
 
 const scoreLabels = {
@@ -18,7 +19,7 @@ const statusLabels = {
 function ScoreDetails({ score }: { score: VehicleScore }) {
   return (
     <details className={styles.intelligenceDetails}>
-      <summary>Por que esta nota?</summary>
+      <summary>Por que esta nota ({score.scoreType})?</summary>
       <div className={styles.intelligenceComponents}>
         {score.components.map((component) => (
           <div key={component.key}>
@@ -27,8 +28,8 @@ function ScoreDetails({ score }: { score: VehicleScore }) {
           </div>
         ))}
       </div>
-      {score.reasonCodes.length ? <p><b>Motivos da pontuação:</b> {score.reasonCodes.join(", ")}</p> : null}
-      {score.missingEvidence.length ? <p><b>Evidências pendentes:</b> {score.missingEvidence.join(", ")}</p> : null}
+      {score.reasonCodes.length ? <p><b>Motivos da pontuação:</b> {score.reasonCodes.map((code) => formatVehicleIntelligenceCode(code)).join(", ")}</p> : null}
+      {score.missingEvidence.length ? <p><b>Evidências pendentes:</b> {score.missingEvidence.map((code) => formatVehicleIntelligenceCode(code)).join(", ")}</p> : null}
     </details>
   );
 }

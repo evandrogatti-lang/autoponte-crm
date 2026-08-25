@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { formatVehicleIntelligenceCode } from "../lib/vehicle-intelligence/presentation.ts";
 import { buildVehicleInputSnapshot, calculateInputSnapshotHash, calculateVehicleIntelligence, createVehicleScoreSnapshotIdentity, normalizeVehicleDate, type VehicleIntelligenceInput, vqiClassification } from "../lib/vehicle-intelligence/scoring.ts";
 import { persistVehicleIntelligenceSnapshot, toVehicleIntelligenceSnapshotRow } from "../lib/vehicle-intelligence/service.ts";
 
@@ -20,6 +21,14 @@ const completeInput: VehicleIntelligenceInput = {
     provenance_maintenance: { source: "document", confidence: 82, verified: true },
   },
 };
+
+test("presents vehicle intelligence codes in Portuguese without exposing unknown codes", () => {
+  assert.equal(formatVehicleIntelligenceCode("VQI_MECHANICAL_UNAVAILABLE"), "Dados mecânicos indisponíveis");
+  assert.equal(formatVehicleIntelligenceCode("CVI_DEMAND_MATCH_UNAVAILABLE"), "Dados de demanda/match indisponíveis");
+  assert.equal(formatVehicleIntelligenceCode("CVI_MARKET_PRICE_AVAILABLE"), "Preço de mercado disponível");
+  assert.equal(formatVehicleIntelligenceCode("DCQ_IDENTIFICATION_WEAK_EVIDENCE"), "Evidências de identificação insuficientes");
+  assert.equal(formatVehicleIntelligenceCode("FUTURE_INTERNAL_CODE"), "Informação de avaliação indisponível");
+});
 
 test("calculates bounded and versioned scores from complete evidence", () => {
   const scores = calculateVehicleIntelligence(completeInput);
@@ -129,8 +138,13 @@ test("canonicalizes JSON before hashing and treats semantic snapshots as idempot
       inputSnapshot: buildVehicleInputSnapshot(baseInput),
     }),
   );
+  assert.equal(buildVehicleInputSnapshot(baseInput).referenceDate, "2026-02-01");
   assert.equal(
-    calculateInputSnapshotHash(buildVehicleInputSnapshot({ ...baseInput, calculatedAt: "2026-03-01T00:00:00.000Z" })),
+    calculateInputSnapshotHash(buildVehicleInputSnapshot({ ...baseInput, calculatedAt: "2026-02-01T23:59:59.999Z" })),
+    calculateInputSnapshotHash(buildVehicleInputSnapshot(baseInput)),
+  );
+  assert.notEqual(
+    calculateInputSnapshotHash(buildVehicleInputSnapshot({ ...baseInput, calculatedAt: "2026-02-02T00:00:00.000Z" })),
     calculateInputSnapshotHash(buildVehicleInputSnapshot(baseInput)),
   );
   assert.deepEqual(
@@ -270,9 +284,31 @@ test("persists a full score batch atomically and rejects duplicate semantic snap
   assert.equal(provenanceWrites.length, 0);
   assert.deepEqual(rows.map((row) => row.vehicleId), ["vehicle-atom", "vehicle-atom", "vehicle-atom", "vehicle-atom"]);
 
-  const repeated = await persistVehicleIntelligenceSnapshot({ vehicleId: "vehicle-atom", scores, db: fakeDb });
+  const sameReferenceDateScores = calculateVehicleIntelligence({
+    ...completeInput,
+    calculatedAt: "2026-02-01T23:59:59.999Z",
+  });
+  assert.equal(scores.CVI.inputSnapshotHash, sameReferenceDateScores.CVI.inputSnapshotHash);
+  const repeated = await persistVehicleIntelligenceSnapshot({ vehicleId: "vehicle-atom", scores: sameReferenceDateScores, db: fakeDb });
   assert.equal(repeated, 0);
   assert.equal(state.length, 4);
+
+  const firstAgingScores = calculateVehicleIntelligence({
+    id: "vehicle-aging",
+    listingDate: "2026-08-20",
+    calculatedAt: "2026-08-24T10:00:00.000Z",
+  });
+  const secondAgingScores = calculateVehicleIntelligence({
+    id: "vehicle-aging",
+    listingDate: "2026-08-20",
+    calculatedAt: "2026-08-25T10:00:00.000Z",
+  });
+  assert.equal(firstAgingScores.CVI.score, 94);
+  assert.equal(secondAgingScores.CVI.score, 93);
+  assert.notEqual(firstAgingScores.CVI.inputSnapshotHash, secondAgingScores.CVI.inputSnapshotHash);
+  assert.equal(await persistVehicleIntelligenceSnapshot({ vehicleId: "vehicle-aging", scores: firstAgingScores, db: fakeDb }), 4);
+  assert.equal(await persistVehicleIntelligenceSnapshot({ vehicleId: "vehicle-aging", scores: secondAgingScores, db: fakeDb }), 4);
+  assert.equal(state.length, 12);
 });
 
 test("rolls back all inserts when a later score insert fails and keeps VQI zero values valid", async () => {

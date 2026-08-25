@@ -175,7 +175,7 @@ test("FIPE provenance changes the semantic input once and remains deterministic"
   });
   const retry = calculateVehicleIntelligence({
     ...attachVehicleProvenance(vehicle, mergeVehicleProvenance(merged, fipe)),
-    calculatedAt: "2026-08-25T10:00:00.000Z",
+    calculatedAt: "2026-08-24T15:00:00.000Z",
   });
 
   assert.notEqual(before.DCQ.inputSnapshotHash, after.DCQ.inputSnapshotHash);
@@ -206,7 +206,7 @@ test("filters an identical provenance retry even when audit timestamps differ", 
     }).DCQ.inputSnapshotHash,
     calculateVehicleIntelligence({
       ...attachVehicleProvenance(vehicle, retry),
-      calculatedAt: "2026-08-25T10:00:00.000Z",
+      calculatedAt: "2026-08-24T15:00:00.000Z",
     }).DCQ.inputSnapshotHash,
   );
 });

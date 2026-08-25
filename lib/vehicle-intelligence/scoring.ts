@@ -45,6 +45,7 @@ export type VehicleIntelligenceInput = {
   additionalCosts?: number;
   fipeValue?: number;
   calculatedAt?: string;
+  referenceDate?: Date | string | null;
   provenance?: Record<string, FieldEvidence>;
 };
 
@@ -177,6 +178,17 @@ export function normalizeVehicleDate(value: Date | string | null | undefined): s
   return parsed.toISOString().slice(0, 10);
 }
 
+function resolveVehicleReferenceDate(input: Record<string, unknown> | VehicleIntelligenceInput): string | null {
+  const record = input as Record<string, unknown>;
+  if (record.referenceDate !== undefined) {
+    return normalizeVehicleDate(record.referenceDate as Date | string | null);
+  }
+  if (record.calculatedAt !== undefined) {
+    return normalizeVehicleDate(record.calculatedAt as string);
+  }
+  return normalizeVehicleDate(new Date());
+}
+
 function canonicalizeJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map((entry) => canonicalizeJson(entry)).join(",")}]`;
   if (value !== null && typeof value === "object") {
@@ -210,6 +222,7 @@ export function buildVehicleInputSnapshot(input: Record<string, unknown> | Vehic
     : [];
   return {
     ...snapshot,
+    referenceDate: resolveVehicleReferenceDate(record),
     provenance: Object.fromEntries(provenance),
   };
 }
@@ -391,25 +404,26 @@ export function calculateVqi(input: VehicleIntelligenceInput): VehicleScore {
 export function calculateCvi(input: VehicleIntelligenceInput): VehicleScore {
   const reasonCodes: string[] = [];
   const missingEvidence: string[] = [];
+  const referenceDate = resolveVehicleReferenceDate(input);
+  const scoringInput = { ...input, referenceDate };
   const asking = input.askingPrice ?? 0;
   const fipe = input.fipeValue ?? 0;
   const cost = (input.acquisitionCost ?? 0) + (input.additionalCosts ?? 0);
   const normalizedListingDate = normalizeVehicleDate(input.listingDate);
   const listingDate = normalizedListingDate ? new Date(`${normalizedListingDate}T00:00:00.000Z`).getTime() : Number.NaN;
-  const calculationInstant = input.calculatedAt ?? new Date().toISOString();
-  const calculatedAt = new Date(calculationInstant).getTime();
+  const referenceTime = referenceDate ? new Date(`${referenceDate}T00:00:00.000Z`).getTime() : Number.NaN;
   const components = CVI_WEIGHTS.map(([key, label, weight]) => {
     let score: number | null = null;
     if (key === "price_vs_market" && isNumber(asking) && isNumber(fipe)) score = clamp(100 - Math.abs(((asking - fipe) / fipe) * 100) * 2);
     if (key === "potential_margin" && isNumber(asking) && isNumber(cost) && asking > cost) score = clamp(((asking - cost) / asking) * 500);
-    if (key === "aging" && Number.isFinite(listingDate) && Number.isFinite(calculatedAt)) score = clamp(100 - ((calculatedAt - listingDate) / 86400000) * 1.5);
+    if (key === "aging" && Number.isFinite(listingDate) && Number.isFinite(referenceTime)) score = clamp(100 - ((referenceTime - listingDate) / 86400000) * 1.5);
     const available = score !== null;
     if (!available) missingEvidence.push(`CVI_${key.toUpperCase()}_UNAVAILABLE`);
     return { key, label, weight, score, available };
   });
   if (components.some((component) => !component.available)) reasonCodes.push("CVI_PARTIAL_COMMERCIAL_EVIDENCE");
   if (components.find((component) => component.key === "price_vs_market")?.available) reasonCodes.push("CVI_MARKET_PRICE_AVAILABLE");
-  return baseScore(input, "CVI", components, reasonCodes, missingEvidence);
+  return baseScore(scoringInput, "CVI", components, reasonCodes, missingEvidence);
 }
 
 export function calculateVehicleIntelligence(input: VehicleIntelligenceInput): VehicleIntelligenceResult {
