@@ -47,6 +47,23 @@ type DatabaseLike = {
 type AppDatabase = ReturnType<typeof getDb>;
 type AppTransaction = Parameters<Parameters<AppDatabase["transaction"]>[0]>[0];
 
+type AffectedRowResult = {
+  count?: number;
+  rowCount?: number;
+  affectedRows?: number;
+};
+
+export function affectedRowCount(result: AffectedRowResult | unknown[] | undefined, fallback = 0): number {
+  if (result && typeof result === "object") {
+    const metadata = result as AffectedRowResult;
+    for (const value of [metadata.count, metadata.rowCount, metadata.affectedRows]) {
+      if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, value);
+    }
+  }
+  if (Array.isArray(result)) return result.length;
+  return fallback;
+}
+
 export function buildVehicleScoreSnapshotId(vehicleId: string, score: VehicleScore): string {
   return `${vehicleId}:${score.scoreType}:${score.version}:${score.calculatorVersion}:${score.inputSnapshotHash}`;
 }
@@ -96,14 +113,15 @@ export async function calculateVehicleIntelligenceByVehicleId(vehicleId: string)
   const { eq } = await import("drizzle-orm");
   const { getDb } = await import("../../db/index.ts");
   const { vehicles } = await import("../../db/vehicle-schema.ts");
-  const { vehicleDataProvenance } = await import("../../db/vehicle-intelligence-schema.ts");
+  const { vehicleDataProvenance, vehicleEvidenceObservations } = await import("../../db/vehicle-intelligence-schema.ts");
   const db = getDb();
-  const [[vehicle], provenance] = await Promise.all([
+  const [[vehicle], provenance, observations] = await Promise.all([
     db.select().from(vehicles).where(eq(vehicles.id, vehicleId)).limit(1),
     db.select().from(vehicleDataProvenance).where(eq(vehicleDataProvenance.vehicleId, vehicleId)),
+    db.select().from(vehicleEvidenceObservations).where(eq(vehicleEvidenceObservations.vehicleId, vehicleId)),
   ]);
   if (!vehicle) throw new Error(`Veículo ${vehicleId} não encontrado para recalcular inteligência.`);
-  return calculateVehicleIntelligence(attachVehicleProvenance(vehicle, provenance));
+  return calculateVehicleIntelligence(attachVehicleProvenance(vehicle, provenance, observations));
 }
 
 export type PersistVehicleIntelligenceSnapshotInput = {
@@ -119,7 +137,7 @@ export async function persistVehicleIntelligenceSnapshot({
   db,
   transactionDb,
 }: PersistVehicleIntelligenceSnapshotInput): Promise<number> {
-  const activeDb = db ?? (await import("../../db/index.ts")).getDb();
+  const activeDb = db ?? (transactionDb ? undefined : (await import("../../db/index.ts")).getDb());
   const { vehicleScores } = await import("../../db/vehicle-intelligence-schema.ts");
   const rows = Object.values(scores).map((score) => toVehicleIntelligenceSnapshotRow(vehicleId, score));
 
@@ -155,8 +173,8 @@ export async function persistVehicleIntelligenceSnapshot({
             vehicleScores.inputSnapshotHash,
           ],
         })
-        .execute();
-      if (result.count > 0) inserted += 1;
+        .execute() as AffectedRowResult | unknown[];
+      if (affectedRowCount(result) > 0) inserted += 1;
     }
     return inserted;
   }
@@ -214,8 +232,7 @@ export async function persistVehicleIntelligenceSnapshot({
             vehicleScores.inputSnapshotHash,
           ],
         }).execute() as { rowCount?: number; count?: number } | undefined;
-        const affected = typeof result?.rowCount === "number" ? result.rowCount : (typeof result?.count === "number" ? result.count : 1);
-        if (affected > 0) {
+        if (affectedRowCount(result, 1) > 0) {
           inserted += 1;
         }
       } catch (error) {
@@ -272,8 +289,7 @@ export async function persistVehicleIntelligenceSnapshot({
             vehicleScores.inputSnapshotHash,
           ],
         }).execute() as { rowCount?: number; count?: number } | undefined;
-        const affected = typeof result?.rowCount === "number" ? result.rowCount : (typeof result?.count === "number" ? result.count : 1);
-        if (affected > 0) {
+        if (affectedRowCount(result, 1) > 0) {
           inserted += 1;
         }
       } catch (error) {

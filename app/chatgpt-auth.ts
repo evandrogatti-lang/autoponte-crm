@@ -19,16 +19,7 @@ const CALLBACK_PATH = "/callback";
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const email = requestHeaders.get(USER_EMAIL_HEADER);
-  if (!email) {
-    // A autenticação Supabase será ativada na próxima etapa.
-    // Este usuário temporário permite homologar o CRM na Vercel sem depender
-    // dos cabeçalhos exclusivos do ambiente ChatGPT/Cloudflare.
-    return {
-      displayName: process.env.AUTOPONTE_ADMIN_NAME ?? "Evandro Gatti",
-      email: process.env.AUTOPONTE_ADMIN_EMAIL ?? "admin@autoponte.local",
-      fullName: process.env.AUTOPONTE_ADMIN_NAME ?? "Evandro Gatti",
-    };
-  }
+  if (!email) return null;
 
   const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
   const fullName =
