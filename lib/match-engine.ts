@@ -1,6 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../db";
 import { buyerProfiles, consignments, tradeIns, vehicleMatches } from "../db/schema";
+import { evaluateMatchDecision, rankMatchDecisions, type DecisionIntent, type MatchDecision } from "./match-decision";
 
 export type BuyerProfile = {
   id: string; name: string; whatsapp: string; email: string; city: string;
@@ -12,6 +13,8 @@ export type MatchableVehicle = {
   sourceType: "catalog" | "consignment" | "trade_in"; sourceId: string; label: string;
   price: number; city: string; year: number; mileage: number; type?: string;
   transmission?: string; fuel?: string; useCases?: readonly string[];
+  brand?: string; model?: string; marketPrice?: number; documentApproved?: boolean;
+  inspectionApproved?: boolean; condition?: string; immediateAvailability?: boolean;
 };
 function normalize(value: string) { return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
 function parseTypes(value: string) { try { return JSON.parse(value || "[]") as string[]; } catch { return []; } }
@@ -35,10 +38,17 @@ function draftMessage(profile: BuyerProfile, vehicle: MatchableVehicle) {
 function toLegacyProfile(row: typeof buyerProfiles.$inferSelect): BuyerProfile {
   return { id: row.id, name: row.name, whatsapp: row.whatsapp, email: row.email, city: row.city, budget_max: row.budgetMax, vehicle_types: row.vehicleTypes, preferred_models: row.preferredModels, min_year: row.minYear, max_mileage: row.maxMileage, transmission: row.transmission, fuel: row.fuel, use_case: row.useCase, purchase_timeline: row.purchaseTimeline, alerts_consent: row.alertsConsent ? 1 : 0 };
 }
+function toDecisionIntent(profile:BuyerProfile):DecisionIntent{
+  return {budgetMax:profile.budget_max,vehicleTypes:parseTypes(profile.vehicle_types),preferredModels:profile.preferred_models.split(/[,;/]+/).map(x=>x.trim()).filter(Boolean),minYear:profile.min_year,maxMileage:profile.max_mileage,transmission:profile.transmission,useCase:profile.use_case};
+}
+function decisionValues(decision:MatchDecision){
+  const grouped={HARD:decision.requirements.filter(x=>x.constraintType==="HARD"),SOFT:decision.requirements.filter(x=>x.constraintType==="SOFT"),PREFERENCE:decision.requirements.filter(x=>x.constraintType==="PREFERENCE")};
+  return {constraintType:grouped,hardConstraintPass:decision.hardConstraintPass,hardConstraintFailures:decision.hardConstraintFailures,softDeviations:decision.softDeviations,preferencesSatisfied:decision.preferencesSatisfied,commercialAdvantages:decision.commercialAdvantages,compensationReasons:decision.compensationReasons,matchFitScore:decision.matchFitScore,opportunityScore:decision.opportunityScore,opportunityOverride:decision.opportunityOverride,rankingPosition:decision.rankingPosition,evaluationRunId:decision.evaluationRunId,scoringVersion:decision.scoringVersion,evaluatedAt:decision.evaluatedAt};
+}
 export async function createMatchesForVehicle(vehicle: MatchableVehicle) {
   const db = getDb(); const profiles = await db.select().from(buyerProfiles).where(eq(buyerProfiles.status, "active")); let created = 0;
-  for (const row of profiles) { const profile = toLegacyProfile(row); const match = scoreBuyerVehicle(profile, vehicle); if (match.score < 55) continue;
-    await db.insert(vehicleMatches).values({ id: crypto.randomUUID(), buyerProfileId: profile.id, sourceType: vehicle.sourceType, sourceId: vehicle.sourceId, vehicleLabel: vehicle.label, vehiclePrice: vehicle.price, score: match.score, reasons: JSON.stringify(match.reasons), messageDraft: draftMessage(profile, vehicle), status: profile.alerts_consent ? "review_pending" : "internal_only" }).onConflictDoNothing(); created += 1; }
+  for (const row of profiles) { const profile = toLegacyProfile(row); const match = scoreBuyerVehicle(profile, vehicle); const runId=crypto.randomUUID(); const [ranked]=rankMatchDecisions([{decision:evaluateMatchDecision(toDecisionIntent(profile),vehicle,match.score,{evaluationRunId:runId})}],runId); if(match.score<55&&!ranked.decision.opportunityOverride)continue;
+    await db.insert(vehicleMatches).values({ id: crypto.randomUUID(), buyerProfileId: profile.id, sourceType: vehicle.sourceType, sourceId: vehicle.sourceId, vehicleLabel: vehicle.label, vehiclePrice: vehicle.price, score: match.score, reasons: JSON.stringify(match.reasons), messageDraft: draftMessage(profile, vehicle), status: !ranked.decision.hardConstraintPass?"ineligible":profile.alerts_consent ? "review_pending" : "internal_only",...decisionValues(ranked.decision) }).onConflictDoNothing(); created += 1; }
   return created;
 }
 export async function createMatchesForBuyer(profile: BuyerProfile) {
@@ -47,8 +57,9 @@ export async function createMatchesForBuyer(profile: BuyerProfile) {
   for (const item of consignmentRows) vehicles.push({ sourceType: "consignment", sourceId: item.id, label: item.vehicleName, price: item.askingPrice, city: item.city, year: Number(item.year.match(/\d{4}/)?.[0] || 0), mileage: item.mileage });
   const tradeRows = await db.select().from(tradeIns).orderBy(desc(tradeIns.createdAt)).limit(100);
   for (const item of tradeRows) vehicles.push({ sourceType: "trade_in", sourceId: item.id, label: `${item.brand} ${item.model}`, price: item.estimatedMax, city: item.city, year: Number(item.year.match(/\d{4}/)?.[0] || 0), mileage: item.mileage });
-  let created = 0;
-  for (const vehicle of vehicles) { const match = scoreBuyerVehicle(profile, vehicle); if (match.score < 55) continue;
-    await db.insert(vehicleMatches).values({ id: crypto.randomUUID(), buyerProfileId: profile.id, sourceType: vehicle.sourceType, sourceId: vehicle.sourceId, vehicleLabel: vehicle.label, vehiclePrice: vehicle.price, score: match.score, reasons: JSON.stringify(match.reasons), messageDraft: draftMessage(profile, vehicle), status: profile.alerts_consent ? "review_pending" : "internal_only" }).onConflictDoNothing(); created += 1; }
+  let created = 0; const runId=crypto.randomUUID();
+  const ranked=rankMatchDecisions(vehicles.map(vehicle=>{const match=scoreBuyerVehicle(profile,vehicle);return {vehicle,match,decision:evaluateMatchDecision(toDecisionIntent(profile),vehicle,match.score,{evaluationRunId:runId})};}),runId);
+  for (const item of ranked) { if(item.match.score<55&&!item.decision.opportunityOverride)continue; const {vehicle,match,decision}=item;
+    await db.insert(vehicleMatches).values({ id: crypto.randomUUID(), buyerProfileId: profile.id, sourceType: vehicle.sourceType, sourceId: vehicle.sourceId, vehicleLabel: vehicle.label, vehiclePrice: vehicle.price, score: match.score, reasons: JSON.stringify(match.reasons), messageDraft: draftMessage(profile, vehicle), status: !decision.hardConstraintPass?"ineligible":profile.alerts_consent ? "review_pending" : "internal_only",...decisionValues(decision) }).onConflictDoNothing(); created += 1; }
   return created;
 }

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const tradeIns = pgTable("trade_ins", {
   id: text("id").primaryKey(),
@@ -123,8 +123,23 @@ export const vehicleMatches = pgTable("vehicle_matches", {
   caseId: text("case_id"),
   vehicleId: text("vehicle_id"),
   outcome: text("outcome").notNull().default(""),
+  constraintType: jsonb("constraint_type").notNull().default({}),
+  hardConstraintPass: boolean("hard_constraint_pass"),
+  hardConstraintFailures: jsonb("hard_constraint_failures").notNull().default([]),
+  softDeviations: jsonb("soft_deviations").notNull().default([]),
+  preferencesSatisfied: jsonb("preferences_satisfied").notNull().default([]),
+  commercialAdvantages: jsonb("commercial_advantages").notNull().default([]),
+  compensationReasons: jsonb("compensation_reasons").notNull().default([]),
+  matchFitScore: integer("match_fit_score"),
+  opportunityScore: integer("opportunity_score"),
+  opportunityOverride: boolean("opportunity_override").notNull().default(false),
+  rankingPosition: integer("ranking_position"),
+  evaluationRunId: text("evaluation_run_id"),
+  scoringVersion: text("scoring_version"),
+  evaluatedAt: timestamp("evaluated_at", { withTimezone: true }),
 }, (table) => [
   uniqueIndex("vehicle_matches_source_buyer_unique").on(table.sourceType, table.sourceId, table.buyerProfileId),
+  index("vehicle_matches_evaluation_ranking_idx").on(table.evaluationRunId, table.hardConstraintPass, table.rankingPosition),
 ]);
 
 /** Passwords stay exclusively with the authentication provider. */
