@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { FipeQuote } from "../fipe.ts";
 import { normalizeVehicleDate, type EvidenceSource, type FieldEvidence } from "./scoring.ts";
+import { COMPONENT_OBSERVATION_TYPES, isTrustedVqiEvidenceSource, isVqiEvidenceType } from "./evidence.ts";
 
 export const MANUAL_PROVENANCE_FIELDS = [
   "sourceType",
@@ -63,17 +64,33 @@ export type VehicleProvenanceEntry = {
   confidence: number;
   verified: boolean;
   verifiedAt: Date | null;
+  observationId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
 
 export type StoredVehicleProvenance = {
+  vehicleId?: string;
   fieldName: string;
   valueHash: string;
   source: string;
   confidence: number;
   verified: boolean;
   verifiedAt: Date | string | null;
+  observationId?: string | null;
+};
+
+export type StoredVehicleEvidenceObservation = {
+  id: string;
+  vehicleId: string;
+  evidenceType: string;
+  value: unknown;
+  valueHash: string;
+  source: string;
+  confidence: number;
+  verified: boolean;
+  verifiedAt: Date | string | null;
+  supersedesObservationId: string | null;
 };
 
 function canonicalizeValue(value: unknown): string {
@@ -269,10 +286,25 @@ export function filterChangedVehicleProvenance(
 export function attachVehicleProvenance<T extends VehicleValues>(
   vehicle: T,
   rows: readonly StoredVehicleProvenance[],
+  observations: readonly StoredVehicleEvidenceObservation[] = [],
 ): T & { provenance: Record<string, FieldEvidence> } {
   const provenance: Record<string, FieldEvidence> = {};
+  const observationById = new Map(observations.map((observation) => [observation.id, observation]));
+  const supersededIds = new Set(observations.flatMap((observation) => observation.supersedesObservationId ? [observation.supersedesObservationId] : []));
   for (const row of rows) {
-    if (!row.valueHash || row.valueHash !== calculateFieldValueHash(row.fieldName, vehicle[row.fieldName])) continue;
+    if (row.observationId) {
+      const observation = observationById.get(row.observationId);
+      if (!observation || supersededIds.has(observation.id)) continue;
+      if (observation.vehicleId !== vehicle.id || (row.vehicleId && row.vehicleId !== vehicle.id)) continue;
+      if (observation.evidenceType !== row.fieldName || !isVqiEvidenceType(observation.evidenceType)) continue;
+      if (!observation.verified || !row.verified || !observation.verifiedAt || !row.verifiedAt) continue;
+      if (!isTrustedVqiEvidenceSource(observation.evidenceType, observation.source)) continue;
+      if (observation.source !== row.source || observation.confidence !== row.confidence) continue;
+      if (!row.valueHash || row.valueHash !== observation.valueHash || observation.valueHash !== calculateProvenanceValueHash(observation.value)) continue;
+      if (!COMPONENT_OBSERVATION_TYPES.has(observation.evidenceType) && row.valueHash !== calculateFieldValueHash(row.fieldName, vehicle[row.fieldName])) continue;
+    } else if (!row.valueHash || row.valueHash !== calculateFieldValueHash(row.fieldName, vehicle[row.fieldName])) {
+      continue;
+    }
     provenance[row.fieldName] = {
       source: row.source as EvidenceSource,
       confidence: Math.max(0, Math.min(100, row.confidence)),

@@ -22,6 +22,7 @@ export async function persistVehicleDataProvenance(
           confidence: entry.confidence,
           verified: entry.verified,
           verifiedAt: entry.verifiedAt,
+          observationId: entry.observationId ?? null,
           updatedAt: entry.updatedAt,
         },
       });
