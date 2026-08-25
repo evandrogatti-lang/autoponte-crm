@@ -43,7 +43,8 @@ export default function PasswordForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const password = String(form.get("password") ?? "");
     const confirmation = String(form.get("confirmation") ?? "");
     if (password.length < 8) return setMessage("A senha deve ter pelo menos 8 caracteres.");
@@ -56,7 +57,7 @@ export default function PasswordForm() {
       if (error) throw error;
       setSuccess(true);
       setMessage("Senha atualizada. Agora você já pode entrar no CRM.");
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Não foi possível atualizar a senha.");
     } finally {

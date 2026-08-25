@@ -13,9 +13,10 @@ export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setLoading(true);
     setMessage("");
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     const email = String(form.get("email") ?? "").trim().toLowerCase();
     try {
       const supabase = createAuthClient();
@@ -30,7 +31,7 @@ export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
         if (error) throw error;
         setMessage("Se o e-mail estiver cadastrado, você receberá um link para definir uma nova senha.");
-        event.currentTarget.reset();
+        formElement.reset();
       }
     } catch (error) {
       const text = error instanceof Error ? error.message : "Não foi possível concluir a solicitação.";
