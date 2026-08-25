@@ -71,6 +71,41 @@
       "when": 1785764380804,
       "tag": "0009_seller_operations_mvp",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1785764380805,
+      "tag": "0010_vehicle_intelligence_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1785764380806,
+      "tag": "0011_vehicle_intelligence_scoring_upgrade",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1785764380807,
+      "tag": "0012_vehicle_score_snapshot_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1785764380808,
+      "tag": "0013_vehicle_data_provenance_value_hash",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1785764380809,
+      "tag": "0014_vehicle_score_calculated_at_non_unique",
+      "breakpoints": true
     }
   ]
 }
