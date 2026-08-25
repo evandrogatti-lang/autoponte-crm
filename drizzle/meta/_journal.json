@@ -120,6 +120,13 @@
       "when": 1785764380811,
       "tag": "0016_vehicle_registry_intelligence_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1787673600000,
+      "tag": "0017_e2e_pilot_operational_spine",
+      "breakpoints": true
     }
   ]
 }

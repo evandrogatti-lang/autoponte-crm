@@ -120,6 +120,9 @@ export const vehicleMatches = pgTable("vehicle_matches", {
   status: text("status").notNull().default("review_pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   reviewedAt: text("reviewed_at").notNull().default(""),
+  caseId: text("case_id"),
+  vehicleId: text("vehicle_id"),
+  outcome: text("outcome").notNull().default(""),
 }, (table) => [
   uniqueIndex("vehicle_matches_source_buyer_unique").on(table.sourceType, table.sourceId, table.buyerProfileId),
 ]);
@@ -233,3 +236,4 @@ export const sellerAssignments = pgTable("seller_assignments", {
 ]);
 
 export { vehicleDataProvenance, vehicleEvidenceObservations, vehicleScores } from "./vehicle-intelligence-schema.ts";
+export * from "./pilot-schema.ts";
