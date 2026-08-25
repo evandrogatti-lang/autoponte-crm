@@ -1,6 +1,7 @@
 import { and, desc, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getChatGPTUser } from "../../chatgpt-auth";
+import { requirePermission } from "../../../lib/access-control";
 import { getDb } from "../../../db";
 import { vehicleDataProvenance } from "../../../db/vehicle-intelligence-schema";
 import { vehicles } from "../../../db/vehicle-schema";
@@ -20,6 +21,11 @@ import { parseVehicleRegistrationInput, resolveVehicleRegistration } from "../..
 export async function GET() {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+  try {
+    await requirePermission(user, "vehicles.manage");
+  } catch {
+    return Response.json({ error: "Forbidden." }, { status: 403 });
+  }
   return Response.json(await getDb().select().from(vehicles).orderBy(desc(vehicles.updatedAt)).limit(500));
 }
 
