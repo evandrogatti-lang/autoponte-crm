@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq, isNull, or } from "drizzle-orm";
 import { requireChatGPTUser } from "../chatgpt-auth";
 import { getDb } from "../../db";
 import { buyerProfiles, vehicleMatches } from "../../db/schema";
@@ -23,7 +23,9 @@ export default async function MatchesPage() {
     status: vehicleMatches.status, source_type: vehicleMatches.sourceType, created_at: vehicleMatches.createdAt,
     name: buyerProfiles.name, whatsapp: buyerProfiles.whatsapp, email: buyerProfiles.email,
     city: buyerProfiles.city, alerts_consent: buyerProfiles.alertsConsent,
-  }).from(vehicleMatches).innerJoin(buyerProfiles, eq(buyerProfiles.id, vehicleMatches.buyerProfileId)).orderBy(desc(vehicleMatches.score), desc(vehicleMatches.createdAt)).limit(200);
+  }).from(vehicleMatches).innerJoin(buyerProfiles, eq(buyerProfiles.id, vehicleMatches.buyerProfileId))
+    .where(or(isNull(vehicleMatches.hardConstraintPass),eq(vehicleMatches.hardConstraintPass,true)))
+    .orderBy(desc(vehicleMatches.hardConstraintPass),asc(vehicleMatches.rankingPosition),desc(vehicleMatches.score),desc(vehicleMatches.createdAt)).limit(200);
 
   return <main className="crm-page"><header className="crm-header"><a className="brand" href="/"><span>AutoPonte</span> Veículos</a><div><strong>AutoPonte Match</strong><a href="/crm">CRM integrado</a><a href="/oportunidades">Avaliações</a><a href="/">Voltar ao site</a></div></header>
     <section className="crm-summary"><div><span>Correspondências</span><strong>{rows.length}</strong></div><div><span>Aguardando revisão</span><strong>{rows.filter((row) => row.status === "review_pending").length}</strong></div><div><span>Compatibilidade alta</span><strong>{rows.filter((row) => row.score >= 80).length}</strong></div></section>
