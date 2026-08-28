@@ -1,5 +1,5 @@
-import type { Momentum, OpportunityStage } from "./types";
-import { clamp } from "./utils";
+import type { Momentum, OpportunityStage } from "./types.ts";
+import { clamp } from "./utils.ts";
 
 const stageBaseRate: Record<OpportunityStage, number> = {
   new: 24,

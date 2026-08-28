@@ -1,8 +1,8 @@
-import type { OpportunitySignals, OpportunityStage } from "../ade";
-import { cleanContactText, normalizeInternationalPhone, normalizeEmail } from "../contact";
-import { opportunityStatuses } from "./types";
-import { parseDesiredVehicleProfileInput } from "../vehicles/fipe-validation";
-import type { OpportunityCommand, OpportunityStatus } from "./types";
+import type { OpportunitySignals, OpportunityStage } from "../ade/index.ts";
+import { cleanContactText, normalizeInternationalPhone, normalizeEmail } from "../contact.ts";
+import { opportunityStatuses } from "./types.ts";
+import { parseDesiredVehicleProfileInput } from "../vehicles/fipe-validation.ts";
+import type { OpportunityCommand, OpportunityStatus } from "./types.ts";
 
 export const opportunityStatusLabels: Record<OpportunityStatus, string> = {
   pre_evaluated: "Pré-avaliação",

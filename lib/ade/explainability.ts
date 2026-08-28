@@ -1,5 +1,5 @@
-import type { Explainability, OpportunityDNA, OpportunitySignals } from "./types";
-import { daysUntil } from "./utils";
+import type { Explainability, OpportunityDNA, OpportunitySignals } from "./types.ts";
+import { daysUntil } from "./utils.ts";
 
 export function explainAssessment(signals: OpportunitySignals, dna: OpportunityDNA, now = new Date()): Explainability {
   const candidates: Array<{ score: number; text: string }> = [

@@ -1,5 +1,5 @@
-import type { ConfidenceAssessment, OpportunityDNA, OpportunitySignals } from "./types";
-import { average, clamp } from "./utils";
+import type { ConfidenceAssessment, OpportunityDNA, OpportunitySignals } from "./types.ts";
+import { average, clamp } from "./utils.ts";
 
 export function assessConfidence(signals: OpportunitySignals, dna: OpportunityDNA): ConfidenceAssessment {
   const checks: Array<[string, boolean]> = [

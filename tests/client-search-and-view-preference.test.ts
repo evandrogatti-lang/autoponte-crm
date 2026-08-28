@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { matchesClientNamePrefix, normalizeClientName } from "../lib/clients/search";
-import { resolveOpportunityView } from "../lib/opportunities/view-preference";
+import { matchesClientNamePrefix, normalizeClientName } from "../lib/clients/search.ts";
+import { resolveOpportunityView } from "../lib/opportunities/view-preference.ts";
 
 test("busca de clientes normaliza acentos e usa prefixo nominal", () => {
   assert.equal(normalizeClientName(" João "), "joao");

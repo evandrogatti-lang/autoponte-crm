@@ -1,5 +1,5 @@
-import type { OpportunityAssessment, OpportunityStage } from "../ade";
-import type { DesiredVehicleProfileInput } from "../vehicles/desired-profile";
+import type { OpportunityAssessment, OpportunityStage } from "../ade/index.ts";
+import type { DesiredVehicleProfileInput } from "../vehicles/desired-profile.ts";
 
 export const opportunityStatuses = [
   "pre_evaluated",

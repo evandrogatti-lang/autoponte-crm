@@ -1,5 +1,5 @@
-import type { OpportunityDNA, OpportunitySignals } from "./types";
-import { ageInDays, clamp, daysSince, daysUntil, stageIndex } from "./utils";
+import type { OpportunityDNA, OpportunitySignals } from "./types.ts";
+import { ageInDays, clamp, daysSince, daysUntil, stageIndex } from "./utils.ts";
 
 function leadHeat(category?: string) {
   if (category === "hot") return 95;

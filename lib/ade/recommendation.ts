@@ -1,5 +1,5 @@
-import type { Explainability, Momentum, OpportunitySignals, Recommendation } from "./types";
-import { daysUntil } from "./utils";
+import type { Explainability, Momentum, OpportunitySignals, Recommendation } from "./types.ts";
+import { daysUntil } from "./utils.ts";
 
 export function recommendNextAction(
   signals: OpportunitySignals,

@@ -1,5 +1,5 @@
-import type { BusinessTemperature, Momentum, OpportunityDNA, OpportunitySignals } from "./types";
-import { ageInDays, clamp, daysSince, daysUntil, temperatureLabel } from "./utils";
+import type { BusinessTemperature, Momentum, OpportunityDNA, OpportunitySignals } from "./types.ts";
+import { ageInDays, clamp, daysSince, daysUntil, temperatureLabel } from "./utils.ts";
 
 export function calculateBusinessTemperature(dna: OpportunityDNA): BusinessTemperature {
   const score = clamp(

@@ -1,4 +1,4 @@
-import type { OpportunityStage, TemperatureLevel } from "./types";
+import type { OpportunityStage, TemperatureLevel } from "./types.ts";
 
 export const DAY_MS = 86_400_000;
 

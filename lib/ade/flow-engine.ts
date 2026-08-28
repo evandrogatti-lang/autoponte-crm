@@ -5,7 +5,7 @@ import type {
   FlowStage,
   OpportunityStage,
 } from "./types";
-import { average, clamp, stageLabels, stageOrder, temperatureLabel } from "./utils";
+import { average, clamp, stageLabels, stageOrder, temperatureLabel } from "./utils.ts";
 
 const stallThresholdDays: Record<OpportunityStage, number> = {
   new: 2,

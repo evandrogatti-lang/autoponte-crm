@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { evaluateOpportunity } from "../lib/ade";
-import { buildMissionControl } from "../lib/mission-control/mapper";
-import { parseOpportunityCommand } from "../lib/opportunities/domain";
-import { buildMailtoUrl, buildWhatsAppUrl, cleanContactText, formatBrazilianPhone, normalizeBrazilianPhone, normalizeEmail } from "../lib/contact";
-import type { TradeInRow } from "../lib/mission-control/model";
-import { buildDesiredVehicleLabel, buildFipeModelGroups, desiredVehicleSearchScope } from "../lib/vehicles/desired-profile";
+import { evaluateOpportunity } from "../lib/ade/index.ts";
+import { buildMissionControl } from "../lib/mission-control/mapper.ts";
+import { parseOpportunityCommand } from "../lib/opportunities/domain.ts";
+import { buildMailtoUrl, buildWhatsAppUrl, cleanContactText, formatBrazilianPhone, normalizeBrazilianPhone, normalizeEmail } from "../lib/contact.ts";
+import type { TradeInRow } from "../lib/mission-control/model.ts";
+import { buildDesiredVehicleLabel, buildFipeModelGroups, desiredVehicleSearchScope } from "../lib/vehicles/desired-profile.ts";
 
 const NOW = new Date("2026-08-05T12:00:00.000Z");
 
@@ -103,6 +103,7 @@ test("edição do cliente exige contato válido e normaliza os dados", () => {
     action: "edit_client",
     name: " Cliente Real ",
     whatsapp: "(11) 98888-7777",
+    whatsappDdi: "55",
     email: " CLIENTE@EXAMPLE.COM ",
     city: " São Bernardo do Campo ",
   });

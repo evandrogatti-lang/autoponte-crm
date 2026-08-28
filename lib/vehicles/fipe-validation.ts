@@ -1,10 +1,10 @@
-import { getFipeBrands, getFipeModels } from "../fipe";
+import { getFipeBrands, getFipeModels } from "../fipe.ts";
 import {
   buildDesiredVehicleLabel,
   buildFipeModelGroups,
   desiredVehicleSearchScope,
-} from "./desired-profile";
-import type { DesiredVehicleProfile, DesiredVehicleProfileInput, FipeOption } from "./desired-profile";
+} from "./desired-profile.ts";
+import type { DesiredVehicleProfile, DesiredVehicleProfileInput, FipeOption } from "./desired-profile.ts";
 
 export class DesiredVehicleValidationError extends Error {
   constructor(message: string) {

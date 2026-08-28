@@ -1,15 +1,15 @@
-import { calculateBusinessTemperature, calculateMomentum } from "./business-temperature";
-import { assessConfidence } from "./confidence";
-import { explainAssessment } from "./explainability";
-import { buildOpportunityDNA } from "./opportunity-dna";
-import { calibrateClosingProbability } from "./probability-calibration";
-import { recommendNextAction } from "./recommendation";
-import { ageInDays, average, clamp, temperatureLabel } from "./utils";
-import type { BusinessTemperature, OpportunityAssessment, OpportunitySignals } from "./types";
+import { calculateBusinessTemperature, calculateMomentum } from "./business-temperature.ts";
+import { assessConfidence } from "./confidence.ts";
+import { explainAssessment } from "./explainability.ts";
+import { buildOpportunityDNA } from "./opportunity-dna.ts";
+import { calibrateClosingProbability } from "./probability-calibration.ts";
+import { recommendNextAction } from "./recommendation.ts";
+import { ageInDays, average, clamp, temperatureLabel } from "./utils.ts";
+import type { BusinessTemperature, OpportunityAssessment, OpportunitySignals } from "./types.ts";
 
-export * from "./types";
-export { buildFlowEngine } from "./flow-engine";
-export { calibrateClosingProbability } from "./probability-calibration";
+export * from "./types.ts";
+export { buildFlowEngine } from "./flow-engine.ts";
+export { calibrateClosingProbability } from "./probability-calibration.ts";
 
 export function evaluateOpportunity(signals: OpportunitySignals, now = new Date()): OpportunityAssessment {
   const rawDna = buildOpportunityDNA(signals, now);

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildFlowEngine, evaluateOpportunity } from "../lib/ade";
+import { buildFlowEngine, evaluateOpportunity } from "../lib/ade/index.ts";
 
 const NOW = new Date("2026-08-05T12:00:00.000Z");
 

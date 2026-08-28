@@ -226,10 +226,10 @@ test("persists a full score batch atomically and rejects duplicate semantic snap
   const fakeDb = {
     rows: state,
     provenanceWrites,
-    async transaction(work: (tx: FakeTx) => Promise<void>) {
+    async transaction<T>(work: (tx: FakeTx) => Promise<T>): Promise<T> {
       const previous = [...state];
       try {
-        await work({
+        return await work({
           insert() {
             return {
               values(input: Record<string, unknown>) {
@@ -329,10 +329,10 @@ test("rolls back all inserts when a later score insert fails and keeps VQI zero 
   };
 
   const fakeDb = {
-    async transaction(work: (tx: FakeTx) => Promise<void>) {
+    async transaction<T>(work: (tx: FakeTx) => Promise<T>): Promise<T> {
       const previous = [...state];
       try {
-        await work({
+        return await work({
           insert() {
             return {
               values(input: Record<string, unknown>) {

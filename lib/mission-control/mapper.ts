@@ -1,6 +1,6 @@
-import { aggregateBusinessTemperature, buildFlowEngine, evaluateOpportunity } from "../ade";
-import { calculateMarginPotential, isTerminalStatus, opportunitySignalsFromRow, statusToStage } from "../opportunities";
-import type { MissionControlViewModel, MissionEventRow, MissionOpportunity, TradeInRow } from "./model";
+import { aggregateBusinessTemperature, buildFlowEngine, evaluateOpportunity } from "../ade/index.ts";
+import { calculateMarginPotential, isTerminalStatus, opportunitySignalsFromRow, statusToStage } from "../opportunities/index.ts";
+import type { MissionControlViewModel, MissionEventRow, MissionOpportunity, TradeInRow } from "./model.ts";
 
 function relativeFollowUp(value?: string, now = new Date()) {
   if (!value) return "Definir retorno";
