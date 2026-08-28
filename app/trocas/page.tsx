@@ -7,11 +7,10 @@ import { CoreShell, coreStyles as styles } from "../../components/crm/CoreShell"
 import { VehicleListFilters } from "../../features/vehicle-registry/components/VehicleListFilters";
 import { activeVehicleFilterChips, buildVehicleListHref, filterVehicleList, type VehicleFilterParams } from "../../features/vehicle-registry/vehicle-list-filters";
 import Link from "next/link";
+import { BRL_CURRENCY as money } from "../../lib/presentation/formatters";
+import { VEHICLE_STATUS_LABELS as statusLabels } from "../../lib/vehicles/presentation";
 
 export const dynamic = "force-dynamic";
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
-const statusLabels: Record<string, string> = { available: "Disponível", evaluation: "Em avaliação", reserved: "Reservado", sold: "Vendido", unavailable: "Indisponível" };
 
 export default async function TrocasPage({ searchParams }: { searchParams: Promise<VehicleFilterParams> }) {
   await requireChatGPTUser("/trocas");

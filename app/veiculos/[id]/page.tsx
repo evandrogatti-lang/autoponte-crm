@@ -18,8 +18,9 @@ import { InventoryShell } from "../../../features/vehicle-registry/components/In
 import { VehicleCreateForm } from "../../../features/vehicle-registry/components/VehicleCreateForm";
 import { VehicleIntelligenceScores } from "../../../features/vehicle-registry/components/VehicleIntelligenceScores";
 import styles from "../../../features/vehicle-registry/components/VehicleRegistry.module.css";
+import { BRL_CURRENCY as money } from "../../../lib/presentation/formatters";
+import { vehicleLifecycleLabel, VEHICLE_STATUS_LABELS as statusLabels } from "../../../lib/vehicles/presentation";
 
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const sourceLabels: Record<string, string> = {
   dealer_inventory: "Estoque de loja",
   consignment: "Consignação",
@@ -28,15 +29,6 @@ const sourceLabels: Record<string, string> = {
   partner_inventory: "Estoque parceiro",
   new_vehicle: "Veículo 0 km",
 };
-const statusLabels: Record<string, string> = {
-  available: "Disponível",
-  evaluation: "Em avaliação",
-  reserved: "Reservado",
-  sold: "Vendido",
-  unavailable: "Indisponível",
-};
-const lifecycleLabels: Record<string, string> = { PENDING_ENTRY: "Entrada pendente", IN_STOCK: "Em estoque", PREPARATION: "Preparação", READY: "Pronto", PUBLISHED: "Publicado", AVAILABLE: "Disponível", RESERVED: "Reservado", SOLD: "Vendido", DELIVERED: "Entregue" };
-
 async function getTradeInHistory(opportunityId: string) {
   const [row] = await getDb()
     .select({
@@ -269,7 +261,7 @@ export default async function VehicleDetailPage({
         <div className={styles.vehiclePhoto}>{vehicle.brand.slice(0, 1)}{vehicle.model.slice(0, 1)}</div>
         <div className={styles.vehicleIdentity}>
           <span className={styles.statusBadge} data-status={vehicle.status}>
-            {lifecycleLabels[vehicle.lifecycleStatus] ?? vehicle.lifecycleStatus}
+            {vehicleLifecycleLabel(vehicle.lifecycleStatus)}
           </span>
           <h2>{vehicle.brand} {vehicle.model}</h2>
           <p>{vehicle.plate || "Placa não informada"} · {vehicle.color || "Cor não informada"} · {vehicle.mileage.toLocaleString("pt-BR")} km</p>
@@ -293,7 +285,7 @@ export default async function VehicleDetailPage({
               <div><span>Avaliação</span><strong>{money.format(vehicle.appraisalValue || tradeInHistory?.opportunity.estimatedMax || 0)}</strong></div>
               <div><span>Valor creditado / pago</span><strong>{money.format(vehicle.creditedPaidValue || tradeInHistory?.creditedValue || 0)}</strong></div>
               <div><span>Custo de aquisição</span><strong>{money.format(vehicle.acquisitionCost)}</strong></div>
-              <div><span>Estado atual</span><strong>{lifecycleLabels[vehicle.lifecycleStatus] ?? vehicle.lifecycleStatus}</strong></div>
+              <div><span>Estado atual</span><strong>{vehicleLifecycleLabel(vehicle.lifecycleStatus)}</strong></div>
             </div>
           </section>
 
@@ -304,7 +296,7 @@ export default async function VehicleDetailPage({
           </section>
 
           <section className={styles.card}>
-            <header><div><span>ATIVIDADE OPERACIONAL ATUAL</span><h2>{lifecycleLabels[vehicle.lifecycleStatus] ?? vehicle.lifecycleStatus}</h2></div></header>
+            <header><div><span>ATIVIDADE OPERACIONAL ATUAL</span><h2>{vehicleLifecycleLabel(vehicle.lifecycleStatus)}</h2></div></header>
             <div className={styles.kv}>
               <div><span>Bloqueadores</span><strong>{inventoryReadiness.blockers.length ? inventoryReadiness.blockers.join(" · ") : "Nenhum"}</strong></div>
               <div><span>Documentação</span><strong>{inventoryReadiness.documentationReady ? "Pronta" : "Pendente"}</strong></div>

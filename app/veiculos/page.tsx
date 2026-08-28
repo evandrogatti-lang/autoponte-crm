@@ -8,11 +8,11 @@ import { VehicleListFilters } from "../../features/vehicle-registry/components/V
 import { activeVehicleFilterChips, buildVehicleListHref, filterVehicleList, type VehicleFilterParams } from "../../features/vehicle-registry/vehicle-list-filters";
 import styles from "../../features/vehicle-registry/components/VehicleRegistry.module.css";
 import Link from "next/link";
+import { BRL_CURRENCY as money } from "../../lib/presentation/formatters";
+import { VEHICLE_STATUS_LABELS as statusLabels } from "../../lib/vehicles/presentation";
 
 export const dynamic = "force-dynamic";
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const sourceLabels: Record<string, string> = { dealer_inventory: "Estoque próprio", consignment: "Consignação", trade_in: "Troca", autoponte_inventory: "AutoPonte", partner_inventory: "Estoque parceiro", new_vehicle: "0 km" };
-const statusLabels: Record<string, string> = { available: "Disponível", evaluation: "Em avaliação", reserved: "Reservado", sold: "Vendido", unavailable: "Indisponível" };
 
 function daysSince(value?: string | Date | null) {
   if (!value) return null;

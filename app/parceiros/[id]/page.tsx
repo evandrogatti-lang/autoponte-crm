@@ -8,9 +8,8 @@ import { VehicleListFilters } from "../../../features/vehicle-registry/component
 import { activeVehicleFilterChips, buildVehicleListHref, filterVehicleList, type VehicleFilterParams } from "../../../features/vehicle-registry/vehicle-list-filters";
 import styles from "../../../features/partner-registry/components/PartnerRegistry.module.css";
 import Link from "next/link";
-
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-const statusLabels: Record<string, string> = { available: "Disponível", evaluation: "Em avaliação", reserved: "Reservado", sold: "Vendido", unavailable: "Indisponível" };
+import { BRL_CURRENCY as money } from "../../../lib/presentation/formatters";
+import { VEHICLE_STATUS_LABELS as statusLabels } from "../../../lib/vehicles/presentation";
 
 export default async function PartnerDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<VehicleFilterParams> }) {
   const { id } = await params;
