@@ -1,15 +1,16 @@
-import { and, asc, desc, eq, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ne, or, sql } from "drizzle-orm";
 import { getDb } from "../../db/index.ts";
 import { crmUsers, sellerProfiles, tradeIns, vehicleMatches } from "../../db/schema.ts";
 import { vehicles } from "../../db/vehicle-schema.ts";
 import {
-  commercialCases, commercialContracts, customerIntents, customers, matchInteractions,
+  caseTasks, commercialCases, commercialContracts, customerIntents, customers, matchInteractions,
   paymentRecords, postSaleFollowups, proposals, vehicleCostEntries, vehicleDeliveries,
   vehicleLifecycleEvents, vehicleMedia, vehiclePriceHistory, vehiclePublications, vehicleWorkOrders,
 } from "../../db/pilot-schema.ts";
-import { assertTransition, CaseOperationError, type CaseAction } from "./contracts.ts";
+import { assertTransition, CaseOperationError, deriveNextAction, type CaseCommand, type CaseTaskCommand, type CreateCaseTaskCommand } from "./contracts.ts";
 
 export type CaseActor={name:string;email:string};
+function isCaseTaskCommand(action:CaseCommand):action is CaseTaskCommand{return action.type==="task.create"||action.type==="task.complete"||action.type==="task.cancel";}
 const eventTitle:Record<string,string>={
   "work_order.create":"Ordem de serviço aberta","work_order.transition":"Ordem de serviço atualizada",
   "publication.create":"Publicação criada","publication.transition":"Publicação atualizada",
@@ -18,6 +19,7 @@ const eventTitle:Record<string,string>={
   "payment.create":"Pagamento registrado","payment.transition":"Pagamento atualizado",
   "delivery.schedule":"Entrega agendada","delivery.complete":"Veículo entregue",
   "post_sale.schedule":"Pós-venda agendado","post_sale.complete":"Pós-venda concluído",
+  "task.create":"Ação do caso criada","task.complete":"Ação do caso concluída","task.cancel":"Ação do caso cancelada",
 };
 
 export async function listCommercialCases(){
@@ -27,12 +29,13 @@ export async function listCommercialCases(){
 
 export async function getCommercialCase(caseId:string){
   const db=getDb();
-  const [base]=await db.select({case:commercialCases,vehicle:vehicles,customer:customers,opportunity:tradeIns,sellerName:crmUsers.name})
+  const [base]=await db.select({case:commercialCases,vehicle:vehicles,customer:customers,opportunity:tradeIns,sellerName:crmUsers.name,sellerUserId:crmUsers.id})
     .from(commercialCases).leftJoin(vehicles,eq(commercialCases.vehicleId,vehicles.id)).leftJoin(customers,eq(commercialCases.customerId,customers.id)).leftJoin(tradeIns,eq(commercialCases.opportunityId,tradeIns.id)).leftJoin(sellerProfiles,eq(commercialCases.sellerProfileId,sellerProfiles.id)).leftJoin(crmUsers,eq(sellerProfiles.crmUserId,crmUsers.id)).where(or(eq(commercialCases.id,caseId),eq(commercialCases.pilotCode,caseId))).limit(1);
   if(!base)throw new CaseOperationError("Caso comercial não encontrado.",404);
   const resolvedCaseId=base.case.id;
-  const [timeline,costs,workOrders,media,publications,prices,intents,matches,interactions,proposalRows,contracts,payments,deliveries,followups,tradeInVehicles]=await Promise.all([
+  const [timeline,tasks,costs,workOrders,media,publications,prices,intents,matches,interactions,proposalRows,contracts,payments,deliveries,followups,tradeInVehicles]=await Promise.all([
     db.select().from(vehicleLifecycleEvents).where(eq(vehicleLifecycleEvents.caseId,resolvedCaseId)).orderBy(desc(vehicleLifecycleEvents.occurredAt)),
+    db.select().from(caseTasks).where(eq(caseTasks.caseId,resolvedCaseId)).orderBy(desc(caseTasks.createdAt)),
     db.select().from(vehicleCostEntries).where(eq(vehicleCostEntries.caseId,resolvedCaseId)).orderBy(desc(vehicleCostEntries.incurredAt)),
     db.select().from(vehicleWorkOrders).where(eq(vehicleWorkOrders.caseId,resolvedCaseId)).orderBy(desc(vehicleWorkOrders.openedAt)),
     db.select().from(vehicleMedia).where(eq(vehicleMedia.caseId,resolvedCaseId)).orderBy(asc(vehicleMedia.position)),
@@ -52,16 +55,17 @@ export async function getCommercialCase(caseId:string){
   ]);
   const totalCosts=costs.filter(x=>x.status==="approved").reduce((n,x)=>n+x.amount,0);
   const settledPayments=payments.filter(x=>x.status==="settled").reduce((n,x)=>n+x.amount,0);
-  return {...base,tradeInVehicle:tradeInVehicles[0]?.vehicle??null,timeline,costs,workOrders,media,publications,prices,intents,matches:matches.map(match=>({...match,reasons:safeJson(match.reasons,[]),interactions:interactions.filter(i=>i.matchId===match.id)})),proposals:proposalRows,contracts,payments,deliveries,followups,summary:{totalCosts,approvedPhotos:media.filter(x=>x.mediaType==="photo"&&x.status==="approved").length,settledPayments}};
+  return {...base,tradeInVehicle:tradeInVehicles[0]?.vehicle??null,timeline,tasks,nextAction:deriveNextAction(tasks)??null,costs,workOrders,media,publications,prices,intents,matches:matches.map(match=>({...match,reasons:safeJson(match.reasons,[]),interactions:interactions.filter(i=>i.matchId===match.id)})),proposals:proposalRows,contracts,payments,deliveries,followups,summary:{totalCosts,approvedPhotos:media.filter(x=>x.mediaType==="photo"&&x.status==="approved").length,settledPayments}};
 }
 
 function safeJson(value:string,fallback:unknown){try{return JSON.parse(value)}catch{return fallback}}
 type SelectExecutor=Pick<ReturnType<typeof getDb>,"select">;
 async function currentCase(tx:SelectExecutor,caseId:string){const [row]=await tx.select({case:commercialCases,vehicle:vehicles,customer:customers}).from(commercialCases).leftJoin(vehicles,eq(commercialCases.vehicleId,vehicles.id)).leftJoin(customers,eq(commercialCases.customerId,customers.id)).where(eq(commercialCases.id,caseId)).limit(1);if(!row||!row.vehicle||!row.customer)throw new CaseOperationError("Caso sem veículo ou cliente operacional.",409);return {case:row.case,vehicle:row.vehicle,customer:row.customer};}
 
-export async function operateCommercialCase(caseId:string,action:CaseAction,actor:CaseActor){
+export async function operateCommercialCase(caseId:string,action:CaseCommand,actor:CaseActor){
   const db=getDb(),now=new Date();
   return db.transaction(async tx=>{
+    if(isCaseTaskCommand(action))return operateCaseTask(tx,caseId,action,actor,now);
     const base=await currentCase(tx,caseId); let entityId="",description="";
     if(action.type==="work_order.create"){
       entityId=crypto.randomUUID(); await tx.insert(vehicleWorkOrders).values({id:entityId,caseId,vehicleId:base.vehicle.id,workType:action.workType,description:action.description,status:"open",estimatedCost:action.estimatedCost,openedAt:now}); description=action.description||action.workType;
@@ -99,4 +103,61 @@ export async function operateCommercialCase(caseId:string,action:CaseAction,acto
     await tx.update(commercialCases).set({updatedAt:now}).where(eq(commercialCases.id,caseId));
     return {ok:true,entityId,title:eventTitle[action.type]};
   });
+}
+
+type CaseTx=Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
+async function insertCaseTask(tx:CaseTx,caseId:string,command:CreateCaseTaskCommand,now:Date){
+  const [owner]=await tx.select({id:crmUsers.id}).from(crmUsers).where(and(eq(crmUsers.id,command.ownerId),eq(crmUsers.status,"active"))).limit(1);
+  if(!owner)throw new CaseOperationError("Responsável ativo não encontrado.",409);
+  const id=crypto.randomUUID();
+  await tx.insert(caseTasks).values({id,caseId,actionType:command.actionType,ownerId:owner.id,dueAt:new Date(command.dueAt),priority:command.priority,status:"OPEN",context:command.context,createdAt:now});
+  return id;
+}
+
+async function writeTaskTimeline(tx:CaseTx,caseId:string,vehicleId:string|null,type:string,taskId:string,description:string,actor:CaseActor,now:Date,metadata:Record<string,unknown>={}){
+  await tx.insert(vehicleLifecycleEvents).values({id:crypto.randomUUID(),caseId,vehicleId,eventType:type,status:"completed",occurredAt:now,description,metadata:{taskId,actor,...metadata}});
+}
+
+async function operateCaseTask(tx:CaseTx,caseId:string,action:CaseTaskCommand,actor:CaseActor,now:Date){
+  const [base]=await tx.select({id:commercialCases.id,status:commercialCases.status,vehicleId:commercialCases.vehicleId}).from(commercialCases).where(eq(commercialCases.id,caseId)).limit(1);
+  if(!base)throw new CaseOperationError("Caso comercial não encontrado.",404);
+  if(!["opened","active"].includes(base.status))throw new CaseOperationError("Ações só podem ser alteradas em um caso ativo.",409);
+  if(action.type==="task.create"){
+    const entityId=await insertCaseTask(tx,caseId,action,now);
+    await tx.update(commercialCases).set({noNextActionReason:null,updatedAt:now}).where(eq(commercialCases.id,caseId));
+    await writeTaskTimeline(tx,caseId,base.vehicleId,"task.create",entityId,action.context||action.actionType,actor,now,{actionType:action.actionType,priority:action.priority,dueAt:action.dueAt});
+    return {ok:true,entityId,title:eventTitle[action.type]};
+  }
+  const [task]=await tx.select().from(caseTasks).where(and(eq(caseTasks.id,action.id),eq(caseTasks.caseId,caseId))).limit(1);
+  if(!task)throw new CaseOperationError("Ação do caso não encontrada.",404);
+  if(task.status!=="OPEN")throw new CaseOperationError("Somente uma ação aberta pode ser concluída ou cancelada.",409);
+  if(action.type==="task.complete"){
+    if(!action.result)throw new CaseOperationError("Informe o resultado da ação.");
+    if(task.actionType==="MARK_CASE_LOST"){
+      if(!action.lossReason)throw new CaseOperationError("Informe o motivo da perda.");
+      const cancelled=await tx.select({id:caseTasks.id,actionType:caseTasks.actionType}).from(caseTasks).where(and(eq(caseTasks.caseId,caseId),eq(caseTasks.status,"OPEN"),ne(caseTasks.id,task.id)));
+      await tx.update(caseTasks).set({status:"DONE",result:action.result,completedAt:now}).where(eq(caseTasks.id,task.id));
+      await tx.update(caseTasks).set({status:"CANCELLED",result:"Caso encerrado como perdido",completedAt:now}).where(and(eq(caseTasks.caseId,caseId),eq(caseTasks.status,"OPEN"),ne(caseTasks.id,task.id)));
+      await tx.update(commercialCases).set({status:"lost",finalOutcome:"negotiation_lost",closedAt:now,noNextActionReason:null,notes:action.note||undefined,updatedAt:now}).where(eq(commercialCases.id,caseId));
+      await writeTaskTimeline(tx,caseId,base.vehicleId,"task.complete",task.id,action.result,actor,now,{actionType:task.actionType,lossReason:action.lossReason,note:action.note});
+      for(const item of cancelled)await writeTaskTimeline(tx,caseId,base.vehicleId,"task.cancel",item.id,"Caso encerrado como perdido",actor,now,{actionType:item.actionType});
+      return {ok:true,entityId:task.id,title:"Caso marcado como perdido"};
+    }
+    await tx.update(caseTasks).set({status:"DONE",result:action.result,completedAt:now}).where(eq(caseTasks.id,task.id));
+    let nextId:string|undefined;
+    if(action.nextTask)nextId=await insertCaseTask(tx,caseId,action.nextTask,now);
+    const [remaining]=await tx.select({id:caseTasks.id}).from(caseTasks).where(and(eq(caseTasks.caseId,caseId),eq(caseTasks.status,"OPEN"))).limit(1);
+    if(!remaining&&!action.noNextActionReason)throw new CaseOperationError("Defina a próxima ação ou registre o motivo para não haver uma.");
+    await tx.update(commercialCases).set({noNextActionReason:remaining?null:action.noNextActionReason,updatedAt:now}).where(eq(commercialCases.id,caseId));
+    await writeTaskTimeline(tx,caseId,base.vehicleId,"task.complete",task.id,action.result,actor,now,{actionType:task.actionType,nextTaskId:nextId});
+    if(nextId&&action.nextTask)await writeTaskTimeline(tx,caseId,base.vehicleId,"task.create",nextId,action.nextTask.context||action.nextTask.actionType,actor,now,{actionType:action.nextTask.actionType});
+    return {ok:true,entityId:task.id,nextTaskId:nextId,title:eventTitle[action.type]};
+  }
+  if(!action.reason)throw new CaseOperationError("Informe o motivo do cancelamento.");
+  await tx.update(caseTasks).set({status:"CANCELLED",result:action.reason,completedAt:now}).where(eq(caseTasks.id,task.id));
+  const [remaining]=await tx.select({id:caseTasks.id}).from(caseTasks).where(and(eq(caseTasks.caseId,caseId),eq(caseTasks.status,"OPEN"))).limit(1);
+  if(!remaining&&!action.noNextActionReason)throw new CaseOperationError("Defina uma próxima ação antes de cancelar ou registre o motivo para não haver uma.");
+  await tx.update(commercialCases).set({noNextActionReason:remaining?null:action.noNextActionReason,updatedAt:now}).where(eq(commercialCases.id,caseId));
+  await writeTaskTimeline(tx,caseId,base.vehicleId,"task.cancel",task.id,action.reason,actor,now,{actionType:task.actionType});
+  return {ok:true,entityId:task.id,title:eventTitle[action.type]};
 }

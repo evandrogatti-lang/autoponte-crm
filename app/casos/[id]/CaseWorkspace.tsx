@@ -35,6 +35,11 @@ const eventLabel: Record<string, string> = {
   "post_sale.complete": "Pós-venda concluído", "work_order.create": "Serviço aberto",
   "work_order.transition": "Serviço atualizado",
 };
+const taskLabel: Record<string, string> = {
+  CONTACT_CUSTOMER: "Contatar cliente", REQUEST_DOCUMENTS: "Solicitar documentos",
+  REVIEW_PROPOSAL: "Revisar proposta", SCHEDULE_FOLLOW_UP: "Agendar acompanhamento",
+  MARK_CASE_LOST: "Marcar caso como perdido",
+};
 
 export default function CaseWorkspace({ initialData }: { initialData: Json }) {
   const [data, setData] = useState(initialData);
@@ -53,6 +58,8 @@ export default function CaseWorkspace({ initialData }: { initialData: Json }) {
   const deliveries = Array.isArray(data.deliveries) ? data.deliveries as Json[] : [];
   const followups = Array.isArray(data.followups) ? data.followups as Json[] : [];
   const lifecycle = Array.isArray(data.timeline) ? data.timeline as Json[] : [];
+  const tasks = Array.isArray(data.tasks) ? data.tasks as Json[] : [];
+  const canonicalNextAction = data.nextAction as Json | null;
   const intents = Array.isArray(data.intents) ? data.intents as Json[] : [];
   const opportunity = data.opportunity as Json | null;
   const tradeInVehicle = data.tradeInVehicle as Json | null;
@@ -75,8 +82,6 @@ export default function CaseWorkspace({ initialData }: { initialData: Json }) {
   const isLost = caseData.status === "lost" || ["negotiation_lost", "proposal_rejected"].includes(String(caseData.finalOutcome));
   const documentBlocked = !["regular", "approved"].includes(String(vehicle.documentStatus));
   const blocker = isSold || isLost ? "Sem bloqueio · encerrada" : documentBlocked ? `Documentação ${label(vehicle.documentStatus)}` : pendingWork ? `Serviço: ${String(pendingWork.description || pendingWork.workType)}` : pendingPayment ? `Pagamento ${money(pendingPayment.amount)}` : "Sem bloqueio registrado";
-  const nextAction = isSold ? "Acompanhar pós-venda" : isLost ? "Nenhuma ação comercial" : documentBlocked ? "Regularizar documentação" : pendingWork ? "Concluir serviço pendente" : pendingPayment ? "Confirmar liquidação" : !selectedMatch ? "Selecionar recomendação" : !currentProposal ? "Preparar proposta" : currentProposal.status === "draft" ? "Enviar proposta" : currentProposal.status === "sent" ? "Obter decisão do cliente" : "Revisar andamento";
-  const nextDeadline = currentFollowup?.status === "scheduled" ? currentFollowup.dueAt : currentPayment?.dueAt || currentProposal?.validUntil;
   const advertisedPrice = currentPublication?.askingPrice ?? vehicle.askingPrice;
   const closingValue = isSold && acceptedProposal ? acceptedProposal.totalAmount : null;
   const discountValue = advertisedPrice && closingValue ? Math.max(0, Number(advertisedPrice) - Number(closingValue)) : null;
@@ -132,9 +137,21 @@ export default function CaseWorkspace({ initialData }: { initialData: Json }) {
     setData(await fresh.json()); setMessage(result.title ?? "Operação concluída."); setBusy(false);
   }
 
-  const completionAction = pendingPayment ? <button disabled={busy} onClick={() => void act({ type: "payment.transition", id: pendingPayment.id, status: "settled" })}>Confirmar liquidação</button>
-    : currentProposal?.status === "draft" ? <button disabled={busy} onClick={() => void act({ type: "proposal.transition", id: currentProposal.id, status: "sent" })}>Enviar proposta</button>
-    : currentProposal?.status === "sent" ? <button disabled={busy} onClick={() => void act({ type: "proposal.transition", id: currentProposal.id, status: "accepted" })}>Aceitar proposta</button> : null;
+  function newTask(): Json | null {
+    const actionType = window.prompt("Tipo: CONTACT_CUSTOMER, REQUEST_DOCUMENTS, REVIEW_PROPOSAL, SCHEDULE_FOLLOW_UP ou MARK_CASE_LOST", "CONTACT_CUSTOMER")?.trim();
+    const ownerId = String(data.sellerUserId || "");
+    const dueAt = window.prompt("Prazo (data e hora ISO)", new Date(Date.now() + 86400000).toISOString())?.trim();
+    if (!actionType || !ownerId || !dueAt) { setMessage(ownerId ? "A criação foi cancelada." : "O caso precisa de um vendedor responsável para criar ações."); return null; }
+    return { type: "task.create", actionType, ownerId, dueAt, priority: window.prompt("Prioridade: LOW, NORMAL, HIGH ou URGENT", "NORMAL")?.trim() || "NORMAL", context: window.prompt("Contexto da ação", "")?.trim() || "" };
+  }
+
+  function completeTask(task: Json) {
+    const result = window.prompt("Resultado da ação", "")?.trim(); if (!result) return;
+    if (task.actionType === "MARK_CASE_LOST") { const lossReason = window.prompt("Motivo: PRICE, FINANCING, VEHICLE_MISMATCH, CUSTOMER_WITHDREW, BOUGHT_FROM_COMPETITOR, NO_RESPONSE ou OTHER", "OTHER")?.trim(); if (lossReason) void act({ type:"task.complete", id:task.id, result, lossReason, note:window.prompt("Observação", "")?.trim() || "", noNextActionReason:"" }); return; }
+    const candidate = window.confirm("Deseja definir a próxima ação agora?") ? newTask() : null;
+    const noNextActionReason = candidate ? "" : window.prompt("Por que o caso ficará sem próxima ação?", "")?.trim() || "";
+    if (candidate || noNextActionReason) { const nextTask = { ...(candidate || {}) }; delete nextTask.type; void act({ type:"task.complete", id:task.id, result, nextTask:candidate ? nextTask : undefined, noNextActionReason, note:"" }); }
+  }
 
   return <div className={styles.cockpit}>
     <section className={styles.executive} aria-label="Resumo executivo">
@@ -145,7 +162,7 @@ export default function CaseWorkspace({ initialData }: { initialData: Json }) {
       <Meta label="Preço anunciado" value={advertisedPrice ? money(advertisedPrice) : "Não informado"} />
       <Meta label="Proposta aceita" value={acceptedProposal ? `#${acceptedProposal.sequence} · ${money(acceptedProposal.totalAmount)}` : "Nenhuma"} />
       <Meta label="Fechamento" value={closingValue ? money(closingValue) : "Não concluído"} />
-      <div className={styles.next}><span>PRÓXIMA AÇÃO</span><strong>{nextAction}</strong><small>{String(data.sellerName || "Não atribuído")} · {nextDeadline ? `até ${dateOnly(nextDeadline)}` : "sem prazo informado"}</small>{completionAction}</div>
+      <div className={styles.next}><span>PRÓXIMA AÇÃO</span>{canonicalNextAction ? <><strong>{taskLabel[String(canonicalNextAction.actionType)] || label(canonicalNextAction.actionType)}</strong><small>{String(data.sellerName || canonicalNextAction.ownerId)} · até {when(canonicalNextAction.dueAt)} · {label(canonicalNextAction.priority)}</small><button disabled={busy} onClick={() => completeTask(canonicalNextAction)}>Concluir</button></> : <><strong>Sem próxima ação definida</strong><small>{String(caseData.noNextActionReason || "Registre a próxima ação do caso.")}</small><button disabled={busy || isSold || isLost} onClick={() => { const task = newTask(); if (task) void act(task); }}>Criar ação</button></>}</div>
       <div className={styles.blocker} data-alert={!isSold && !isLost && blocker !== "Sem bloqueio registrado"}><span>BLOQUEIO</span><strong>{blocker}</strong></div>
     </section>
 
@@ -219,6 +236,12 @@ export default function CaseWorkspace({ initialData }: { initialData: Json }) {
       <header><h2>Linha do tempo unificada</h2><span>{unifiedTimeline.length} registros · histórico completo</span></header>
       <div className={styles.timelineHead}><span>Data / hora</span><span>Evento</span><span>Resumo</span><span>Responsável</span><span>Valor / status</span></div>
       {unifiedTimeline.map((row) => <div className={styles.timelineRow} key={row.id}><time>{when(row.at)}</time><strong>{row.event}</strong><span>{row.summary}</span><span>{row.owner}</span><b>{row.value}</b></div>)}
+    </section>
+
+    <section className={styles.timeline}>
+      <header><h2>Histórico de ações</h2><span>{tasks.length} registros</span></header>
+      <div className={styles.timelineHead}><span>Criada</span><span>Ação</span><span>Contexto / resultado</span><span>Prioridade</span><span>Status</span></div>
+      {tasks.length ? tasks.map((task) => <div className={styles.timelineRow} key={String(task.id)}><time>{when(task.createdAt)}</time><strong>{taskLabel[String(task.actionType)] || label(task.actionType)}</strong><span>{String(task.result || task.context || "Sem contexto")}</span><span>{label(task.priority)}</span><b>{label(task.status)}</b></div>) : <div className={styles.message}>Nenhuma ação registrada para este caso.</div>}
     </section>
   </div>;
 }
