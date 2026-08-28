@@ -2,7 +2,10 @@ import fs from "node:fs";
 import postgres from "postgres";
 const expected="prcmlynykncfgzwluoef";
 const env=Object.fromEntries(fs.readFileSync(".env.staging.local","utf8").split(/\r?\n/).filter(x=>x&&!x.startsWith("#")&&x.includes("=")).map(x=>{const i=x.indexOf("=");return [x.slice(0,i).trim(),x.slice(i+1).trim().replace(/^['"]|['"]$/g,"")]}));
-const u=new URL(env.DATABASE_URL),a=new URL(env.NEXT_PUBLIC_SUPABASE_URL);if(u.hostname!==`db.${expected}.supabase.co`||a.hostname.split(".")[0]!==expected)throw new Error("Unsafe target");
+const u=new URL(env.DATABASE_URL),a=new URL(env.NEXT_PUBLIC_SUPABASE_URL);
+const directTarget=u.hostname===`db.${expected}.supabase.co`;
+const poolerTarget=u.hostname.endsWith(".pooler.supabase.com")&&u.username===`postgres.${expected}`;
+if(env.AUTOPONTE_ENV!=="staging"||(!directTarget&&!poolerTarget)||a.hostname.split(".")[0]!==expected)throw new Error("Unsafe target");
 const db=postgres(env.DATABASE_URL,{prepare:false,max:1});
 try {
  const vehicleOrigins=await db`select source_type,origin,count(*)::int total from vehicles group by source_type,origin order by total desc`;

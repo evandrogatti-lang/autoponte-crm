@@ -6,7 +6,8 @@ import { buildTradeInDecision } from "../lib/vehicles/managerial-decision.ts";
 const expected="prcmlynykncfgzwluoef", marker="L1-CUSTOMER-B";
 const env=Object.fromEntries(fs.readFileSync(".env.staging.local","utf8").split(/\r?\n/).filter(x=>x&&!x.startsWith("#")&&x.includes("=")).map(x=>{const i=x.indexOf("=");return [x.slice(0,i).trim(),x.slice(i+1).trim().replace(/^['"]|['"]$/g,"")]}));
 const dbUrl=new URL(env.DATABASE_URL),authUrl=new URL(env.NEXT_PUBLIC_SUPABASE_URL);
-if(env.AUTOPONTE_ENV!=="staging"||dbUrl.hostname!==`db.${expected}.supabase.co`||authUrl.hostname.split(".")[0]!==expected)throw new Error("Unsafe target");
+const directTarget=dbUrl.hostname===`db.${expected}.supabase.co`,poolerTarget=dbUrl.hostname.endsWith(".pooler.supabase.com")&&dbUrl.username===`postgres.${expected}`;
+if(env.AUTOPONTE_ENV!=="staging"||(!directTarget&&!poolerTarget)||authUrl.hostname.split(".")[0]!==expected)throw new Error("Unsafe target");
 const db=postgres(env.DATABASE_URL,{prepare:false,max:1});
 try{
  const result=await db.begin(async tx=>{

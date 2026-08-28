@@ -1,6 +1,6 @@
 import fs from "node:fs";import postgres from "postgres";
 const expected="prcmlynykncfgzwluoef",vehicleId="phase2-p2-27-vehicle",marker="L2-CONTROLLED";
-const env=Object.fromEntries(fs.readFileSync(".env.staging.local","utf8").split(/\r?\n/).filter(v=>v&&!v.startsWith("#")&&v.includes("=")).map(v=>{const i=v.indexOf("=");return[v.slice(0,i).trim(),v.slice(i+1).trim().replace(/^['"]|['"]$/g,"")]}));const u=new URL(env.DATABASE_URL),a=new URL(env.NEXT_PUBLIC_SUPABASE_URL);if(env.AUTOPONTE_ENV!=="staging"||u.hostname!==`db.${expected}.supabase.co`||a.hostname.split(".")[0]!==expected)throw Error("Unsafe target");
+const env=Object.fromEntries(fs.readFileSync(".env.staging.local","utf8").split(/\r?\n/).filter(v=>v&&!v.startsWith("#")&&v.includes("=")).map(v=>{const i=v.indexOf("=");return[v.slice(0,i).trim(),v.slice(i+1).trim().replace(/^['"]|['"]$/g,"")]}));const u=new URL(env.DATABASE_URL),a=new URL(env.NEXT_PUBLIC_SUPABASE_URL);const direct=u.hostname===`db.${expected}.supabase.co`,pooler=u.hostname.endsWith(".pooler.supabase.com")&&u.username===`postgres.${expected}`;if(env.AUTOPONTE_ENV!=="staging"||(!direct&&!pooler)||a.hostname.split(".")[0]!==expected)throw Error("Unsafe target");
 const db=postgres(env.DATABASE_URL,{prepare:false,max:1});
 try{
  const result=await db.begin(async tx=>{

@@ -6,7 +6,9 @@ const expected = "prcmlynykncfgzwluoef";
 const env = Object.fromEntries(fs.readFileSync(".env.staging.local", "utf8").split(/\r?\n/).filter((line) => line && !line.startsWith("#") && line.includes("=")).map((line) => { const at = line.indexOf("="); return [line.slice(0, at).trim(), line.slice(at + 1).trim().replace(/^['"]|['"]$/g, "")]; }));
 const databaseUrl = new URL(env.DATABASE_URL);
 const authUrl = new URL(env.NEXT_PUBLIC_SUPABASE_URL);
-const databaseProject = databaseUrl.hostname === `db.${expected}.supabase.co` ? expected : databaseUrl.username.split(".")[1] || "unknown";
+const directTarget = databaseUrl.hostname === `db.${expected}.supabase.co`;
+const poolerTarget = databaseUrl.hostname.endsWith(".pooler.supabase.com") && databaseUrl.username === `postgres.${expected}`;
+const databaseProject = directTarget || poolerTarget ? expected : "unknown";
 const authProject = authUrl.hostname.split(".")[0];
 if (env.AUTOPONTE_ENV !== "staging" || databaseProject !== expected || authProject !== expected) throw new Error(`Refusing unsafe target: env=${env.AUTOPONTE_ENV}, db=${databaseProject}, auth=${authProject}`);
 
