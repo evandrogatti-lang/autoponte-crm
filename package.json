@@ -15,7 +15,7 @@
     "test:rendered": "node --test tests/rendered-html.test.mjs",
     "test:artifact": "npm run build && npm run test:rendered",
     "validate:artifact": "bash scripts/validate-artifact.sh",
-    "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
+    "lint": "eslint app components features lib db tests scripts --no-cache",
     "lint:core": "eslint lib db tests scripts --no-cache --max-warnings 0",
     "check": "npm run typecheck && npm run lint:core && npm run test:unit",
     "check:full": "npm run check && npm run lint && npm run test:artifact",

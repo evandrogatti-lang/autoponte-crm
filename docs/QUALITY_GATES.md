@@ -12,7 +12,7 @@ O workflow `.github/workflows/quality.yml` executa esse gate em pull requests e 
 
 ## Gates adicionais
 
-- `npm run lint`: baseline completo de UI/Next; ainda pode conter dívida histórica e deve ser reduzido por categoria.
+- `npm run lint`: baseline multiplataforma de toda a fonte, incluindo UI/Next; exclui snapshots e artefatos versionados fora dos diretórios de fonte e ainda pode conter dívida histórica a ser reduzida por categoria.
 - `npm run test:artifact`: gera o build e valida o HTML renderizado; exige ambiente compatível com o build.
 - `npm run check:full`: combina o gate obrigatório, lint completo e validação de artifact.
 - `npm run db:audit:staging`: auditoria read-only do schema de staging.
