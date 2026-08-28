@@ -177,7 +177,7 @@ export async function applyOpportunityCommand(id: string, command: OpportunityCo
     if (!current) throw new Error("OPPORTUNITY_NOT_FOUND");
 
     let updates: Partial<typeof tradeIns.$inferInsert> = { updatedAt: now };
-    let eventType = command.action;
+    const eventType = command.action;
     let title = "Oportunidade atualizada";
     let description = "";
     let metadata: Record<string, unknown> = {};

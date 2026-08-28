@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const tradeIns = pgTable("trade_ins", {
