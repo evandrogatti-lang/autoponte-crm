@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { assertVehicleLifecycleConsistency, assertVehicleLifecycleTransition, legacyStatusToLifecycle } from "../lib/vehicles/lifecycle.ts";
+import { parseVehicleLifecycleCommand } from "../lib/vehicles/lifecycle-service.ts";
 import { buildTradeInDecision } from "../lib/vehicles/managerial-decision.ts";
 
 test("accepts canonical forward lifecycle and rejects contradictory jumps", () => {
@@ -10,6 +11,22 @@ test("accepts canonical forward lifecycle and rejects contradictory jumps", () =
   assert.throws(() => assertVehicleLifecycleConsistency("SOLD", ["DOCUMENT_BLOCKED"]), /não pode/);
   assert.throws(() => assertVehicleLifecycleConsistency("AVAILABLE", ["VQI_PENDING"]), /VQI/);
   assert.equal(legacyStatusToLifecycle("sold"), "SOLD");
+});
+
+test("lifecycle service normalizes its command at the application boundary", () => {
+  assert.deepEqual(parseVehicleLifecycleCommand({
+    status: "PREPARATION",
+    blockers: ["MAINTENANCE_BLOCKED", "MAINTENANCE_BLOCKED"],
+    reason: "  Revisão preventiva  ",
+    caseId: " case-1 ",
+  }), {
+    status: "PREPARATION",
+    blockers: ["MAINTENANCE_BLOCKED"],
+    reason: "Revisão preventiva",
+    caseId: "case-1",
+  });
+  assert.throws(() => parseVehicleLifecycleCommand({ status: "INVALID", blockers: [] }), /Status de ciclo de vida inválido/);
+  assert.throws(() => parseVehicleLifecycleCommand({ status: "READY", blockers: ["UNKNOWN"] }), /Bloqueador de ciclo de vida inválido/);
 });
 
 test("managerial trade-in decision always exposes required decision dimensions", () => {
