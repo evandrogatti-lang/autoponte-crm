@@ -17,6 +17,7 @@ import { calculateVehicleIntelligence } from "../../../lib/vehicle-intelligence/
 import { InventoryShell } from "../../../features/vehicle-registry/components/InventoryShell";
 import { VehicleCreateForm } from "../../../features/vehicle-registry/components/VehicleCreateForm";
 import { VehicleIntelligenceScores } from "../../../features/vehicle-registry/components/VehicleIntelligenceScores";
+import { VehicleHeroSummary, VehicleOperationalPanel } from "../../../features/vehicle-registry/components/VehicleDetailPanels";
 import styles from "../../../features/vehicle-registry/components/VehicleRegistry.module.css";
 import { BRL_CURRENCY as money } from "../../../lib/presentation/formatters";
 import { vehicleLifecycleLabel, VEHICLE_STATUS_LABELS as statusLabels } from "../../../lib/vehicles/presentation";
@@ -257,21 +258,7 @@ export default async function VehicleDetailPage({
         </div>
       </div>
 
-      <section className={styles.vehicleHero}>
-        <div className={styles.vehiclePhoto}>{vehicle.brand.slice(0, 1)}{vehicle.model.slice(0, 1)}</div>
-        <div className={styles.vehicleIdentity}>
-          <span className={styles.statusBadge} data-status={vehicle.status}>
-            {vehicleLifecycleLabel(vehicle.lifecycleStatus)}
-          </span>
-          <h2>{vehicle.brand} {vehicle.model}</h2>
-          <p>{vehicle.plate || "Placa não informada"} · {vehicle.color || "Cor não informada"} · {vehicle.mileage.toLocaleString("pt-BR")} km</p>
-        </div>
-        <div className={styles.heroValues}>
-          <div><span>Preço de venda</span><strong>{money.format(asking)}</strong></div>
-          <div><span>Custo total</span><strong>{money.format(totalCost)}</strong></div>
-          <div><span>Margem bruta estimada</span><strong>{money.format(margin)}</strong></div>
-        </div>
-      </section>
+      <VehicleHeroSummary vehicle={vehicle} askingPrice={asking} totalCost={totalCost} margin={margin} />
 
       <div className={styles.vehicleDetailLayout}>
         <div className={styles.detailStack}>
@@ -295,21 +282,7 @@ export default async function VehicleDetailPage({
             <div className={styles.kv}>{currentCommercialCases.length ? currentCommercialCases.map((item) => <div key={item.id}><span>{item.status}</span><strong><Link href={`/casos/${item.id}`}>{item.customerName || item.customerId || item.pilotCode}</Link></strong></div>) : <div><span>Negociações atuais</span><strong>Nenhuma</strong></div>}</div>
           </section>
 
-          <section className={styles.card}>
-            <header><div><span>ATIVIDADE OPERACIONAL ATUAL</span><h2>{vehicleLifecycleLabel(vehicle.lifecycleStatus)}</h2></div></header>
-            <div className={styles.kv}>
-              <div><span>Bloqueadores</span><strong>{inventoryReadiness.blockers.length ? inventoryReadiness.blockers.join(" · ") : "Nenhum"}</strong></div>
-              <div><span>Documentação</span><strong>{inventoryReadiness.documentationReady ? "Pronta" : "Pendente"}</strong></div>
-              <div><span>Manutenção</span><strong>{inventoryReadiness.maintenanceReady ? "Pronta" : `${inventoryReadiness.openWorkOrders} ordem(ns) aberta(s)`}</strong></div>
-              <div><span>VQI</span><strong>{!inventoryReadiness.vqiRequired ? "Não exigido" : inventoryReadiness.vqiReady ? "Concluído" : "Pendente"}</strong></div>
-              <div><span>Fotos / mídia</span><strong>{inventoryReadiness.approvedPhotos} aprovadas · {inventoryReadiness.mediaReady ? "Pronto" : "Pendente"}</strong></div>
-              <div><span>Precificação</span><strong>{inventoryReadiness.pricingReady ? money.format(asking) : "Pendente"}</strong></div>
-              <div><span>Publicação</span><strong>{inventoryReadiness.publicationStatus}</strong></div>
-              <div><span>Início / finalização</span><strong>{inventoryReadiness.publicationStartedAt?.toLocaleDateString("pt-BR") || "Não iniciada"} · {inventoryReadiness.publicationEndedAt?.toLocaleDateString("pt-BR") || "Em aberto"}</strong></div>
-              <div><span>Aging</span><strong>{inventoryAgeDays} dia(s)</strong></div>
-              <div><span>Próxima ação operacional</span><strong>{inventoryReadiness.nextAction}</strong></div>
-            </div>
-          </section>
+          <VehicleOperationalPanel lifecycleStatus={vehicle.lifecycleStatus} readiness={inventoryReadiness} askingPrice={asking} inventoryAgeDays={inventoryAgeDays} />
           <section className={styles.card}>
             <header><div><span>IDENTIFICAÇÃO</span><h2>Dados do veículo</h2></div></header>
             <div className={styles.kv}>
