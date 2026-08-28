@@ -35,6 +35,32 @@ export function isOpportunityStatus(value: unknown): value is OpportunityStatus 
   return typeof value === "string" && opportunityStatuses.includes(value as OpportunityStatus);
 }
 
+export const opportunityTransitions: Record<OpportunityStatus, readonly OpportunityStatus[]> = {
+  pre_evaluated: ["new", "contacted", "lost"],
+  new: ["contacted", "lost"],
+  contacted: ["qualified", "lost"],
+  qualified: ["sent_to_store", "proposal", "lost"],
+  sent_to_store: ["qualified", "proposal", "lost"],
+  proposal: ["qualified", "closed", "lost"],
+  closed: [],
+  lost: ["new"],
+};
+
+export class OpportunityTransitionError extends Error {
+  constructor(current: OpportunityStatus, next: OpportunityStatus) {
+    super(`Transição de oportunidade inválida: ${current} → ${next}.`);
+    this.name = "OpportunityTransitionError";
+  }
+}
+
+export function assertOpportunityTransition(current: string, next: OpportunityStatus) {
+  const normalizedCurrent = normalizeOpportunityStatus(current);
+  if (normalizedCurrent === next) return;
+  if (!opportunityTransitions[normalizedCurrent].includes(next)) {
+    throw new OpportunityTransitionError(normalizedCurrent, next);
+  }
+}
+
 export function statusToStage(status: string): OpportunityStage {
   const stageMap: Record<string, OpportunityStage> = {
     new: "new",

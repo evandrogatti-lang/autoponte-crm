@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { evaluateOpportunity } from "../lib/ade/index.ts";
 import { buildMissionControl } from "../lib/mission-control/mapper.ts";
-import { parseOpportunityCommand } from "../lib/opportunities/domain.ts";
+import { assertOpportunityTransition, opportunityTransitions, parseOpportunityCommand } from "../lib/opportunities/domain.ts";
 import { buildMailtoUrl, buildWhatsAppUrl, cleanContactText, formatBrazilianPhone, normalizeBrazilianPhone, normalizeEmail } from "../lib/contact.ts";
 import type { TradeInRow } from "../lib/mission-control/model.ts";
 import { buildDesiredVehicleLabel, buildFipeModelGroups, desiredVehicleSearchScope } from "../lib/vehicles/desired-profile.ts";
@@ -77,6 +77,15 @@ test("comandos operacionais são validados e normalizados", () => {
   assert.equal(next.action, "next_action");
   if (next.action === "next_action") assert.equal(next.label, "Retornar");
   assert.throws(() => parseOpportunityCommand({ action: "stage", status: "invalid" }), /Etapa inválida/);
+});
+
+test("oportunidades seguem a máquina de estados e exigem reabertura explícita", () => {
+  assert.deepEqual(opportunityTransitions.closed, []);
+  assert.doesNotThrow(() => assertOpportunityTransition("new", "contacted"));
+  assert.doesNotThrow(() => assertOpportunityTransition("received", "contacted"));
+  assert.doesNotThrow(() => assertOpportunityTransition("lost", "new"));
+  assert.throws(() => assertOpportunityTransition("new", "closed"), /Transição de oportunidade inválida/);
+  assert.throws(() => assertOpportunityTransition("closed", "new"), /Transição de oportunidade inválida/);
 });
 
 test("margem e recomendações vêm de registros reais", () => {

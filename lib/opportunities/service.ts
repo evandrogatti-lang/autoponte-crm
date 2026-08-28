@@ -6,6 +6,7 @@ import { cleanContactText } from "../contact";
 import {
   calculateEstimatedMidpoint,
   calculateMarginPotential,
+  assertOpportunityTransition,
   normalizeOpportunityStatus,
   opportunitySignalsFromRow,
   opportunityStageLabels,
@@ -182,6 +183,7 @@ export async function applyOpportunityCommand(id: string, command: OpportunityCo
     let metadata: Record<string, unknown> = {};
 
     if (command.action === "stage") {
+      assertOpportunityTransition(current.status, command.status);
       updates = {
         ...updates,
         status: command.status,

@@ -3,6 +3,7 @@ import { getChatGPTUser } from "../../../chatgpt-auth";
 import { applyOpportunityCommand, getOpportunityWorkspace } from "../../../../lib/opportunities/service";
 import { parseOpportunityCommand } from "../../../../lib/opportunities";
 import type { OpportunityCommand } from "../../../../lib/opportunities";
+import { OpportunityTransitionError } from "../../../../lib/opportunities/domain";
 import { DesiredVehicleValidationError } from "../../../../lib/vehicles/fipe-validation";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -51,6 +52,9 @@ export async function PATCH(request: Request, context: RouteContext) {
   } catch (error) {
     if (error instanceof DesiredVehicleValidationError) {
       return Response.json({ error: error.message }, { status: 400 });
+    }
+    if (error instanceof OpportunityTransitionError) {
+      return Response.json({ error: error.message }, { status: 409 });
     }
     if (error instanceof Error && error.message === "OPPORTUNITY_NOT_FOUND") {
       return Response.json({ error: "Oportunidade não encontrada." }, { status: 404 });

@@ -5,6 +5,13 @@ export const contractStatuses = ["draft", "signed", "cancelled"] as const;
 export const paymentStatuses = ["pending", "settled", "failed", "cancelled"] as const;
 export const deliveryStatuses = ["scheduled", "delivered", "cancelled"] as const;
 export const followUpStatuses = ["scheduled", "completed", "cancelled"] as const;
+export const commercialCaseStatuses = ["opened", "active", "closed", "lost"] as const;
+export const commercialCaseOutcomes = ["", "active_negotiation", "awaiting_documents", "proposal_rejected", "negotiation_lost", "sold"] as const;
+export const acquisitionModes = ["direct_purchase", "trade_in", "consignment", "appraisal_only", "sale"] as const;
+
+export type CommercialCaseStatus = typeof commercialCaseStatuses[number];
+export type CommercialCaseOutcome = typeof commercialCaseOutcomes[number];
+export type AcquisitionMode = typeof acquisitionModes[number];
 
 export type CaseAction =
   | { type:"work_order.create"; workType:string; description:string; estimatedCost:number }
@@ -47,11 +54,11 @@ export function parseCaseAction(raw:Record<string,unknown>):CaseAction {
   throw new CaseOperationError("Ação operacional inválida.");
 }
 
-const allowed:Record<string,Record<string,readonly string[]>>={
+export const caseEntityTransitions:Record<string,Record<string,readonly string[]>>={
   work_order:{open:["in_progress","completed","cancelled"],in_progress:["completed","cancelled"],completed:[],cancelled:[]},
   publication:{draft:["published","ended"],published:["paused","ended"],paused:["published","ended"],ended:[]},
   proposal:{draft:["sent","rejected"],sent:["accepted","rejected","lost","expired"],accepted:[],rejected:[],lost:[],expired:[]},
   contract:{draft:["signed","cancelled"],signed:["cancelled"],cancelled:[]},
   payment:{pending:["settled","failed","cancelled"],failed:["pending","cancelled"],settled:[],cancelled:[]},
 };
-export function assertTransition(kind:keyof typeof allowed,current:string,next:string){if(current===next)return;if(!(allowed[kind][current]??[]).includes(next))throw new CaseOperationError(`Transição ${kind} ${current} → ${next} não permitida.`,409);}
+export function assertTransition(kind:keyof typeof caseEntityTransitions,current:string,next:string){if(current===next)return;if(!(caseEntityTransitions[kind][current]??[]).includes(next))throw new CaseOperationError(`Transição ${kind} ${current} → ${next} não permitida.`,409);}

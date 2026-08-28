@@ -10,7 +10,7 @@ export type VehicleLifecycleState = typeof VEHICLE_LIFECYCLE_STATES[number];
 export const VEHICLE_BLOCKERS = ["DOCUMENT_BLOCKED", "MAINTENANCE_BLOCKED", "VQI_PENDING"] as const;
 export type VehicleBlocker = typeof VEHICLE_BLOCKERS[number];
 
-const nextStates: Record<VehicleLifecycleState, readonly VehicleLifecycleState[]> = {
+export const VEHICLE_LIFECYCLE_TRANSITIONS: Record<VehicleLifecycleState, readonly VehicleLifecycleState[]> = {
   PENDING_ENTRY: ["IN_STOCK"],
   IN_STOCK: ["PREPARATION", "READY"],
   PREPARATION: ["READY"],
@@ -24,7 +24,7 @@ const nextStates: Record<VehicleLifecycleState, readonly VehicleLifecycleState[]
 
 export function assertVehicleLifecycleTransition(from: VehicleLifecycleState, to: VehicleLifecycleState) {
   if (from === to) return;
-  if (!nextStates[from].includes(to)) throw new Error(`Transição de ciclo de vida inválida: ${from} → ${to}.`);
+  if (!VEHICLE_LIFECYCLE_TRANSITIONS[from].includes(to)) throw new Error(`Transição de ciclo de vida inválida: ${from} → ${to}.`);
 }
 
 export function assertVehicleLifecycleConsistency(state: VehicleLifecycleState, blockers: readonly VehicleBlocker[]) {
