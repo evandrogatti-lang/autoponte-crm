@@ -75,11 +75,10 @@
   font-weight:700;
   border-left:3px solid transparent;
   box-sizing:border-box;
-  transition:background-color .16s ease,color .16s ease,box-shadow .16s ease,border-color .16s ease;
 }
 
 .nav a:focus-visible{
-  outline: 3px solid rgba(200,255,46,0.34);
+  outline: 3px solid rgba(200,255,46,0.12);
   outline-offset: 2px;
   border-radius:9px;
 }
@@ -146,25 +145,21 @@
   font-weight:800;
   border:1px solid #d1dde2;
   background:#fff;
-  transition:background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .16s ease;
-}
-.actions a:hover{
-  background:#f3f7f9;
 }
 .actions a:focus-visible{
-  outline: 3px solid rgba(200,255,46,0.34);
+  outline: 3px solid rgba(18,52,72,0.12);
   outline-offset: 2px;
   border-radius:9px;
 }
 
 /* Focus-visible for mobile more button and panel links */
 .mobileMoreButton:focus-visible{
-  outline: 3px solid rgba(200,255,46,0.34);
+  outline: 3px solid rgba(200,255,46,0.18);
   outline-offset: 2px;
   border-radius:9px;
 }
 .mobileMorePanel a:focus-visible{
-  outline: 3px solid rgba(200,255,46,0.34);
+  outline: 3px solid rgba(200,255,46,0.12);
   outline-offset: 2px;
   border-radius:8px;
 }
@@ -379,7 +374,6 @@
     font-size:10px;
     line-height:1.1;
     cursor:pointer;
-    transition:background-color .16s ease,color .16s ease,box-shadow .16s ease;
   }
 
   /* Mobile behavior: match `.nav a` layout and provide an active state when expanded */
@@ -419,14 +413,12 @@
   font-size:11px;
   font-weight:700;
   background:#0b2a3c;
-  transition:background-color .16s ease,color .16s ease,box-shadow .16s ease,border-color .16s ease;
 }
 
 .mobileMorePanel a:hover,
 .mobileMorePanel .mobileMoreActive{
   background:#14363d;
   color:#fff;
-  box-shadow:inset 3px 0 0 var(--ap-lime);
 }
 
 .mobileMorePanel .icon{
@@ -549,12 +541,6 @@
   border-radius:10px;
   background:#fff;
   box-sizing:border-box;
-  transition:border-color .16s ease,box-shadow .16s ease;
-}
-
-.globalSearch:focus-within{
-  border-color:#8eb03a;
-  box-shadow:0 0 0 3px rgba(200,255,46,.22);
 }
 
 .globalSearch span{
@@ -585,20 +571,6 @@
   cursor:pointer;
   padding:4px;
   line-height:1;
-  border-radius:6px;
-}
-
-.globalSearch button:focus-visible{
-  outline: 3px solid rgba(200,255,46,0.34);
-  outline-offset: 2px;
-}
-
-.appleTouch .mobileSearchTrigger:focus-visible,
-.mobileSearchHeader button:focus-visible,
-.mobileSearchForm input:focus-visible,
-.mobileSearchForm button:focus-visible{
-  outline: 3px solid rgba(200,255,46,0.34);
-  outline-offset: 2px;
 }
 
 .mobileSearchTrigger,

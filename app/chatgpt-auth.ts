@@ -1,4 +1,5 @@
-import { headers } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export type ChatGPTUser = {
@@ -20,13 +21,19 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const email = requestHeaders.get(USER_EMAIL_HEADER);
   if (!email) {
-    // A autenticação Supabase será ativada na próxima etapa.
-    // Este usuário temporário permite homologar o CRM na Vercel sem depender
-    // dos cabeçalhos exclusivos do ambiente ChatGPT/Cloudflare.
+    const supabaseUser = await getSupabaseUser();
+    if (supabaseUser) return supabaseUser;
+
+    const developmentBypass =
+      process.env.NODE_ENV === "development" &&
+      process.env.AUTOPONTE_DEV_AUTH_BYPASS === "true";
+    if (!developmentBypass) return null;
+
+    const displayName = process.env.AUTOPONTE_ADMIN_NAME ?? "Operador local";
     return {
-      displayName: process.env.AUTOPONTE_ADMIN_NAME ?? "Evandro Gatti",
+      displayName,
       email: process.env.AUTOPONTE_ADMIN_EMAIL ?? "admin@autoponte.local",
-      fullName: process.env.AUTOPONTE_ADMIN_NAME ?? "Evandro Gatti",
+      fullName: displayName,
     };
   }
 
@@ -50,7 +57,32 @@ export async function requireChatGPTUser(
   const user = await getChatGPTUser();
   if (user) return user;
 
-  redirect(chatGPTSignInPath(returnTo));
+  redirect(`/login?return_to=${encodeURIComponent(safeRelativeReturnPath(returnTo))}`);
+}
+
+async function getSupabaseUser(): Promise<ChatGPTUser | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) return null;
+
+  const cookieStore = await cookies();
+  const supabase = createServerClient(url, key, {
+    cookies: {
+      getAll: () => cookieStore.getAll(),
+      setAll: () => {},
+    },
+  });
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user?.email) return null;
+
+  const fullName = typeof user.user_metadata?.full_name === "string"
+    ? user.user_metadata.full_name
+    : null;
+  return {
+    displayName: fullName ?? user.email,
+    email: user.email,
+    fullName,
+  };
 }
 
 export function chatGPTSignInPath(returnTo: string): string {

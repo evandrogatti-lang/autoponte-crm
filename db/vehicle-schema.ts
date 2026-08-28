@@ -1,10 +1,20 @@
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export const vehicles = pgTable("vehicles", {
   id: text("id").primaryKey(),
   inventoryScope: text("inventory_scope").notNull().default("autoponte"),
   partnerId: text("partner_id").notNull().default(""),
   sourceType: text("source_type").notNull().default("partner_inventory"),
+  origin: text("origin").notNull().default("other"),
+  previousOwnerCustomerId: text("previous_owner_customer_id"),
+  sourceCaseId: text("source_case_id"),
+  sourceNegotiationId: text("source_negotiation_id"),
+  entryAt: timestamp("entry_at", { withTimezone: true }),
+  appraisalValue: integer("appraisal_value").notNull().default(0),
+  creditedPaidValue: integer("credited_paid_value").notNull().default(0),
+  lifecycleStatus: text("lifecycle_status").notNull().default("IN_STOCK"),
+  lifecycleBlockers: jsonb("lifecycle_blockers").$type<string[]>().notNull().default([]),
+  vqiRequired: boolean("vqi_required").notNull().default(false),
   status: text("status").notNull().default("available"),
   plate: text("plate").notNull().default(""),
   chassis: text("chassis").notNull().default(""),

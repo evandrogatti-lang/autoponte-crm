@@ -1,6 +1,7 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import { buyerProfiles, consignments, tradeIns, vehicleMatches } from "../db/schema";
+import { vehicles as inventoryVehicles } from "../db/vehicle-schema";
 import { evaluateMatchDecision, rankMatchDecisions, type DecisionIntent, type MatchDecision } from "./match-decision";
 
 export type BuyerProfile = {
@@ -10,7 +11,7 @@ export type BuyerProfile = {
   use_case: string; purchase_timeline: string; alerts_consent: number;
 };
 export type MatchableVehicle = {
-  sourceType: "catalog" | "consignment" | "trade_in"; sourceId: string; label: string;
+  sourceType: "catalog" | "consignment" | "trade_in" | "inventory"; sourceId: string; label: string;
   price: number; city: string; year: number; mileage: number; type?: string;
   transmission?: string; fuel?: string; useCases?: readonly string[];
   brand?: string; model?: string; marketPrice?: number; documentApproved?: boolean;
@@ -53,6 +54,16 @@ export async function createMatchesForVehicle(vehicle: MatchableVehicle) {
 }
 export async function createMatchesForBuyer(profile: BuyerProfile) {
   const db = getDb(); const vehicles: MatchableVehicle[] = [];
+  const availableInventory = await db.select().from(inventoryVehicles).where(and(
+    eq(inventoryVehicles.lifecycleStatus, "AVAILABLE"),
+    sql`${inventoryVehicles.lifecycleBlockers} = '[]'::jsonb`,
+    sql`${inventoryVehicles.documentStatus} in ('regular','approved')`,
+    sql`${inventoryVehicles.askingPrice} > 0`,
+    sql`(not ${inventoryVehicles.vqiRequired} or exists(select 1 from vehicle_scores s where s.vehicle_id=${inventoryVehicles.id} and s.score_type='VQI' and s.status<>'INSUFFICIENT_DATA'))`,
+    sql`(select count(*) from vehicle_media m where m.vehicle_id=${inventoryVehicles.id} and m.media_type='photo' and m.status='approved') >= 4`,
+    sql`exists(select 1 from vehicle_publications p where p.vehicle_id=${inventoryVehicles.id} and p.status='published' and p.published_at is not null and p.ended_at is null)`,
+  )).orderBy(desc(inventoryVehicles.createdAt)).limit(100);
+  for (const item of availableInventory) vehicles.push({ sourceType: "inventory", sourceId: item.id, label: `${item.brand} ${item.model}`, price: item.askingPrice || item.fipeValue, city: item.city, year: item.modelYear, mileage: item.mileage, transmission: item.transmission, fuel: item.fuel, brand: item.brand, model: item.model, documentApproved: ["regular", "approved"].includes(item.documentStatus), inspectionApproved: item.inspectionStatus === "approved", immediateAvailability: true });
   const consignmentRows = await db.select().from(consignments).orderBy(desc(consignments.createdAt)).limit(100);
   for (const item of consignmentRows) vehicles.push({ sourceType: "consignment", sourceId: item.id, label: item.vehicleName, price: item.askingPrice, city: item.city, year: Number(item.year.match(/\d{4}/)?.[0] || 0), mileage: item.mileage });
   const tradeRows = await db.select().from(tradeIns).orderBy(desc(tradeIns.createdAt)).limit(100);

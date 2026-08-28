@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { createAuthClient } from "../../lib/supabase-auth-client";
 import styles from "./auth.module.css";
 
-export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
+export default function AuthForm({ mode, returnTo }: { mode: "login" | "recovery"; returnTo?: string }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
         const password = String(form.get("password") ?? "");
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        router.replace("/crm");
+        router.replace(returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/crm");
         router.refresh();
       } else {
         const redirectTo = `${window.location.origin}/nova-senha`;

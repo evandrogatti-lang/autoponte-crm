@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -30,6 +30,7 @@ const NAVIGATION: NavGroup[] = [
       { label: "Potenciais clientes", href: "/leads", icon: "target" },
       { label: "Clientes", href: "/clientes", icon: "users" },
       { label: "Oportunidades", href: "/oportunidades", icon: "target" },
+      { label: "Negociações", href: "/casos", icon: "briefcase" },
       { label: "Propostas", href: "/propostas", icon: "file" },
     ],
   },
@@ -65,8 +66,8 @@ const NAVIGATION: NavGroup[] = [
 
 const MOBILE_PRIMARY_HREFS = [
   "/crm",
-  "/clientes",
   "/oportunidades",
+  "/casos",
   "/veiculos",
 ];
 
@@ -76,6 +77,7 @@ const MANAGED_PREFIXES = [
   "/clientes",
   "/leads",
   "/oportunidades",
+  "/casos",
   "/veiculos",
   "/estoque",
   "/trocas",
@@ -124,6 +126,7 @@ function Icon({ name }: { name: string }) {
   if (name === "car") return <svg {...common} aria-hidden="true" focusable="false"><path d="M3 13l2-5h14l2 5"/><path d="M5 13h14a2 2 0 0 1 2 2v3H3v-3a2 2 0 0 1 2-2Z"/><circle cx="6.5" cy="17" r="1"/><circle cx="17.5" cy="17" r="1"/></svg>;
   if (name === "swap") return <svg {...common} aria-hidden="true" focusable="false"><path d="M7 7h11l-3-3M17 17H6l3 3M18 7l3 3-3 3M6 17l-3-3 3-3"/></svg>;
   if (name === "file") return <svg {...common} aria-hidden="true" focusable="false"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>;
+  if (name === "briefcase") return <svg {...common} aria-hidden="true" focusable="false"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"/></svg>;
   if (name === "store") return <svg {...common} aria-hidden="true" focusable="false"><path d="M3 9l2-5h14l2 5"/><path d="M5 13v8h14v-8M8 21v-5h8v5"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg>;
   if (name === "wallet") return <svg {...common} aria-hidden="true" focusable="false"><path d="M3 6h15a3 3 0 0 1 3 3v9H3z"/><path d="M3 6V4h13v2M16 12h5"/><circle cx="17" cy="12" r=".7" fill="currentColor"/></svg>;
   if (name === "chart") return <svg {...common} aria-hidden="true" focusable="false"><path d="M4 20V10M10 20V4M16 20v-7M22 20V7"/></svg>;
@@ -145,12 +148,6 @@ export function CRMAppShell({ children }: { children: ReactNode }) {
   const mobileMoreButtonRef = useRef<HTMLButtonElement | null>(null);
   const mobileMorePanelRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
-  const closeMobileMore = useCallback((restoreFocus = false) => {
-    setMobileMoreOpen(false);
-    if (restoreFocus) {
-      requestAnimationFrame(() => mobileMoreButtonRef.current?.focus());
-    }
-  }, []);
 
   useEffect(() => {
   const handleShortcut = (event: KeyboardEvent) => {
@@ -246,18 +243,10 @@ useEffect(() => {
 
 // Close mobile more panel on route change
 useEffect(() => {
-  closeMobileMore(false);
-}, [closeMobileMore, pathname]);
-
-// Move focus to first item when opening mobile more panel
-useEffect(() => {
-  if (!mobileMoreOpen) return;
-  const id = requestAnimationFrame(() => {
-    const firstLink = mobileMorePanelRef.current?.querySelector<HTMLAnchorElement>('a[href]');
-    firstLink?.focus();
-  });
+  // always close on route change (no dependency on mobileMoreOpen)
+  const id = requestAnimationFrame(() => setMobileMoreOpen(false));
   return () => cancelAnimationFrame(id);
-}, [mobileMoreOpen]);
+}, [pathname]);
 
 // Handle Esc key and click outside when mobileMoreOpen
 useEffect(() => {
@@ -265,7 +254,9 @@ useEffect(() => {
 
   const onKey = (e: KeyboardEvent) => {
     if (e.key === "Escape" || e.key === "Esc") {
-      closeMobileMore(true);
+      setMobileMoreOpen(false);
+      // return focus to button
+      requestAnimationFrame(() => mobileMoreButtonRef.current?.focus());
     }
   };
 
@@ -274,7 +265,7 @@ useEffect(() => {
     const btn = mobileMoreButtonRef.current;
     const target = e.target as Node;
     if (panel && !panel.contains(target) && btn && !btn.contains(target)) {
-      closeMobileMore(false);
+      setMobileMoreOpen(false);
     }
   };
 
@@ -285,14 +276,14 @@ useEffect(() => {
     window.removeEventListener("keydown", onKey);
     window.removeEventListener("click", onClick, true);
   };
-}, [closeMobileMore, mobileMoreOpen]);
+}, [mobileMoreOpen]);
 
 // Close panel on hashchange (e.g., /crm#agenda)
 useEffect(() => {
-  const onHash = () => closeMobileMore(false);
+  const onHash = () => setMobileMoreOpen(false);
   window.addEventListener("hashchange", onHash);
   return () => window.removeEventListener("hashchange", onHash);
-}, [closeMobileMore]);
+}, []);
 
 // Close panel when leaving mobile breakpoint
 useEffect(() => {
@@ -301,7 +292,7 @@ useEffect(() => {
 
   const changeListener = (ev: Event) => {
     const mqlEvent = ev as MediaQueryListEvent;
-    if (!mqlEvent.matches) closeMobileMore(false);
+    if (!mqlEvent.matches) setMobileMoreOpen(false);
   };
 
   // modern browsers: addEventListener
@@ -312,20 +303,13 @@ useEffect(() => {
 
   // legacy: addListener
   if (typeof mq.addListener === "function") {
-    const legacyListener = (e: MediaQueryListEvent) => { if (!e.matches) closeMobileMore(false); };
+    const legacyListener = (e: MediaQueryListEvent) => { if (!e.matches) setMobileMoreOpen(false); };
     mq.addListener(legacyListener);
     return () => mq.removeListener(legacyListener);
   }
 
   return () => {};
-}, [closeMobileMore]);
-
-// Close panel on mobile orientation changes
-useEffect(() => {
-  const onOrientationChange = () => closeMobileMore(false);
-  window.addEventListener("orientationchange", onOrientationChange);
-  return () => window.removeEventListener("orientationchange", onOrientationChange);
-}, [closeMobileMore]);
+}, []);
 
 // primary mobile items are used implicitly by MOBILE_PRIMARY_HREFS; no separate variable needed
 
@@ -359,7 +343,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
               aria-label="Busca global"
               placeholder="Buscar clientes, veículos, placas..."
             />
-            <button type="submit" aria-label="Buscar" title="Buscar"><span aria-hidden="true">🔍</span></button>
+            <button type="submit" aria-label="Buscar" title="Buscar">🔍</button>
           </form>
         </section>
       </div>,
@@ -400,7 +384,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
             href={item.href}
             className={classNames}
             aria-current={isActive ? "page" : undefined}
-            onClick={() => closeMobileMore(false)}
+            onClick={() => setMobileMoreOpen(false)}
           >
             <span className={styles.icon}>
               <Icon name={item.icon} />
@@ -428,13 +412,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
     aria-expanded={mobileMoreOpen}
     aria-controls="mobile-more-panel"
     aria-label={mobileMoreOpen ? "Fechar mais opções" : "Abrir mais opções"}
-    onClick={() => {
-      if (mobileMoreOpen) {
-        closeMobileMore(false);
-        return;
-      }
-      setMobileMoreOpen(true);
-    }}
+    onClick={() => setMobileMoreOpen((s) => !s)}
   >
     <span className={styles.icon}><Icon name="grid" /></span>
     <span>Mais</span>
@@ -455,9 +433,8 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => closeMobileMore(false)}
+                onClick={() => setMobileMoreOpen(false)}
                 className={isActive ? styles.mobileMoreActive : ""}
-                aria-current={isActive ? "page" : undefined}
               >
                 <span className={styles.icon}><Icon name={item.icon} /></span>
                 <span>{item.label}</span>
@@ -489,7 +466,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
                  method="GET"
                 action="/busca"
 >
-          <span aria-hidden="true">⌕</span>
+          <span>⌕</span>
 
               <input
                 ref={globalSearchRef}

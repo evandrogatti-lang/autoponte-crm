@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, or, sql } from "drizzle-orm";
 import { getDb } from "../../db/index.ts";
 import { crmUsers, sellerProfiles, tradeIns, vehicleMatches } from "../../db/schema.ts";
 import { vehicles } from "../../db/vehicle-schema.ts";
@@ -28,27 +28,31 @@ export async function listCommercialCases(){
 export async function getCommercialCase(caseId:string){
   const db=getDb();
   const [base]=await db.select({case:commercialCases,vehicle:vehicles,customer:customers,opportunity:tradeIns,sellerName:crmUsers.name})
-    .from(commercialCases).leftJoin(vehicles,eq(commercialCases.vehicleId,vehicles.id)).leftJoin(customers,eq(commercialCases.customerId,customers.id)).leftJoin(tradeIns,eq(commercialCases.opportunityId,tradeIns.id)).leftJoin(sellerProfiles,eq(commercialCases.sellerProfileId,sellerProfiles.id)).leftJoin(crmUsers,eq(sellerProfiles.crmUserId,crmUsers.id)).where(eq(commercialCases.id,caseId)).limit(1);
+    .from(commercialCases).leftJoin(vehicles,eq(commercialCases.vehicleId,vehicles.id)).leftJoin(customers,eq(commercialCases.customerId,customers.id)).leftJoin(tradeIns,eq(commercialCases.opportunityId,tradeIns.id)).leftJoin(sellerProfiles,eq(commercialCases.sellerProfileId,sellerProfiles.id)).leftJoin(crmUsers,eq(sellerProfiles.crmUserId,crmUsers.id)).where(or(eq(commercialCases.id,caseId),eq(commercialCases.pilotCode,caseId))).limit(1);
   if(!base)throw new CaseOperationError("Caso comercial não encontrado.",404);
-  const [timeline,costs,workOrders,media,publications,prices,intents,matches,interactions,proposalRows,contracts,payments,deliveries,followups]=await Promise.all([
-    db.select().from(vehicleLifecycleEvents).where(eq(vehicleLifecycleEvents.caseId,caseId)).orderBy(desc(vehicleLifecycleEvents.occurredAt)),
-    db.select().from(vehicleCostEntries).where(eq(vehicleCostEntries.caseId,caseId)).orderBy(desc(vehicleCostEntries.incurredAt)),
-    db.select().from(vehicleWorkOrders).where(eq(vehicleWorkOrders.caseId,caseId)).orderBy(desc(vehicleWorkOrders.openedAt)),
-    db.select().from(vehicleMedia).where(eq(vehicleMedia.caseId,caseId)).orderBy(asc(vehicleMedia.position)),
-    db.select().from(vehiclePublications).where(eq(vehiclePublications.caseId,caseId)).orderBy(desc(vehiclePublications.createdAt)),
-    db.select().from(vehiclePriceHistory).where(eq(vehiclePriceHistory.caseId,caseId)).orderBy(desc(vehiclePriceHistory.changedAt)),
-    db.select().from(customerIntents).where(eq(customerIntents.caseId,caseId)).orderBy(desc(customerIntents.capturedAt)),
-    db.select().from(vehicleMatches).where(eq(vehicleMatches.caseId,caseId)).orderBy(desc(vehicleMatches.score)),
-    db.select().from(matchInteractions).where(eq(matchInteractions.caseId,caseId)).orderBy(desc(matchInteractions.occurredAt)),
-    db.select().from(proposals).where(eq(proposals.caseId,caseId)).orderBy(desc(proposals.sequence)),
-    db.select().from(commercialContracts).where(eq(commercialContracts.caseId,caseId)).orderBy(desc(commercialContracts.createdAt)),
-    db.select().from(paymentRecords).where(eq(paymentRecords.caseId,caseId)).orderBy(desc(paymentRecords.createdAt)),
-    db.select().from(vehicleDeliveries).where(eq(vehicleDeliveries.caseId,caseId)),
-    db.select().from(postSaleFollowups).where(eq(postSaleFollowups.caseId,caseId)).orderBy(desc(postSaleFollowups.dueAt)),
+  const resolvedCaseId=base.case.id;
+  const [timeline,costs,workOrders,media,publications,prices,intents,matches,interactions,proposalRows,contracts,payments,deliveries,followups,tradeInVehicles]=await Promise.all([
+    db.select().from(vehicleLifecycleEvents).where(eq(vehicleLifecycleEvents.caseId,resolvedCaseId)).orderBy(desc(vehicleLifecycleEvents.occurredAt)),
+    db.select().from(vehicleCostEntries).where(eq(vehicleCostEntries.caseId,resolvedCaseId)).orderBy(desc(vehicleCostEntries.incurredAt)),
+    db.select().from(vehicleWorkOrders).where(eq(vehicleWorkOrders.caseId,resolvedCaseId)).orderBy(desc(vehicleWorkOrders.openedAt)),
+    db.select().from(vehicleMedia).where(eq(vehicleMedia.caseId,resolvedCaseId)).orderBy(asc(vehicleMedia.position)),
+    db.select().from(vehiclePublications).where(eq(vehiclePublications.caseId,resolvedCaseId)).orderBy(desc(vehiclePublications.createdAt)),
+    db.select().from(vehiclePriceHistory).where(eq(vehiclePriceHistory.caseId,resolvedCaseId)).orderBy(desc(vehiclePriceHistory.changedAt)),
+    db.select().from(customerIntents).where(eq(customerIntents.caseId,resolvedCaseId)).orderBy(desc(customerIntents.capturedAt)),
+    db.select().from(vehicleMatches).where(eq(vehicleMatches.caseId,resolvedCaseId)).orderBy(desc(vehicleMatches.score)),
+    db.select().from(matchInteractions).where(eq(matchInteractions.caseId,resolvedCaseId)).orderBy(desc(matchInteractions.occurredAt)),
+    db.select().from(proposals).where(eq(proposals.caseId,resolvedCaseId)).orderBy(desc(proposals.sequence)),
+    db.select().from(commercialContracts).where(eq(commercialContracts.caseId,resolvedCaseId)).orderBy(desc(commercialContracts.createdAt)),
+    db.select().from(paymentRecords).where(eq(paymentRecords.caseId,resolvedCaseId)).orderBy(desc(paymentRecords.createdAt)),
+    db.select().from(vehicleDeliveries).where(eq(vehicleDeliveries.caseId,resolvedCaseId)),
+    db.select().from(postSaleFollowups).where(eq(postSaleFollowups.caseId,resolvedCaseId)).orderBy(desc(postSaleFollowups.dueAt)),
+    base.opportunity?.id
+      ? db.select({ vehicle: vehicles }).from(vehicleMatches).innerJoin(vehicles,eq(vehicleMatches.vehicleId,vehicles.id)).where(and(eq(vehicleMatches.sourceType,"trade_in"),eq(vehicleMatches.sourceId,base.opportunity.id))).limit(1)
+      : Promise.resolve([]),
   ]);
   const totalCosts=costs.filter(x=>x.status==="approved").reduce((n,x)=>n+x.amount,0);
   const settledPayments=payments.filter(x=>x.status==="settled").reduce((n,x)=>n+x.amount,0);
-  return {...base,timeline,costs,workOrders,media,publications,prices,intents,matches:matches.map(match=>({...match,reasons:safeJson(match.reasons,[]),interactions:interactions.filter(i=>i.matchId===match.id)})),proposals:proposalRows,contracts,payments,deliveries,followups,summary:{totalCosts,approvedPhotos:media.filter(x=>x.mediaType==="photo"&&x.status==="approved").length,settledPayments}};
+  return {...base,tradeInVehicle:tradeInVehicles[0]?.vehicle??null,timeline,costs,workOrders,media,publications,prices,intents,matches:matches.map(match=>({...match,reasons:safeJson(match.reasons,[]),interactions:interactions.filter(i=>i.matchId===match.id)})),proposals:proposalRows,contracts,payments,deliveries,followups,summary:{totalCosts,approvedPhotos:media.filter(x=>x.mediaType==="photo"&&x.status==="approved").length,settledPayments}};
 }
 
 function safeJson(value:string,fallback:unknown){try{return JSON.parse(value)}catch{return fallback}}

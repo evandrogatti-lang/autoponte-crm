@@ -1,0 +1,11 @@
+import fs from "node:fs";
+import postgres from "postgres";
+const expected="prcmlynykncfgzwluoef";
+const env=Object.fromEntries(fs.readFileSync(".env.staging.local","utf8").split(/\r?\n/).filter(x=>x&&!x.startsWith("#")&&x.includes("=")).map(x=>{const i=x.indexOf("=");return [x.slice(0,i).trim(),x.slice(i+1).trim().replace(/^['"]|['"]$/g,"")]}));
+const u=new URL(env.DATABASE_URL),a=new URL(env.NEXT_PUBLIC_SUPABASE_URL);if(env.AUTOPONTE_ENV!=="staging"||u.hostname!==`db.${expected}.supabase.co`||a.hostname.split(".")[0]!==expected)throw new Error("Unsafe target");
+const db=postgres(env.DATABASE_URL,{prepare:false,max:1});
+try{await db.begin(async tx=>{
+ const [gate]=await tx`select (select count(*)::int from commercial_cases) cases,(select count(*)::int from vehicle_matches) matches`;if(gate.cases!==50||gate.matches!==170)throw new Error("Preservation gate failed");
+ await tx`update vehicles set origin='purchase' where source_type='direct_purchase' and origin='other'`;
+ await tx.unsafe(`with provenance as (select distinct on(c.vehicle_id)c.vehicle_id,c.opportunity_id negotiation_id,c.id case_id,c.customer_id previous_owner_id,c.opened_at,coalesce(nullif(t.estimated_max,0),t.reference_price,0) appraisal,coalesce(p.trade_in_credit,0) credited from commercial_cases c left join trade_ins t on t.id=c.opportunity_id left join proposals p on p.case_id=c.id and p.status='accepted' where c.acquisition_mode='trade_in' and c.vehicle_id is not null order by c.vehicle_id,c.opened_at asc,p.proposed_at desc nulls last) update vehicles v set source_negotiation_id=coalesce(v.source_negotiation_id,provenance.negotiation_id),source_case_id=coalesce(v.source_case_id,provenance.case_id),previous_owner_customer_id=coalesce(v.previous_owner_customer_id,provenance.previous_owner_id),entry_at=coalesce(v.entry_at,provenance.opened_at),appraisal_value=case when v.appraisal_value=0 then provenance.appraisal else v.appraisal_value end,credited_paid_value=case when v.credited_paid_value=0 then provenance.credited else v.credited_paid_value end from provenance where v.id=provenance.vehicle_id and v.origin='trade_in'`);
+ });console.log(JSON.stringify({target:expected,backfill:"complete"}));}finally{await db.end()}

@@ -43,3 +43,8 @@ next-env.d.ts
 
 .next/
 .next.zip
+
+# local editor and Codex worktree state
+/.vscode/
+/.worktrees/
+*.tsbuildinfo

@@ -16,6 +16,7 @@ import { persistVehicleDataProvenance } from "../../../lib/vehicle-intelligence/
 import { calculateVehicleIntelligence } from "../../../lib/vehicle-intelligence/scoring";
 import { persistVehicleIntelligenceSnapshot } from "../../../lib/vehicle-intelligence/service";
 import { parseVehicleRegistrationInput, resolveVehicleRegistration } from "../../../lib/vehicles/vehicle-registration";
+import { legacyStatusToLifecycle } from "../../../lib/vehicles/lifecycle";
 
 export async function GET() {
   const user = await getChatGPTUser();
@@ -49,6 +50,8 @@ export async function POST(request: Request) {
       inventoryScope: input.inventoryScope,
       partnerId: input.partnerId,
       sourceType: input.sourceType,
+      origin: input.sourceType === "trade_in" ? "trade_in" : input.sourceType === "consignment" ? "consignment" : ["dealer_inventory", "autoponte_inventory"].includes(input.sourceType) ? "purchase" : "other",
+      lifecycleStatus: legacyStatusToLifecycle(input.status),
       status: input.status,
       plate: input.plate,
       chassis: input.chassis,

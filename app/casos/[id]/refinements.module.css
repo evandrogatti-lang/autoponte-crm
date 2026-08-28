@@ -1,0 +1,129 @@
+.tradeInCard,
+.aiSummary {
+  background: #fff;
+  border: 1px solid #dce3ea;
+  border-radius: 8px;
+}
+
+.tradeInCard > header,
+.aiSummary > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-bottom: 1px solid #edf0f2;
+}
+
+.tradeInCard header span,
+.aiSummary header span {
+  display: block;
+  color: #687887;
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.tradeInCard h2,
+.aiSummary h2 {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+
+.tradeInBody {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.6fr) repeat(3, minmax(130px, 1fr));
+}
+
+.tradeInBody > * {
+  padding: 10px 12px;
+  border-right: 1px solid #edf0f2;
+}
+
+.tradeInVehicle a {
+  color: #164f65;
+  text-decoration: none;
+}
+
+.tradeInVehicle a:hover {
+  text-decoration: underline;
+}
+
+.tradeInVehicle strong,
+.tradeInVehicle span {
+  display: block;
+  font-size: 13px;
+}
+
+.tradeInVehicle span {
+  margin-top: 3px;
+  color: #687887;
+  font-size: 11px;
+}
+
+.aiSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.aiSummaryGrid p {
+  margin: 0;
+  padding: 10px 12px;
+  border-right: 1px solid #edf0f2;
+  color: #40535f;
+  font-size: 11px;
+  line-height: 1.42;
+}
+
+.aiSummaryGrid b {
+  display: block;
+  margin-bottom: 3px;
+  color: #17212b;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.aiSummary > details {
+  padding: 7px 12px;
+  border-top: 1px solid #edf0f2;
+}
+
+.aiSummary summary {
+  cursor: pointer;
+  color: #225e72;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.aiDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  color: #40535f;
+  font-size: 11px;
+}
+
+.aiDetails p {
+  margin: 7px 0 0;
+}
+
+:global([data-subdued="true"]) b {
+  color: #80909b;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: none;
+}
+
+@media (max-width: 1050px) {
+  .tradeInBody,
+  .aiSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .tradeInBody,
+  .aiSummaryGrid,
+  .aiDetails {
+    grid-template-columns: 1fr;
+  }
+}

@@ -5,7 +5,6 @@ import { requireChatGPTUser } from "../chatgpt-auth";
 import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
 import { InventoryShell } from "../../features/vehicle-registry/components/InventoryShell";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -198,7 +197,7 @@ export default async function LeadsPage({
           </div>
 
           <div style={{ display: "flex", gap: "10px" }}>
-            <Link
+            <a
               href="/crm"
               style={{
                 textDecoration: "none",
@@ -209,9 +208,9 @@ export default async function LeadsPage({
               }}
             >
               ← Voltar ao CRM
-            </Link>
+            </a>
 
-            <Link
+            <a
               href="/oportunidades/nova"
               style={{
                 textDecoration: "none",
@@ -223,7 +222,7 @@ export default async function LeadsPage({
               }}
             >
               + Novo potencial cliente
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -347,9 +346,9 @@ export default async function LeadsPage({
                 const params = new URLSearchParams(canonicalParams);
                 params.delete(key);
                 const href = params.size ? `/leads?${params}` : "/leads";
-                return <Link key={key} href={href} className={styles.filterChip}>{filterLabel(key, filters[key])} <span aria-hidden="true">×</span></Link>;
+                return <a key={key} href={href} className={styles.filterChip}>{filterLabel(key, filters[key])} <span aria-hidden="true">×</span></a>;
               })}
-              <Link href="/leads" className={styles.clearFilters}>Limpar filtros</Link>
+              <a href="/leads" className={styles.clearFilters}>Limpar filtros</a>
             </div>
           )}
 
@@ -381,8 +380,8 @@ export default async function LeadsPage({
                     <th style={thStyle} className={styles.optionalColumn}>Interesse</th>
                     <th style={thStyle}>Etapa</th>
                     <th style={thStyle}>Prioridade</th>
-                    <th style={thStyle}>Próxima ação</th>
                     <th style={thStyle}>Probabilidade</th>
+                    <th style={thStyle}>Próxima ação</th>
                   </tr>
                 </thead>
 
@@ -390,12 +389,12 @@ export default async function LeadsPage({
                   {filteredRows.map((lead) => (
               <tr key={lead.id} className={styles.clickableRow}>
                   <td style={tdStyle}>
-                    <Link
+                    <a
                   href={`/oportunidades/${lead.id}?returnTo=${encodeURIComponent(currentHref)}`}
                   className={styles.rowLink}
                 >
                   {lead.name}
-               </Link>
+               </a>
 
                         <small style={smallStyle}>
                           {lead.whatsapp || lead.email || "Sem contato"}
@@ -423,13 +422,11 @@ export default async function LeadsPage({
                       </td>
 
                       <td style={tdStyle}>
-                        <strong style={{ color: lead.nextAction ? "#0d2233" : "#6a7d8b" }}>
-                          {lead.nextAction || "Sem próxima ação definida"}
-                        </strong>
+                        <strong>{lead.probability}%</strong>
                       </td>
 
                       <td style={tdStyle}>
-                        <strong>{lead.probability}%</strong>
+                        {lead.nextAction || "Sem próxima ação definida"}
                       </td>
                     </tr>
                   ))}
