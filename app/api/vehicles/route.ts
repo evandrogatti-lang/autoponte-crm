@@ -1,6 +1,6 @@
 import { and, desc, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { getChatGPTUser } from "../../chatgpt-auth";
+import { authorizeApi } from "../_access";
 import { getDb } from "../../../db";
 import { vehicleDataProvenance } from "../../../db/vehicle-intelligence-schema";
 import { vehicles } from "../../../db/vehicle-schema";
@@ -19,14 +19,14 @@ import { parseVehicleRegistrationInput, resolveVehicleRegistration } from "../..
 import { legacyStatusToLifecycle } from "../../../lib/vehicles/lifecycle";
 
 export async function GET() {
-  const user = await getChatGPTUser();
-  if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+  const access = await authorizeApi();
+  if (access instanceof Response) return access;
   return Response.json(await getDb().select().from(vehicles).orderBy(desc(vehicles.updatedAt)).limit(500));
 }
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
-  if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+  const access = await authorizeApi(["vehicles.manage"]);
+  if (access instanceof Response) return access;
 
   try {
     const raw = await request.json() as Record<string, unknown>;
@@ -117,8 +117,8 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const user = await getChatGPTUser();
-  if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+  const access = await authorizeApi(["vehicles.manage"]);
+  if (access instanceof Response) return access;
 
   const url = new URL(request.url);
   const id = url.searchParams.get("id") || "";

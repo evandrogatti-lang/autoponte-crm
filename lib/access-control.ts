@@ -30,6 +30,11 @@ export async function recordAudit(actor: AccessActor, action: string, entityType
 }
 
 export async function requirePermission(actor: AccessActor, permission: string) {
+  return requireAnyPermission(actor, [permission]);
+}
+
+export async function requireAnyPermission(actor: AccessActor, permissions: readonly string[]) {
+  if (!permissions.length) throw new Error("Permissão não informada.");
   const db = getDb();
   const email = actor.email.trim().toLowerCase();
   let [user] = await db.select().from(crmUsers).where(eq(crmUsers.email, email)).limit(1);
@@ -41,8 +46,8 @@ export async function requirePermission(actor: AccessActor, permission: string) 
   const [role] = await db.select({ code: crmRoles.code }).from(crmRoles).where(eq(crmRoles.id, user.roleId)).limit(1);
   if (!role) throw new Error("Perfil de acesso não encontrado.");
   if (role.code === "admin") return user;
-  const [allowed] = await db.select({ id: crmRolePermissions.id }).from(crmRolePermissions)
-    .where(and(eq(crmRolePermissions.roleId, user.roleId), eq(crmRolePermissions.permission, permission))).limit(1);
-  if (!allowed) throw new Error("Você não tem permissão para esta operação.");
+  const grants = await db.select({ permission: crmRolePermissions.permission }).from(crmRolePermissions)
+    .where(eq(crmRolePermissions.roleId, user.roleId));
+  if (!grants.some((grant) => permissions.includes(grant.permission))) throw new Error("Você não tem permissão para esta operação.");
   return user;
 }

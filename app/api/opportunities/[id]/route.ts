@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { getChatGPTUser } from "../../../chatgpt-auth";
+import { authorizeApi, type ApiActor } from "../../_access";
 import { applyOpportunityCommand, getOpportunityWorkspace } from "../../../../lib/opportunities/service";
 import { parseOpportunityCommand } from "../../../../lib/opportunities";
 import type { OpportunityCommand } from "../../../../lib/opportunities";
@@ -8,15 +8,9 @@ import { DesiredVehicleValidationError } from "../../../../lib/vehicles/fipe-val
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-async function authenticatedUser() {
-  const user = await getChatGPTUser();
-  if (!user) return null;
-  return { displayName: user.displayName, email: user.email };
-}
-
 export async function GET(_: Request, context: RouteContext) {
-  const user = await authenticatedUser();
-  if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+  const access = await authorizeApi();
+  if (access instanceof Response) return access;
 
   try {
     const { id } = await context.params;
@@ -30,8 +24,8 @@ export async function GET(_: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const user = await authenticatedUser();
-  if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+  const user = await authorizeApi(["opportunities.manage"]);
+  if (user instanceof Response) return user;
 
   let command: OpportunityCommand;
   try {
@@ -42,7 +36,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const opportunity = await applyOpportunityCommand(id, command, user);
+    const opportunity = await applyOpportunityCommand(id, command, user satisfies ApiActor);
     if (!opportunity) return Response.json({ error: "Oportunidade não encontrada." }, { status: 404 });
 
     revalidatePath("/crm");

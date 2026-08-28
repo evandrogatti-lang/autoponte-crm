@@ -1,14 +1,14 @@
 import { desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { getChatGPTUser } from "../../chatgpt-auth";
+import { authorizeApi } from "../_access";
 import { getDb } from "../../../db";
 import { partners } from "../../../db/partner-schema";
 
 const clean=(value:unknown,max=180)=>typeof value==="string"?value.trim().slice(0,max):"";
 const phoneDigits=(value:unknown,max=20)=>clean(value,max).replace(/\D/g,"");
-export async function GET(){const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});return Response.json(await getDb().select().from(partners).orderBy(desc(partners.updatedAt)).limit(500));}
+export async function GET(){const access=await authorizeApi();if(access instanceof Response)return access;return Response.json(await getDb().select().from(partners).orderBy(desc(partners.updatedAt)).limit(500));}
 export async function POST(request:Request){
-  const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
+  const access=await authorizeApi(["vehicles.manage"]);if(access instanceof Response)return access;
   try{
     const raw=await request.json() as Record<string,unknown>;
     const name=clean(raw.name,160);if(!name)throw new Error("Informe o nome do parceiro.");

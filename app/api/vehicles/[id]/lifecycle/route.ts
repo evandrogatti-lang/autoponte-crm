@@ -4,11 +4,11 @@ import { vehicleLifecycleEvents } from "../../../../../db/pilot-schema";
 import { vehicles } from "../../../../../db/vehicle-schema";
 import { assertVehicleLifecycleConsistency, assertVehicleLifecycleTransition, VEHICLE_BLOCKERS, VEHICLE_LIFECYCLE_STATES, type VehicleBlocker, type VehicleLifecycleState } from "../../../../../lib/vehicles/lifecycle";
 import { assertReadinessForState, getInventoryReadiness } from "../../../../../lib/vehicles/inventory-readiness";
-import { getChatGPTUser } from "../../../../chatgpt-auth";
+import { authorizeApi } from "../../../_access";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getChatGPTUser();
-  if (!user) return Response.json({ error: "Não autorizado." }, { status: 401 });
+  const user = await authorizeApi(["vehicles.manage"]);
+  if (user instanceof Response) return user;
   const { id } = await params;
   try {
     const body = await request.json() as { status?: string; blockers?: string[]; reason?: string; caseId?: string };
