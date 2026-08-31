@@ -40,7 +40,7 @@ type TransactionDb = {
 };
 
 type DatabaseLike = {
-  transaction?: <T>(callback: (tx: TransactionDb) => Promise<T>) => Promise<T>;
+  transaction?: (callback: (tx: TransactionDb) => Promise<void>) => Promise<void>;
   insert?: (table: unknown) => InsertBuilder;
 };
 
