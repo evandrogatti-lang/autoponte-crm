@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,7 +36,7 @@ jobs:
         run: npx eslint app/api lib db tests --ignore-pattern dist --ignore-pattern .next
 
       - name: Unit tests
-        run: node --experimental-strip-types --test tests/*.test.ts
+        run: npx --yes tsx@4.20.5 --test tests/*.test.ts
 
       - name: Diff check
         run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD
