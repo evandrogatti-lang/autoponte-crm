@@ -108,7 +108,7 @@ test("edição do cliente exige contato válido e normaliza os dados", () => {
   });
   assert.equal(command.action, "edit_client");
   if (command.action === "edit_client") {
-    assert.equal(command.whatsapp, "5511988887777");
+    assert.equal(command.whatsapp, "11988887777");
     assert.equal(command.email, "cliente@example.com");
   }
   assert.throws(() => parseOpportunityCommand({
