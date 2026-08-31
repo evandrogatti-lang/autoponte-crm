@@ -17,7 +17,7 @@ test("status contacted permanece ativo e completed libera capacidade", () => {
 });
 
 test("oportunidade com assignment ativa permanece elegível para exibição da central", () => {
-  const queueStatuses = [...centralQueueLeadStatuses];
+  const queueStatuses = [...centralQueueLeadStatuses] as string[];
   assert.equal(queueStatuses.includes("new"), true);
   assert.equal(queueStatuses.includes("sent_to_store"), false);
   assert.equal(isActiveAssignmentStatus("contacted"), true);
