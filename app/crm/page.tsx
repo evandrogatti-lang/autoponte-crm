@@ -1,61 +1,13 @@
-import { desc } from "drizzle-orm";
 import { requireChatGPTUser } from "../chatgpt-auth";
-import { getDb } from "../../db";
-import { opportunityEvents, tradeIns } from "../../db/schema";
-import { buildMissionControl } from "../../lib/mission-control/mapper";
-import type { MissionEventRow, TradeInRow } from "../../lib/mission-control/model";
-import { MissionControl } from "../../features/mission-control";
+import { CoreShell } from "../../components/crm/CoreShell";
+import { getCasesMissionControl } from "../../lib/commercial-cases/service";
+import { CasesMissionControl } from "../../features/mission-control";
 
 export const dynamic = "force-dynamic";
 
 export default async function CrmPage() {
   await requireChatGPTUser("/crm");
-  let rows: TradeInRow[] = [];
-  let events: MissionEventRow[] = [];
-  try {
-    const live = await getDb()
-      .select()
-      .from(tradeIns)
-      .orderBy(desc(tradeIns.createdAt))
-      .limit(100);
-    rows = live.map((row) => ({
-      id: row.id,
-      name: row.name,
-      city: row.city,
-      brand: row.brand,
-      model: row.model,
-      year: row.year,
-      desiredVehicle: row.desiredVehicle,
-      estimatedMin: row.estimatedMin,
-      estimatedMax: row.estimatedMax,
-      referencePrice: row.referencePrice,
-      mileage: row.mileage,
-      condition: row.condition,
-      status: row.status,
-      leadCategory: row.leadCategory,
-      nextFollowUp: row.nextFollowUp,
-      lastContactAt: row.lastContactAt,
-      notes: row.notes,
-      createdAt: row.createdAt,
-    }));
-  } catch (error) {
-    console.error("mission control opportunities unavailable", error);
-  }
-  try {
-    const liveEvents = await getDb()
-      .select()
-      .from(opportunityEvents)
-      .orderBy(desc(opportunityEvents.createdAt))
-      .limit(20);
-    events = liveEvents.map((event) => ({
-      id: event.id,
-      opportunityId: event.opportunityId,
-      title: event.title,
-      description: event.description,
-      createdAt: event.createdAt,
-    }));
-  } catch (error) {
-    console.error("mission control event feed unavailable", error);
-  }
-  return <MissionControl model={buildMissionControl(rows, new Date(), events)} />;
+  let model=null;
+  try{model=await getCasesMissionControl();}catch(error){console.error("cases mission control unavailable",error);}
+  return <CoreShell activeHref="/crm" title="Mission Control" subtitle="Casos que pedem atenção operacional agora."><CasesMissionControl model={model}/></CoreShell>;
 }

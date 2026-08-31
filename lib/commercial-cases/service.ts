@@ -8,6 +8,7 @@ import {
   vehicleLifecycleEvents, vehicleMedia, vehiclePriceHistory, vehiclePublications, vehicleWorkOrders,
 } from "../../db/pilot-schema.ts";
 import { assertTransition, CaseOperationError, deriveNextAction, type CaseCommand, type CaseTaskCommand, type CreateCaseTaskCommand } from "./contracts.ts";
+import { buildCasesMissionControl } from "./mission-control.ts";
 
 export type CaseActor={name:string;email:string};
 function isCaseTaskCommand(action:CaseCommand):action is CaseTaskCommand{return action.type==="task.create"||action.type==="task.complete"||action.type==="task.cancel";}
@@ -103,6 +104,18 @@ export async function operateCommercialCase(caseId:string,action:CaseCommand,act
     await tx.update(commercialCases).set({updatedAt:now}).where(eq(commercialCases.id,caseId));
     return {ok:true,entityId,title:eventTitle[action.type]};
   });
+}
+
+export async function getCasesMissionControl(now=new Date()){
+  const db=getDb();
+  const [cases,tasks,lossEvents]=await Promise.all([
+    db.select({id:commercialCases.id,pilotCode:commercialCases.pilotCode,customerName:customers.name,status:commercialCases.status,finalOutcome:commercialCases.finalOutcome,noNextActionReason:commercialCases.noNextActionReason,updatedAt:commercialCases.updatedAt,closedAt:commercialCases.closedAt,sellerName:crmUsers.name}).from(commercialCases).leftJoin(customers,eq(commercialCases.customerId,customers.id)).leftJoin(sellerProfiles,eq(commercialCases.sellerProfileId,sellerProfiles.id)).leftJoin(crmUsers,eq(sellerProfiles.crmUserId,crmUsers.id)).orderBy(desc(commercialCases.updatedAt)).limit(200),
+    db.select({id:caseTasks.id,caseId:caseTasks.caseId,actionType:caseTasks.actionType,ownerId:caseTasks.ownerId,ownerName:crmUsers.name,dueAt:caseTasks.dueAt,priority:caseTasks.priority,status:caseTasks.status,context:caseTasks.context,createdAt:caseTasks.createdAt}).from(caseTasks).leftJoin(crmUsers,eq(caseTasks.ownerId,crmUsers.id)).orderBy(desc(caseTasks.createdAt)),
+    db.select({caseId:vehicleLifecycleEvents.caseId,metadata:vehicleLifecycleEvents.metadata}).from(vehicleLifecycleEvents).where(eq(vehicleLifecycleEvents.eventType,"task.complete")).orderBy(desc(vehicleLifecycleEvents.occurredAt)),
+  ]);
+  const seen=new Set<string>();
+  const losses=lossEvents.flatMap(event=>{if(!event.caseId||seen.has(event.caseId))return [];const reason=typeof event.metadata==="object"&&event.metadata!==null&&"lossReason" in event.metadata?String(event.metadata.lossReason):null;if(!reason)return [];seen.add(event.caseId);return [{caseId:event.caseId,lossReason:reason}];});
+  return buildCasesMissionControl(cases,tasks,losses,now);
 }
 
 type CaseTx=Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
