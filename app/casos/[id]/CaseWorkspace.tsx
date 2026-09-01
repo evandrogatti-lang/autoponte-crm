@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import styles from "./workspace.module.css";
 
 type Row = Record<string, unknown>;
-type TaskStatus = "OPEN" | "DONE" | "CANCELLED";
-
 const actionLabels: Record<string, string> = {
   CONTACT_CUSTOMER: "Contatar cliente",
   REQUEST_DOCUMENTS: "Solicitar documentos",
@@ -107,14 +105,14 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
   const selectedMatch = matches.find((item) => ["selected", "converted", "proposal_accepted"].includes(String(item.status))) || matches[0];
   const activeIntent = intents[0];
   const hasTradeIn = Object.keys(tradeIn).length > 0 || caseData.acquisitionMode === "trade_in" || Number(currentProposal?.tradeInCredit) > 0;
-  const attention = useMemo(() => {
+  const attention = (() => {
     const items: string[] = [];
     if (!nextAction && caseData.status !== "lost" && caseData.finalOutcome !== "sold") items.push(text(caseData.noNextActionReason, "Caso sem próxima ação definida."));
     if (pendingWork.length) items.push(`${pendingWork.length} serviço(s) a executar.`);
     if (payments.some((item) => item.status === "pending")) items.push("Pagamento pendente.");
     if (vehicle.documentStatus && !["approved", "regular"].includes(String(vehicle.documentStatus))) items.push(`Documentação: ${status(vehicle.documentStatus)}.`);
     return items;
-  }, [caseData.finalOutcome, caseData.noNextActionReason, caseData.status, nextAction, payments, pendingWork.length, vehicle.documentStatus]);
+  })();
 
   async function submit(command: Row) {
     if (submittingRef.current) return;
