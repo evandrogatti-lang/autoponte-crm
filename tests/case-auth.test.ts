@@ -33,6 +33,23 @@ test("authenticated Case users still require seller_operations.manage", () => {
   }
 });
 
+test("system admin access requires a pre-existing active admin and never bootstraps one", () => {
+  const accessControl = read("lib/access-control.ts");
+  const start = accessControl.indexOf("export async function requireSystemAdmin");
+  const end = accessControl.indexOf("export async function recordAudit");
+  const requireSystemAdminBody = accessControl.slice(start, end);
+
+  // Empty crm_users and an authenticated but unknown user both follow !user denial.
+  assert.match(requireSystemAdminBody, /if \(!user\) throw new Error\("Você não tem permissão para administrar acessos\."\)/);
+  assert.doesNotMatch(requireSystemAdminBody, /insert\(|role_admin|randomUUID|bootstrap/i);
+
+  // Only an existing active user whose joined role is admin is accepted.
+  assert.match(requireSystemAdminBody, /eq\(crmRoles\.id, user\.roleId\)/);
+  assert.match(requireSystemAdminBody, /eq\(crmRoles\.code, "admin"\)/);
+  assert.match(requireSystemAdminBody, /if \(!role \|\| user\.status !== "active"\) throw/);
+  assert.match(requireSystemAdminBody, /return user/);
+});
+
 test("Case access no longer depends on ChatGPT identity headers", () => {
   for (const file of [
     "app/api/cases/route.ts",
