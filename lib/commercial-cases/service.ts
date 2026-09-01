@@ -8,6 +8,7 @@ import {
   vehicleLifecycleEvents, vehicleMedia, vehiclePriceHistory, vehiclePublications, vehicleWorkOrders,
 } from "../../db/pilot-schema.ts";
 import { assertTransition, canOperateCaseTasks, CaseOperationError, deriveNextAction, type CaseCommand, type CaseTaskCommand, type CreateCaseTaskCommand } from "./contracts.ts";
+import { buildMissionControl } from "./mission-control.ts";
 
 export type CaseActor={name:string;email:string};
 function isCaseTaskCommand(action:CaseCommand):action is CaseTaskCommand{return action.type==="task.create"||action.type==="task.complete"||action.type==="task.cancel";}
@@ -25,6 +26,17 @@ const eventTitle:Record<string,string>={
 export async function listCommercialCases(){
   return getDb().select({id:commercialCases.id,pilotCode:commercialCases.pilotCode,status:commercialCases.status,finalOutcome:commercialCases.finalOutcome,acquisitionMode:commercialCases.acquisitionMode,openedAt:commercialCases.openedAt,updatedAt:commercialCases.updatedAt,vehicleId:vehicles.id,vehicleBrand:vehicles.brand,vehicleModel:vehicles.model,modelYear:vehicles.modelYear,documentStatus:vehicles.documentStatus,askingPrice:vehicles.askingPrice,customerName:customers.name})
     .from(commercialCases).leftJoin(vehicles,eq(commercialCases.vehicleId,vehicles.id)).leftJoin(customers,eq(commercialCases.customerId,customers.id)).orderBy(desc(commercialCases.updatedAt)).limit(200);
+}
+
+export async function getMissionControl(){
+  const db=getDb();
+  const [cases,tasks]=await Promise.all([
+    db.select({id:commercialCases.id,pilotCode:commercialCases.pilotCode,status:commercialCases.status,finalOutcome:commercialCases.finalOutcome,customerName:customers.name,noNextActionReason:commercialCases.noNextActionReason,notes:commercialCases.notes,closedAt:commercialCases.closedAt,updatedAt:commercialCases.updatedAt})
+      .from(commercialCases).leftJoin(customers,eq(commercialCases.customerId,customers.id)).orderBy(desc(commercialCases.updatedAt)).limit(500),
+    db.select({id:caseTasks.id,caseId:caseTasks.caseId,actionType:caseTasks.actionType,ownerId:caseTasks.ownerId,ownerName:crmUsers.name,dueAt:caseTasks.dueAt,priority:caseTasks.priority,status:caseTasks.status,context:caseTasks.context,createdAt:caseTasks.createdAt})
+      .from(caseTasks).leftJoin(crmUsers,eq(caseTasks.ownerId,crmUsers.id)).where(eq(caseTasks.status,"OPEN")),
+  ]);
+  return buildMissionControl(cases,tasks);
 }
 
 export async function getCommercialCase(caseId:string){

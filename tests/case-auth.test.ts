@@ -9,6 +9,7 @@ test("unauthenticated Case requests return 401 and pages redirect to AutoPonte l
   assert.match(auth, /supabase\.auth\.getUser\(\)/);
   assert.match(auth, /redirect\(`\/login\?return_to=/);
   assert.doesNotMatch(auth, /signin-with-chatgpt/);
+  assert.match(read("app/crm/page.tsx"), /requireCurrentAppUser\("\/crm"\)/);
   for (const route of ["app/api/cases/route.ts", "app/api/cases/[id]/route.ts"]) {
     const source = read(route);
     assert.match(source, /getCurrentAppUser\(\)/);
@@ -25,6 +26,7 @@ test("authenticated Case users still require seller_operations.manage", () => {
     "app/api/cases/[id]/route.ts",
     "app/casos/page.tsx",
     "app/casos/[id]/page.tsx",
+    "app/crm/page.tsx",
   ]) {
     assert.match(read(file), /requirePermission\(\w+,\s*"seller_operations\.manage"\)/);
   }
@@ -56,6 +58,7 @@ test("Case access no longer depends on ChatGPT identity headers", () => {
     "app/api/cases/[id]/route.ts",
     "app/casos/page.tsx",
     "app/casos/[id]/page.tsx",
+    "app/crm/page.tsx",
   ]) {
     const source = read(file);
     assert.doesNotMatch(source, /getChatGPTUser|requireChatGPTUser|signin-with-chatgpt/);
