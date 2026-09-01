@@ -6,7 +6,7 @@ export const paymentStatuses = ["pending", "settled", "failed", "cancelled"] as 
 export const deliveryStatuses = ["scheduled", "delivered", "cancelled"] as const;
 export const followUpStatuses = ["scheduled", "completed", "cancelled"] as const;
 
-export type CaseAction =
+export type CaseOperationCommand =
   | { type:"work_order.create"; workType:string; description:string; estimatedCost:number }
   | { type:"work_order.transition"; id:string; status:typeof workOrderStatuses[number]; actualCost?:number }
   | { type:"publication.create"; channel:string; askingPrice:number; externalReference?:string }
@@ -22,14 +22,29 @@ export type CaseAction =
   | { type:"post_sale.schedule"; dueAt:string; notes?:string }
   | { type:"post_sale.complete"; id:string; outcome:string; notes?:string };
 
+export const caseActionTypes = ["CONTACT_CUSTOMER","REQUEST_DOCUMENTS","REVIEW_PROPOSAL","SCHEDULE_FOLLOW_UP","MARK_CASE_LOST"] as const;
+export const caseTaskPriorities = ["LOW","NORMAL","HIGH","URGENT"] as const;
+export const caseTaskStatuses = ["OPEN","DONE","CANCELLED"] as const;
+export const caseLossReasons = ["PRICE","FINANCING","VEHICLE_MISMATCH","CUSTOMER_WITHDREW","BOUGHT_FROM_COMPETITOR","NO_RESPONSE","OTHER"] as const;
+export type CaseActionType=typeof caseActionTypes[number];
+export type CaseTaskPriority=typeof caseTaskPriorities[number];
+export type CaseLossReason=typeof caseLossReasons[number];
+export type CreateCaseTaskCommand={type:"task.create";actionType:CaseActionType;ownerId:string;dueAt:string;priority:CaseTaskPriority;context:string};
+export type CompleteCaseTaskCommand={type:"task.complete";id:string;result:string;lossReason?:CaseLossReason;note:string;nextTask?:CreateCaseTaskCommand;noNextActionReason:string};
+export type CaseTaskCommand=CreateCaseTaskCommand|CompleteCaseTaskCommand|{type:"task.cancel";id:string;reason:string;noNextActionReason:string};
+export type CaseCommand=CaseOperationCommand|CaseTaskCommand;
+
 export class CaseOperationError extends Error { readonly status:number; constructor(message:string,status=400){ super(message);this.status=status; } }
 const text=(v:unknown,max=500)=>typeof v==="string"?v.trim().slice(0,max):"";
 const cash=(v:unknown)=>{const n=Number(v);if(!Number.isInteger(n)||n<0)throw new CaseOperationError("Valor monetário inválido.");return n;};
 const date=(v:unknown,required=false)=>{const s=text(v,40);if(!s&&!required)return "";if(!s||Number.isNaN(new Date(s).valueOf()))throw new CaseOperationError("Data inválida.");return s;};
 const oneOf=<T extends readonly string[]>(v:unknown,values:T,label:string)=>{const s=text(v,40);if(!values.includes(s))throw new CaseOperationError(`${label} inválido.`);return s as T[number];};
 
-export function parseCaseAction(raw:Record<string,unknown>):CaseAction {
+export function parseCaseAction(raw:Record<string,unknown>):CaseCommand {
   const type=text(raw.type,40);
+  if(type==="task.create"){const ownerId=text(raw.ownerId,80);if(!ownerId)throw new CaseOperationError("Informe o responsável pela ação.");return {type,actionType:oneOf(raw.actionType,caseActionTypes,"Tipo de ação"),ownerId,dueAt:date(raw.dueAt,true),priority:oneOf(raw.priority??"NORMAL",caseTaskPriorities,"Prioridade"),context:text(raw.context,2000)};}
+  if(type==="task.complete"){const id=text(raw.id,80),result=text(raw.result,2000);if(!id)throw new CaseOperationError("Ação do caso não informada.");if(!result)throw new CaseOperationError("Informe o resultado da ação.");return {type,id,result,lossReason:raw.lossReason===undefined?undefined:oneOf(raw.lossReason,caseLossReasons,"Motivo da perda"),note:text(raw.note,2000),nextTask:raw.nextTask===undefined?undefined:parseNestedTask(raw.nextTask),noNextActionReason:text(raw.noNextActionReason,1000)};}
+  if(type==="task.cancel"){const id=text(raw.id,80),reason=text(raw.reason,2000);if(!id)throw new CaseOperationError("Ação do caso não informada.");if(!reason)throw new CaseOperationError("Informe o motivo do cancelamento.");return {type,id,reason,noNextActionReason:text(raw.noNextActionReason,1000)};}
   if(type==="work_order.create")return {type,workType:text(raw.workType,60)||"preparation",description:text(raw.description,1000),estimatedCost:cash(raw.estimatedCost)};
   if(type==="work_order.transition")return {type,id:text(raw.id,80),status:oneOf(raw.status,workOrderStatuses,"Status da ordem"),actualCost:raw.actualCost===undefined?undefined:cash(raw.actualCost)};
   if(type==="publication.create")return {type,channel:text(raw.channel,60)||"autoponte",askingPrice:cash(raw.askingPrice),externalReference:text(raw.externalReference,180)};
@@ -46,6 +61,12 @@ export function parseCaseAction(raw:Record<string,unknown>):CaseAction {
   if(type==="post_sale.complete")return {type,id:text(raw.id,80),outcome:text(raw.outcome,180),notes:text(raw.notes,1000)};
   throw new CaseOperationError("Ação operacional inválida.");
 }
+
+function parseNestedTask(value:unknown):CreateCaseTaskCommand{if(typeof value!=="object"||value===null)throw new CaseOperationError("Próxima ação inválida.");const parsed=parseCaseAction({...value,type:"task.create"});if(parsed.type!=="task.create")throw new CaseOperationError("Próxima ação inválida.");return parsed;}
+
+const priorityWeight:Record<CaseTaskPriority,number>={LOW:0,NORMAL:1,HIGH:2,URGENT:3};
+export type NextActionCandidate={status:string;priority:string;dueAt:Date;createdAt:Date};
+export function deriveNextAction<T extends NextActionCandidate>(tasks:readonly T[]):T|undefined{return tasks.filter(task=>task.status==="OPEN").sort((a,b)=>(priorityWeight[b.priority as CaseTaskPriority]??-1)-(priorityWeight[a.priority as CaseTaskPriority]??-1)||a.dueAt.valueOf()-b.dueAt.valueOf()||a.createdAt.valueOf()-b.createdAt.valueOf())[0];}
 
 const allowed:Record<string,Record<string,readonly string[]>>={
   work_order:{open:["in_progress","completed","cancelled"],in_progress:["completed","cancelled"],completed:[],cancelled:[]},
