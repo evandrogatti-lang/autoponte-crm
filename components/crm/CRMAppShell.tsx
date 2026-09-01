@@ -30,6 +30,7 @@ const NAVIGATION: NavGroup[] = [
       { label: "Potenciais clientes", href: "/leads", icon: "target" },
       { label: "Clientes", href: "/clientes", icon: "users" },
       { label: "Oportunidades", href: "/oportunidades", icon: "target" },
+      { label: "Casos", href: "/casos", icon: "file" },
       { label: "Propostas", href: "/propostas", icon: "file" },
     ],
   },
@@ -67,6 +68,7 @@ const MOBILE_PRIMARY_HREFS = [
   "/crm",
   "/clientes",
   "/oportunidades",
+  "/casos",
   "/veiculos",
 ];
 
