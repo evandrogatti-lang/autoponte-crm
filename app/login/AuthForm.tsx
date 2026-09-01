@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { createAuthClient } from "../../lib/supabase-auth-client";
 import styles from "./auth.module.css";
 
-export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
+export default function AuthForm({ mode, returnTo }: { mode: "login" | "recovery"; returnTo?: string }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
         const password = String(form.get("password") ?? "");
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        router.replace("/crm");
+        router.replace(safeReturnPath(returnTo));
         router.refresh();
       } else {
         const redirectTo = `${window.location.origin}/nova-senha`;
@@ -66,4 +66,16 @@ export default function AuthForm({ mode }: { mode: "login" | "recovery" }) {
       </div>
     </section>
   </main>;
+}
+
+function safeReturnPath(value?: string) {
+  if (!value?.startsWith("/") || value.startsWith("//")) return "/crm";
+  try {
+    const url = new URL(value, window.location.origin);
+    return url.origin === window.location.origin && url.pathname !== "/login"
+      ? `${url.pathname}${url.search}${url.hash}`
+      : "/crm";
+  } catch {
+    return "/crm";
+  }
 }

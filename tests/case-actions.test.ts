@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { caseActionTypes, caseLossReasons, deriveNextAction, parseCaseAction } from "../lib/commercial-cases/contracts.ts";
+import { canOperateCaseTasks, caseActionTypes, caseLossReasons, deriveNextAction, parseCaseAction } from "../lib/commercial-cases/contracts.ts";
 
 test("creates a Case task from the canonical action library",()=>{
   assert.deepEqual(caseActionTypes,["CONTACT_CUSTOMER","REQUEST_DOCUMENTS","REVIEW_PROPOSAL","SCHEDULE_FOLLOW_UP","MARK_CASE_LOST"]);
@@ -17,6 +17,14 @@ test("derives Next Action by priority, due date, then creation date",()=>{
     {id:"high-next",status:"OPEN",priority:"HIGH",dueAt:new Date("2026-08-29"),createdAt:new Date("2026-08-28")},
   ];
   assert.equal(deriveNextAction(tasks)?.id,"high-next");
+});
+
+test("task.create accepts active operational case statuses",()=>{
+  assert.equal(canOperateCaseTasks("opened"),true);
+  assert.equal(canOperateCaseTasks("active_negotiation"),true);
+  assert.equal(canOperateCaseTasks("awaiting_documents"),true);
+  assert.equal(canOperateCaseTasks("closed"),false);
+  assert.equal(canOperateCaseTasks("negotiation_lost"),false);
 });
 
 test("completion requires a result and can define the next action atomically",()=>{
@@ -41,8 +49,20 @@ test("Case task writes remain Case-scoped, transactional, authorized, and timeli
   const route=readFileSync("app/api/cases/[id]/route.ts","utf8");
   assert.match(service,/eq\(caseTasks\.id,action\.id\),eq\(caseTasks\.caseId,caseId\)/);
   assert.match(service,/transaction\(async tx/);
+  assert.match(service,/canOperateCaseTasks\(base\.status\)/);
+  assert.match(service,/tx\.insert\(caseTasks\)\.values\(\{id,caseId,actionType:command\.actionType,ownerId:owner\.id,dueAt:new Date\(command\.dueAt\),priority:command\.priority,status:"OPEN",context:command\.context,createdAt:now\}\)/);
+  assert.match(service,/tasks,nextAction:deriveNextAction\(tasks\)\?\?null/);
   assert.match(service,/writeTaskTimeline/);
   assert.match(service,/status:"lost",finalOutcome:"negotiation_lost"/);
   assert.match(service,/eq\(caseTasks\.status,"OPEN"\)[\s\S]*ne\(caseTasks\.id,task\.id\)/);
   assert.match(route,/requirePermission\(actor,"seller_operations\.manage"\)/);
+});
+
+test("task.create refreshes the Workspace only after persistence and blocks duplicate submits",()=>{
+  const workspace=readFileSync("app/casos/[id]/CaseWorkspace.tsx","utf8");
+  assert.match(workspace,/if \(submittingRef\.current\) return;/);
+  assert.ok(workspace.includes('const fresh = await fetch(`/api/cases/${encodeURIComponent(caseId)}`, { cache: "no-store" });'));
+  assert.match(workspace,/setData\(await fresh\.json\(\) as Row\);/);
+  assert.match(workspace,/setTaskMode\(null\);/);
+  assert.match(workspace,/<TaskError message=\{taskError\} \/>/);
 });

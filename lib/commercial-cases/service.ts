@@ -7,7 +7,7 @@ import {
   paymentRecords, postSaleFollowups, proposals, vehicleCostEntries, vehicleDeliveries,
   vehicleLifecycleEvents, vehicleMedia, vehiclePriceHistory, vehiclePublications, vehicleWorkOrders,
 } from "../../db/pilot-schema.ts";
-import { assertTransition, CaseOperationError, deriveNextAction, type CaseCommand, type CaseTaskCommand, type CreateCaseTaskCommand } from "./contracts.ts";
+import { assertTransition, canOperateCaseTasks, CaseOperationError, deriveNextAction, type CaseCommand, type CaseTaskCommand, type CreateCaseTaskCommand } from "./contracts.ts";
 
 export type CaseActor={name:string;email:string};
 function isCaseTaskCommand(action:CaseCommand):action is CaseTaskCommand{return action.type==="task.create"||action.type==="task.complete"||action.type==="task.cancel";}
@@ -121,7 +121,7 @@ async function writeTaskTimeline(tx:CaseTx,caseId:string,vehicleId:string|null,t
 async function operateCaseTask(tx:CaseTx,caseId:string,action:CaseTaskCommand,actor:CaseActor,now:Date){
   const [base]=await tx.select({id:commercialCases.id,status:commercialCases.status,vehicleId:commercialCases.vehicleId}).from(commercialCases).where(eq(commercialCases.id,caseId)).limit(1);
   if(!base)throw new CaseOperationError("Caso comercial não encontrado.",404);
-  if(!["opened","active"].includes(base.status))throw new CaseOperationError("Ações só podem ser alteradas em um caso ativo.",409);
+  if(!canOperateCaseTasks(base.status))throw new CaseOperationError("Ações só podem ser alteradas em um caso ativo.",409);
   if(action.type==="task.create"){
     const entityId=await insertCaseTask(tx,caseId,action,now);
     await tx.update(commercialCases).set({noNextActionReason:null,updatedAt:now}).where(eq(commercialCases.id,caseId));

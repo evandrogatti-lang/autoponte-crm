@@ -26,6 +26,7 @@ export const caseActionTypes = ["CONTACT_CUSTOMER","REQUEST_DOCUMENTS","REVIEW_P
 export const caseTaskPriorities = ["LOW","NORMAL","HIGH","URGENT"] as const;
 export const caseTaskStatuses = ["OPEN","DONE","CANCELLED"] as const;
 export const caseLossReasons = ["PRICE","FINANCING","VEHICLE_MISMATCH","CUSTOMER_WITHDREW","BOUGHT_FROM_COMPETITOR","NO_RESPONSE","OTHER"] as const;
+export const caseTaskMutableCaseStatuses = ["opened","active","appraisal_completed","awaiting_documents","active_negotiation"] as const;
 export type CaseActionType=typeof caseActionTypes[number];
 export type CaseTaskPriority=typeof caseTaskPriorities[number];
 export type CaseLossReason=typeof caseLossReasons[number];
@@ -35,6 +36,7 @@ export type CaseTaskCommand=CreateCaseTaskCommand|CompleteCaseTaskCommand|{type:
 export type CaseCommand=CaseOperationCommand|CaseTaskCommand;
 
 export class CaseOperationError extends Error { readonly status:number; constructor(message:string,status=400){ super(message);this.status=status; } }
+export function canOperateCaseTasks(status:string){return (caseTaskMutableCaseStatuses as readonly string[]).includes(status);}
 const text=(v:unknown,max=500)=>typeof v==="string"?v.trim().slice(0,max):"";
 const cash=(v:unknown)=>{const n=Number(v);if(!Number.isInteger(n)||n<0)throw new CaseOperationError("Valor monetário inválido.");return n;};
 const date=(v:unknown,required=false)=>{const s=text(v,40);if(!s&&!required)return "";if(!s||Number.isNaN(new Date(s).valueOf()))throw new CaseOperationError("Data inválida.");return s;};
