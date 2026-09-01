@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import styles from "./workspace.module.css";
 
@@ -65,10 +65,12 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
   const [data, setData] = useState(initialData);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [taskError, setTaskError] = useState("");
   const [taskMode, setTaskMode] = useState<"create" | "complete" | "cancel" | null>(null);
   const [selectedTask, setSelectedTask] = useState<Row | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [createNextAction, setCreateNextAction] = useState(false);
+  const submittingRef = useRef(false);
 
   const caseData = record(data.case);
   const customer = record(data.customer);
@@ -115,8 +117,11 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
   }, [caseData.finalOutcome, caseData.noNextActionReason, caseData.status, nextAction, payments, pendingWork.length, vehicle.documentStatus]);
 
   async function submit(command: Row) {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setBusy(true);
     setNotice("");
+    setTaskError("");
     try {
       const response = await fetch(`/api/cases/${encodeURIComponent(caseId)}`, {
         method: "POST",
@@ -132,8 +137,11 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
       setTaskMode(null);
       setSelectedTask(null);
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Não foi possível concluir a operação.");
+      const message = error instanceof Error ? error.message : "Não foi possível concluir a operação.";
+      setNotice(message);
+      setTaskError(message);
     } finally {
+      submittingRef.current = false;
       setBusy(false);
     }
   }
@@ -141,6 +149,7 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
   function openTaskForm(mode: "create" | "complete" | "cancel", task?: Row) {
     setSelectedTask(task || null);
     setCreateNextAction(false);
+    setTaskError("");
     setTaskMode(mode);
   }
 
@@ -192,7 +201,7 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
     <main className={styles.page}>
       <header className={styles.caseHeader}>
         <div>
-          <Link href="/casos" className={styles.back}>Casos</Link>
+          <Link href="/casos" className={styles.back}>← Voltar para casos</Link>
           <span>CASO {text(caseData.pilotCode, caseId.slice(0, 8).toUpperCase())}</span>
           <h1>{text(customer.name, "Cliente não informado")}</h1>
           <p>{text(vehicle.brand, "Veículo")} {text(vehicle.model, "")} · {text(vehicle.modelYear, "Ano não informado")} · {text(data.sellerName, "Sem responsável")}</p>
@@ -312,9 +321,9 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
         {timeline.length ? <div className={styles.timeline}>{timeline.map((item) => <div className={styles.timelineRow} key={String(item.id)}><time>{date(item.occurredAt)}</time><div><b>{status(item.eventType)}</b><p>{text(item.description, status(item.status))}</p></div><span>{item.amount ? amount(item.amount) : status(item.status)}</span></div>)}</div> : <p className={styles.empty}>Nenhum evento operacional registrado.</p>}
       </section>
 
-      {taskMode === "create" && <TaskDialog title="Nova ação do caso" onClose={() => setTaskMode(null)}><form onSubmit={createTask} className={styles.form}><TaskFields ownerId={ownerId} /><button disabled={busy}>Criar ação</button></form></TaskDialog>}
-      {taskMode === "complete" && selectedTask && <TaskDialog title={`Concluir: ${taskName(selectedTask)}`} onClose={() => setTaskMode(null)}><form onSubmit={completeTask} className={styles.form}><label>Resultado<textarea name="result" required /></label><label>Observação<textarea name="note" /></label>{selectedTask.actionType === "MARK_CASE_LOST" && <label>Motivo da perda<select name="lossReason" required>{Object.entries(lossReasons).map(([value, item]) => <option value={value} key={value}>{item}</option>)}</select></label>}<label className={styles.checkbox}><input type="checkbox" checked={createNextAction} onChange={(event) => setCreateNextAction(event.target.checked)} /> Criar próxima ação agora</label>{createNextAction ? <div className={styles.nextFields}><TaskFields ownerId={ownerId} prefix="next" /></div> : <label>Motivo para ficar sem próxima ação<textarea name="noNextActionReason" placeholder="Obrigatório se não criar uma próxima ação." required /></label>}<button disabled={busy}>Concluir ação</button></form></TaskDialog>}
-      {taskMode === "cancel" && selectedTask && <TaskDialog title={`Cancelar: ${taskName(selectedTask)}`} onClose={() => setTaskMode(null)}><form onSubmit={cancelTask} className={styles.form}><label>Motivo do cancelamento<textarea name="reason" required /></label><label>Motivo para não haver próxima ação<textarea name="noNextActionReason" /></label><button disabled={busy}>Cancelar ação</button></form></TaskDialog>}
+      {taskMode === "create" && <TaskDialog title="Nova ação do caso" onClose={() => setTaskMode(null)}><form onSubmit={createTask} className={styles.form}><TaskFields ownerId={ownerId} /><TaskError message={taskError} /><button disabled={busy}>Criar ação</button></form></TaskDialog>}
+      {taskMode === "complete" && selectedTask && <TaskDialog title={`Concluir: ${taskName(selectedTask)}`} onClose={() => setTaskMode(null)}><form onSubmit={completeTask} className={styles.form}><label>Resultado<textarea name="result" required /></label><label>Observação<textarea name="note" /></label>{selectedTask.actionType === "MARK_CASE_LOST" && <label>Motivo da perda<select name="lossReason" required>{Object.entries(lossReasons).map(([value, item]) => <option value={value} key={value}>{item}</option>)}</select></label>}<label className={styles.checkbox}><input type="checkbox" checked={createNextAction} onChange={(event) => setCreateNextAction(event.target.checked)} /> Criar próxima ação agora</label>{createNextAction ? <div className={styles.nextFields}><TaskFields ownerId={ownerId} prefix="next" /></div> : <label>Motivo para ficar sem próxima ação<textarea name="noNextActionReason" placeholder="Obrigatório se não criar uma próxima ação." required /></label>}<TaskError message={taskError} /><button disabled={busy}>Concluir ação</button></form></TaskDialog>}
+      {taskMode === "cancel" && selectedTask && <TaskDialog title={`Cancelar: ${taskName(selectedTask)}`} onClose={() => setTaskMode(null)}><form onSubmit={cancelTask} className={styles.form}><label>Motivo do cancelamento<textarea name="reason" required /></label><label>Motivo para não haver próxima ação<textarea name="noNextActionReason" /></label><TaskError message={taskError} /><button disabled={busy}>Cancelar ação</button></form></TaskDialog>}
     </main>
   );
 }
@@ -346,4 +355,8 @@ function TaskFields({ ownerId, prefix = "" }: { ownerId: string; prefix?: string
 
 function TaskDialog({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   return <div className={styles.overlay} role="presentation"><section className={styles.dialog} role="dialog" aria-modal="true" aria-label={title}><header><h2>{title}</h2><button type="button" onClick={onClose} aria-label="Fechar">×</button></header>{children}</section></div>;
+}
+
+function TaskError({ message }: { message: string }) {
+  return message ? <p role="alert" style={{ margin: 0, padding: "8px 10px", borderRadius: 7, background: "#fff0ed", color: "#a34020", fontSize: 11, fontWeight: 700 }}>{message}</p> : null;
 }
