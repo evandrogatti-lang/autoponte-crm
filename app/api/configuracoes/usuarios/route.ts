@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { getChatGPTUser } from "../../../chatgpt-auth";
+import { getCurrentAppUser } from "../../../app-auth";
 import { getDb } from "../../../../db";
 import { crmRoles, crmUsers } from "../../../../db/schema";
 import { recordAudit, requireSystemAdmin } from "../../../../lib/access-control";
@@ -8,7 +8,7 @@ import { createSupabaseAdmin } from "../../../../lib/supabase-admin";
 
 const clean = (value: unknown, max = 180) => typeof value === "string" ? value.trim().slice(0, max) : "";
 const actorFrom = async () => {
-  const user = await getChatGPTUser();
+  const user = await getCurrentAppUser();
   if (!user) throw new Error("Não autorizado.");
   return { email: user.email, displayName: user.displayName };
 };

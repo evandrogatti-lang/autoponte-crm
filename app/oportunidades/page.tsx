@@ -1,5 +1,5 @@
 ﻿import { desc } from "drizzle-orm";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
 import { opportunityStageLabels, statusToStage } from "../../lib/opportunities";
@@ -13,18 +13,7 @@ type OpportunitiesPageProps = {
   searchParams: Promise<{ stage?: string }>;
 };
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-const labels: Record<string, string> = { hot: "Alta prioridade", warm: "Em negociação", review: "Requer análise", new: "Novo cadastro" };
 const validStages = new Set<OpportunityStage>(["new", "contacted", "qualified", "store", "proposal", "closed"]);
-
-function safePhotos(value: string) {
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
-  } catch {
-    return [];
-  }
-}
 
 function matchesStage(status: string, stage?: OpportunityStage) {
   if (!stage) return true;
@@ -33,7 +22,7 @@ function matchesStage(status: string, stage?: OpportunityStage) {
 }
 
 export default async function OpportunitiesPage({ searchParams }: OpportunitiesPageProps) {
-  await requireChatGPTUser("/oportunidades");
+  await requireSellerOperations("/oportunidades");
   const query = await searchParams;
   const selectedStage = validStages.has(query.stage as OpportunityStage) ? query.stage as OpportunityStage : undefined;
   const allRows = await getDb().select().from(tradeIns).orderBy(desc(tradeIns.createdAt)).limit(200);
@@ -52,7 +41,7 @@ export default async function OpportunitiesPage({ searchParams }: OpportunitiesP
         <Link className={!selectedStage ? "active" : ""} href="/oportunidades">Todas</Link>
         {Array.from(validStages).map((stage) => <Link className={selectedStage === stage ? "active" : ""} href={`/oportunidades?stage=${stage}`} key={stage}>{opportunityStageLabels[stage]}</Link>)}
       </nav>
-      {rows.length === 0 ? <div className="crm-empty client-empty"><strong>Nenhuma oportunidade real nesta etapa.</strong><span>Cadastre uma oportunidade para iniciar o fluxo operacional.</span><Link href="/oportunidades/nova">+ Nova oportunidade</Link></div> : <OpportunityViewList rows={rows as any} />}
+      {rows.length === 0 ? <div className="crm-empty client-empty"><strong>Nenhuma oportunidade real nesta etapa.</strong><span>Cadastre uma oportunidade para iniciar o fluxo operacional.</span><Link href="/oportunidades/nova">+ Nova oportunidade</Link></div> : <OpportunityViewList rows={rows.map((row) => ({ ...row, year: Number(row.year) || null }))} />}
     </section>
   </main>;
 }

@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { requirePermission } from "../lib/access-control";
 
 export type AppUser = {
   displayName: string;
@@ -58,6 +59,12 @@ export async function requireCurrentAppUser(
   if (user) return user;
 
   redirect(`/login?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`);
+}
+
+export async function requireSellerOperations(returnTo: string) {
+  const user = await requireCurrentAppUser(returnTo);
+  const crmUser = await requirePermission(user, "seller_operations.manage");
+  return { user, crmUser };
 }
 
 export function safeReturnPath(value: string): string {

@@ -1,7 +1,7 @@
 ﻿import styles from "./Leads.module.css";
 import { desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
 import { InventoryShell } from "../../features/vehicle-registry/components/InventoryShell";
@@ -62,7 +62,7 @@ export default async function LeadsPage({
 }: {
   searchParams: Promise<Partial<Record<(typeof filterKeys)[number], string | string[]>>>;
 }) {
-  await requireChatGPTUser("/leads");
+  await requireSellerOperations("/leads");
 
   const requestedParams = await searchParams;
   const filters = filterKeys.reduce((result, key) => {

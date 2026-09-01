@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireChatGPTUser } from "../../chatgpt-auth";
+import { requireSellerOperations } from "../../app-auth";
 import { OpportunityWorkspace } from "../../../features/opportunity-workspace";
 import { getOpportunityWorkspace } from "../../../lib/opportunities/service";
 
@@ -9,7 +9,7 @@ type OpportunityPageProps = { params: Promise<{ id: string }> };
 
 export default async function OpportunityPage({ params }: OpportunityPageProps) {
   const { id } = await params;
-  await requireChatGPTUser(`/oportunidades/${id}`);
+  await requireSellerOperations(`/oportunidades/${id}`);
   const opportunity = await getOpportunityWorkspace(id);
   if (!opportunity) notFound();
   return <OpportunityWorkspace initialData={opportunity} />;

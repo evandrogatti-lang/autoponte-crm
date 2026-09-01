@@ -1,11 +1,11 @@
-import { requireChatGPTUser } from "../../chatgpt-auth";
+import { requireSellerOperations } from "../../app-auth";
 import { OpportunityCreateForm } from "../../../features/opportunity-create";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewOpportunityPage() {
-  await requireChatGPTUser("/oportunidades/nova");
+  await requireSellerOperations("/oportunidades/nova");
   return <main className="crm-page operational-create-page">
     <header className="crm-header">
       <Link className="brand" href="/crm"><span>AutoPonte</span> Veículos</Link>

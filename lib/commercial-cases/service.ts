@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, ne, or, sql } from "drizzle-orm";
 import { getDb } from "../../db/index.ts";
-import { crmUsers, sellerProfiles, tradeIns, vehicleMatches } from "../../db/schema.ts";
+import { crmRoles, crmUsers, sellerProfiles, tradeIns, vehicleMatches } from "../../db/schema.ts";
 import { vehicles } from "../../db/vehicle-schema.ts";
 import {
   caseTasks, commercialCases, commercialContracts, customerIntents, customers, matchInteractions,
@@ -28,15 +28,26 @@ export async function listCommercialCases(){
     .from(commercialCases).leftJoin(vehicles,eq(commercialCases.vehicleId,vehicles.id)).leftJoin(customers,eq(commercialCases.customerId,customers.id)).orderBy(desc(commercialCases.updatedAt)).limit(200);
 }
 
-export async function getMissionControl(){
+export async function getMissionControl(crmUserId:string){
   const db=getDb();
-  const [cases,tasks]=await Promise.all([
-    db.select({id:commercialCases.id,pilotCode:commercialCases.pilotCode,status:commercialCases.status,finalOutcome:commercialCases.finalOutcome,customerName:customers.name,noNextActionReason:commercialCases.noNextActionReason,notes:commercialCases.notes,closedAt:commercialCases.closedAt,updatedAt:commercialCases.updatedAt})
-      .from(commercialCases).leftJoin(customers,eq(commercialCases.customerId,customers.id)).orderBy(desc(commercialCases.updatedAt)).limit(500),
+  const [access]=await db.select({crmUserId:crmUsers.id,userName:crmUsers.name,roleCode:crmRoles.code,sellerProfileId:sellerProfiles.id})
+    .from(crmUsers).innerJoin(crmRoles,eq(crmUsers.roleId,crmRoles.id)).leftJoin(sellerProfiles,eq(sellerProfiles.crmUserId,crmUsers.id)).where(and(eq(crmUsers.id,crmUserId),eq(crmUsers.status,"active"))).limit(1);
+  if(!access)throw new Error("Perfil operacional ativo não encontrado.");
+  const [cases,tasks,proposalRows,vehicleRows,eventRows]=await Promise.all([
+    db.select({id:commercialCases.id,pilotCode:commercialCases.pilotCode,status:commercialCases.status,finalOutcome:commercialCases.finalOutcome,customerName:customers.name,noNextActionReason:commercialCases.noNextActionReason,notes:commercialCases.notes,closedAt:commercialCases.closedAt,updatedAt:commercialCases.updatedAt,sellerProfileId:commercialCases.sellerProfileId,sellerName:crmUsers.name,opportunityStatus:tradeIns.status,leadCategory:tradeIns.leadCategory,vehicleLabel:sql<string>`concat_ws(' ', ${vehicles.brand}, ${vehicles.model})`,vehicleValue:vehicles.askingPrice})
+      .from(commercialCases).leftJoin(customers,eq(commercialCases.customerId,customers.id)).leftJoin(tradeIns,eq(commercialCases.opportunityId,tradeIns.id)).leftJoin(vehicles,eq(commercialCases.vehicleId,vehicles.id)).leftJoin(sellerProfiles,eq(commercialCases.sellerProfileId,sellerProfiles.id)).leftJoin(crmUsers,eq(sellerProfiles.crmUserId,crmUsers.id)).orderBy(desc(commercialCases.updatedAt)).limit(500),
     db.select({id:caseTasks.id,caseId:caseTasks.caseId,actionType:caseTasks.actionType,ownerId:caseTasks.ownerId,ownerName:crmUsers.name,dueAt:caseTasks.dueAt,priority:caseTasks.priority,status:caseTasks.status,context:caseTasks.context,createdAt:caseTasks.createdAt})
-      .from(caseTasks).leftJoin(crmUsers,eq(caseTasks.ownerId,crmUsers.id)).where(eq(caseTasks.status,"OPEN")),
+      .from(caseTasks).leftJoin(crmUsers,eq(caseTasks.ownerId,crmUsers.id)),
+    db.select({id:proposals.id,caseId:proposals.caseId,status:proposals.status,totalAmount:proposals.totalAmount,proposedAt:proposals.proposedAt}).from(proposals),
+    db.select({id:vehicles.id,status:vehicles.status,askingPrice:vehicles.askingPrice,acquisitionCost:vehicles.acquisitionCost,additionalCosts:vehicles.additionalCosts}).from(vehicles),
+    db.select({id:vehicleLifecycleEvents.id,caseId:vehicleLifecycleEvents.caseId,eventType:vehicleLifecycleEvents.eventType,description:vehicleLifecycleEvents.description,occurredAt:vehicleLifecycleEvents.occurredAt}).from(vehicleLifecycleEvents).orderBy(desc(vehicleLifecycleEvents.occurredAt)).limit(100),
   ]);
-  return buildMissionControl(cases,tasks);
+  return buildMissionControl(cases.map(item=>({...item,vehicleValue:item.vehicleValue??0})),tasks,proposalRows,vehicleRows,eventRows,access);
+}
+
+export async function listOperationalDeliveries(){
+  return getDb().select({id:vehicleDeliveries.id,caseId:vehicleDeliveries.caseId,status:vehicleDeliveries.status,scheduledAt:vehicleDeliveries.scheduledAt,deliveredAt:vehicleDeliveries.deliveredAt,notes:vehicleDeliveries.notes,customerName:customers.name,vehicleBrand:vehicles.brand,vehicleModel:vehicles.model})
+    .from(vehicleDeliveries).innerJoin(commercialCases,eq(vehicleDeliveries.caseId,commercialCases.id)).leftJoin(customers,eq(vehicleDeliveries.customerId,customers.id)).leftJoin(vehicles,eq(vehicleDeliveries.vehicleId,vehicles.id)).orderBy(desc(vehicleDeliveries.createdAt));
 }
 
 export async function getCommercialCase(caseId:string){

@@ -1,5 +1,5 @@
 import { desc } from "drizzle-orm";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { vehicles } from "../../db/vehicle-schema";
 import tradeStyles from "./Trocas.module.css";
@@ -14,7 +14,7 @@ const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL
 const statusLabels: Record<string, string> = { available: "Disponível", evaluation: "Em avaliação", reserved: "Reservado", sold: "Vendido", unavailable: "Indisponível" };
 
 export default async function TrocasPage({ searchParams }: { searchParams: Promise<VehicleFilterParams> }) {
-  await requireChatGPTUser("/trocas");
+  await requireSellerOperations("/trocas");
   const filters = await searchParams;
   const allVehicles = await getDb().select().from(vehicles).orderBy(desc(vehicles.updatedAt)).limit(1000);
   const rows = allVehicles.filter((v) => v.sourceType === "trade_in");

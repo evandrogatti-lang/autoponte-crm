@@ -1,5 +1,5 @@
 import { desc } from "drizzle-orm";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { buyerProfiles, tradeIns } from "../../db/schema";
 import { buildGmailComposeUrl, buildWhatsAppUrl, formatBrazilianPhone, normalizeEmail } from "../../lib/contact";
@@ -50,7 +50,7 @@ export default async function ClientsPage({
 }: {
   searchParams: Promise<{ client?: string; q?: string }>;
 }) {
-  await requireChatGPTUser("/clientes");
+  await requireSellerOperations("/clientes");
   const query = await searchParams;
   const [opportunities, profiles] = await Promise.all([
     getDb().select().from(tradeIns).orderBy(desc(tradeIns.updatedAt)).limit(500),

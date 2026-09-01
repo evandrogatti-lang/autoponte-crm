@@ -1,5 +1,5 @@
 import { desc } from "drizzle-orm";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
 import {
@@ -12,7 +12,7 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function PropostasPage() {
-  await requireChatGPTUser("/propostas");
+  await requireSellerOperations("/propostas");
 
   const rows = await getDb()
     .select()

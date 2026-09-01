@@ -1,10 +1,11 @@
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { vehicles } from "../../db/vehicle-schema";
 import {
   CoreShell,
   coreStyles as styles,
 } from "../../components/crm/CoreShell";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ const money = new Intl.NumberFormat("pt-BR", {
 });
 
 export default async function FinanceiroPage() {
-  await requireChatGPTUser("/financeiro");
+  await requireSellerOperations("/financeiro");
 
   const rows = await getDb().select().from(vehicles).limit(1000);
 
@@ -46,7 +47,7 @@ export default async function FinanceiroPage() {
       activeHref="/financeiro"
       title="Financeiro"
       subtitle="Visão financeira operacional dos veículos ativos."
-      actions={<a href="/veiculos">Ver estoque</a>}
+      actions={<Link href="/veiculos">Ver estoque</Link>}
     >
       <div className={styles.metrics}>
         <div className={styles.metric}>

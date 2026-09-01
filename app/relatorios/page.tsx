@@ -1,4 +1,4 @@
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { vehicles } from "../../db/vehicle-schema";
 import { tradeIns } from "../../db/schema";
@@ -11,7 +11,7 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function RelatoriosPage() {
-  await requireChatGPTUser("/relatorios");
+  await requireSellerOperations("/relatorios");
 
   const [vehicleRows, opportunityRows] = await Promise.all([
     getDb().select().from(vehicles).limit(1000),
