@@ -32,11 +32,7 @@ export async function recordAudit(actor: AccessActor, action: string, entityType
 export async function requirePermission(actor: AccessActor, permission: string) {
   const db = getDb();
   const email = actor.email.trim().toLowerCase();
-  let [user] = await db.select().from(crmUsers).where(eq(crmUsers.email, email)).limit(1);
-  if (!user) {
-    await requireSystemAdmin(actor);
-    [user] = await db.select().from(crmUsers).where(eq(crmUsers.email, email)).limit(1);
-  }
+  const [user] = await db.select().from(crmUsers).where(eq(crmUsers.email, email)).limit(1);
   if (!user || user.status !== "active") throw new Error("Você não tem permissão para esta operação.");
   const [role] = await db.select({ code: crmRoles.code }).from(crmRoles).where(eq(crmRoles.id, user.roleId)).limit(1);
   if (!role) throw new Error("Perfil de acesso não encontrado.");

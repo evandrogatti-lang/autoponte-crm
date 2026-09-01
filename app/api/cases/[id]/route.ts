@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { getChatGPTUser } from "../../../chatgpt-auth";
+import { getCurrentAppUser } from "../../../app-auth";
 import { recordAudit, requirePermission } from "../../../../lib/access-control";
 import { CaseOperationError, parseCaseAction } from "../../../../lib/commercial-cases/contracts";
 import { getCommercialCase, operateCommercialCase } from "../../../../lib/commercial-cases/service";
@@ -11,7 +11,7 @@ function responseStatus(error:unknown,fallback:number){
   return message.includes("permissão")||message.includes("Perfil de acesso")?403:fallback;
 }
 export async function GET(_request:Request,{params}:Context){
-  const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
+  const user=await getCurrentAppUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
   const actor={email:user.email,displayName:user.displayName};
   try{
     await requirePermission(actor,"seller_operations.manage");
@@ -21,7 +21,7 @@ export async function GET(_request:Request,{params}:Context){
   }
 }
 export async function POST(request:Request,{params}:Context){
-  const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
+  const user=await getCurrentAppUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
   const actor={email:user.email,displayName:user.displayName};
   try{
     await requirePermission(actor,"seller_operations.manage");

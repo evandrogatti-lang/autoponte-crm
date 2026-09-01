@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireCurrentAppUser } from "../app-auth";
+import { requirePermission } from "../../lib/access-control";
 import { listCommercialCases } from "../../lib/commercial-cases/service";
 import styles from "./cases.module.css";
 
@@ -10,7 +11,8 @@ function label(value: string) {
 }
 
 export default async function CasesPage() {
-  await requireChatGPTUser("/casos");
+  const user = await requireCurrentAppUser("/casos");
+  await requirePermission(user, "seller_operations.manage");
   const cases = await listCommercialCases();
 
   return (

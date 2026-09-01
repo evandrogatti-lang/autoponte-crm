@@ -1,9 +1,9 @@
-import { getChatGPTUser } from "../../chatgpt-auth";
+import { getCurrentAppUser } from "../../app-auth";
 import { requirePermission } from "../../../lib/access-control";
 import { listCommercialCases } from "../../../lib/commercial-cases/service";
 
 export async function GET(){
-  const user=await getChatGPTUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
+  const user=await getCurrentAppUser();if(!user)return Response.json({error:"Não autorizado."},{status:401});
   const actor={email:user.email,displayName:user.displayName};
   try{
     await requirePermission(actor,"seller_operations.manage");
