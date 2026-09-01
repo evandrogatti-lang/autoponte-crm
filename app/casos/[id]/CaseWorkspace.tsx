@@ -260,11 +260,11 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
           </div>
         </article>
         {hasTradeIn && <article className={`${styles.panel} ${styles.tradeIn}`}>
-          <SectionTitle label="TRADE-IN" title={`${text(tradeIn.brand, opportunity.brand)} ${text(tradeIn.model, opportunity.model)}`} />
+          <SectionTitle label="TRADE-IN" title={`${text(tradeIn.brand, text(opportunity.brand, ""))} ${text(tradeIn.model, text(opportunity.model, ""))}`} />
           <div className={styles.detailGrid}>
             <Detail label="Avaliação" value={amount(tradeIn.appraisalValue || opportunity.estimatedMax || opportunity.referencePrice)} />
             <Detail label="Crédito na proposta" value={amount(currentProposal?.tradeInCredit)} />
-            <Detail label="Ano / placa" value={`${text(tradeIn.modelYear, opportunity.year)} · ${text(tradeIn.plate)}`} />
+            <Detail label="Ano / placa" value={`${text(tradeIn.modelYear, text(opportunity.year, ""))} · ${text(tradeIn.plate)}`} />
             <Detail label="Status" value={status(tradeIn.status || opportunity.status)} />
           </div>
         </article>}
