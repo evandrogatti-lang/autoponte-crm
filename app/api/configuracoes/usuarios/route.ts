@@ -5,6 +5,7 @@ import { getDb } from "../../../../db";
 import { crmRoles, crmUsers } from "../../../../db/schema";
 import { recordAudit, requireSystemAdmin } from "../../../../lib/access-control";
 import { createSupabaseAdmin } from "../../../../lib/supabase-admin";
+import { getPasswordRedirectUrl } from "../../../../lib/auth-flow";
 
 const clean = (value: unknown, max = 180) => typeof value === "string" ? value.trim().slice(0, max) : "";
 const actorFrom = async () => {
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     const [duplicate] = await db.select({ id: crmUsers.id }).from(crmUsers).where(eq(crmUsers.email, email)).limit(1);
     if (duplicate) throw new Error("Já existe um usuário com este e-mail.");
     const auth = createSupabaseAdmin();
-    const redirectTo = `${process.env.AUTOPONTE_APP_URL ?? "https://autoponte-crm.vercel.app"}/nova-senha`;
+    const redirectTo = getPasswordRedirectUrl();
     const { data: invitation, error: invitationError } = await auth.auth.admin.inviteUserByEmail(email, { redirectTo, data: { name } });
     if (invitationError || !invitation.user) throw new Error(invitationError?.message ?? "Não foi possível enviar o convite.");
     const id = crypto.randomUUID();

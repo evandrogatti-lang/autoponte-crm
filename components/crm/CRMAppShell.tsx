@@ -145,7 +145,7 @@ function Icon({ name }: { name: string }) {
   return <svg {...common} aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg>;
 }
 
-export function CRMAppShell({ children }: { children: ReactNode }) {
+export function CRMAppShell({ children, authenticated, canManageSettings }: { children: ReactNode; authenticated: boolean; canManageSettings: boolean }) {
   const pathname = usePathname() || "/";
   const managed = isManaged(pathname);
   const globalSearchRef = useRef<HTMLInputElement>(null);
@@ -294,6 +294,17 @@ useEffect(() => {
   return () => window.removeEventListener("hashchange", onHash);
 }, [closeMobileMore]);
 
+useEffect(() => {
+  if (!managed || !authenticated) return;
+  const validate = async () => {
+    const response = await fetch("/api/auth/session", { cache: "no-store" });
+    if (response.status === 401) window.location.replace("/login");
+  };
+  const onFocus = () => { void validate(); };
+  window.addEventListener("focus", onFocus);
+  return () => window.removeEventListener("focus", onFocus);
+}, [authenticated, managed]);
+
 // Close panel when leaving mobile breakpoint
 useEffect(() => {
   if (typeof window === "undefined" || !window.matchMedia) return;
@@ -329,7 +340,8 @@ useEffect(() => {
 
 // primary mobile items are used implicitly by MOBILE_PRIMARY_HREFS; no separate variable needed
 
-const mobileMoreItems = NAVIGATION
+const visibleNavigation = NAVIGATION.map((group) => ({ ...group, items: group.items.filter((item) => item.href !== "/configuracoes" || canManageSettings) }));
+const mobileMoreItems = visibleNavigation
   .flatMap((group) => group.items)
   .filter((item) =>
     !MOBILE_PRIMARY_HREFS.includes(item.href)
@@ -381,7 +393,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
         </Link>
 
        <nav className={styles.nav}>
-  {NAVIGATION.map((group, groupIndex) => (
+  {visibleNavigation.map((group, groupIndex) => (
     <div
       className={styles.group}
       key={`${group.title || "main"}-${groupIndex}`}
@@ -472,6 +484,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
             <strong>AutoPonte</strong>
             <small>Operação comercial</small>
           </span>
+          <form action="/api/auth/logout" method="POST"><button className={styles.logout} type="submit">Sair com segurança</button></form>
         </div>
       </aside>
 
@@ -480,7 +493,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
           <div>
             <div className={styles.breadcrumb}>AutoPonte CRM</div>
             <div className={styles.routeLabel}>
-              {NAVIGATION.flatMap(group => group.items).find(item => activeFor(pathname, item.href))?.label || "Operação"}
+              {visibleNavigation.flatMap(group => group.items).find(item => activeFor(pathname, item.href))?.label || "Operação"}
             </div>
           </div>
 
