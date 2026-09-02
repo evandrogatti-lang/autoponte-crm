@@ -22,13 +22,13 @@ function NegotiationCard({ item }: { item: MissionControlCase }) {
     <h3>{customerOf(item)}</h3>
     <p>{item.vehicleLabel || "Veículo em definição"}</p>
     <dl><div><dt>Próxima ação</dt><dd>{item.nextAction ? actionLabels[item.nextAction.actionType] || item.nextAction.actionType : "Não definida"}</dd></div><div><dt>Responsável</dt><dd>{item.sellerName || item.nextAction?.ownerName || "Não atribuído"}</dd></div></dl>
-    <Link href={`/casos/${item.id}`}>Abrir negociação</Link>
+    <Link href={`/negociacoes/${item.id}`}>Abrir negociação</Link>
   </article>;
 }
 
 function TaskRow({ task, cases }: { task: MissionControlTaskInput; cases: MissionControlCase[] }) {
   const item = cases.find((entry) => entry.id === task.caseId);
-  return <Link className={styles.taskRow} href={`/casos/${task.caseId}`}>
+  return <Link className={styles.taskRow} href={`/negociacoes/${task.caseId}`}>
     <time>{date.format(task.dueAt)}</time>
     <span><strong>{actionLabels[task.actionType] || task.actionType}</strong><small>{customerOf(item)} · {task.context || "Sem contexto adicional"}</small></span>
     <b data-priority={task.priority}>{task.priority === "URGENT" ? "Urgente" : task.priority === "HIGH" ? "Alta" : "Normal"}</b>
@@ -51,21 +51,20 @@ export default async function CrmPage() {
 
     <section className={styles.metrics} aria-label="Resumo operacional">
       <Link href="/agenda?filtro=atrasadas" data-tone={model.counters.overdue ? "critical" : "neutral"}><span>Atrasadas</span><strong>{model.counters.overdue}</strong><small>ações vencidas</small></Link>
-      <Link href="/agenda?filtro=hoje"><span>Hoje</span><strong>{model.counters.dueToday}</strong><small>próximas ações</small></Link>
-      <Link href="/casos"><span>Negociações</span><strong>{model.counters.openNegotiations}</strong><small>em execução</small></Link>
+      <Link href="/negociacoes"><span>Negociações</span><strong>{model.counters.openNegotiations}</strong><small>em execução</small></Link>
       <Link href="/aprovacoes"><span>Aprovações</span><strong>{model.approvals.length}</strong><small>revisões pendentes</small></Link>
-      <Link href="/casos"><span>Sem próxima ação</span><strong>{model.counters.noNextAction}</strong><small>exigem definição</small></Link>
+      <Link href="/financeiro"><span>Impacto financeiro</span><strong>{money.format(model.financial.proposalValue)}</strong><small>em propostas ativas</small></Link>
     </section>
 
     <section className={styles.attention}>
-      <div className={styles.sectionHeading}><div><span>PRIORIDADE OPERACIONAL</span><h2>Atenção agora</h2></div><Link href="/casos">Ver negociações</Link></div>
+      <div className={styles.sectionHeading}><div><span>PRIORIDADE OPERACIONAL</span><h2>Atenção agora</h2></div><Link href="/negociacoes">Ver negociações</Link></div>
       {model.attentionNow.length ? <div className={styles.attentionGrid}>{model.attentionNow.slice(0, 4).map((item) => <NegotiationCard key={item.id} item={item}/>)}</div> : <Empty>Nenhuma pendência crítica neste momento.</Empty>}
     </section>
 
     <div className={styles.twoColumns}>
       <section className={styles.panel}>
-        <div className={styles.sectionHeading}><div><span>EXECUÇÃO COMERCIAL</span><h2>Negociações quentes</h2></div><Link href="/casos">Ver todas</Link></div>
-        {model.hotNegotiations.length ? <div className={styles.compactList}>{model.hotNegotiations.map((item) => <Link href={`/casos/${item.id}`} key={item.id}><span><strong>{customerOf(item)}</strong><small>{item.nextAction?.context || item.vehicleLabel || "Contexto em atualização"}</small></span><b>{item.displayValue ? money.format(item.displayValue) : attentionLabels[item.attention]}</b></Link>)}</div> : <Empty>Nenhuma negociação quente no recorte atual.</Empty>}
+        <div className={styles.sectionHeading}><div><span>EXECUÇÃO COMERCIAL</span><h2>Negociações quentes</h2></div><Link href="/negociacoes">Ver todas</Link></div>
+        {model.hotNegotiations.length ? <div className={styles.compactList}>{model.hotNegotiations.map((item) => <Link href={`/negociacoes/${item.id}`} key={item.id}><span><strong>{customerOf(item)}</strong><small>{item.nextAction?.context || item.vehicleLabel || "Contexto em atualização"}</small></span><b>{item.displayValue ? money.format(item.displayValue) : attentionLabels[item.attention]}</b></Link>)}</div> : <Empty>Nenhuma negociação quente no recorte atual.</Empty>}
       </section>
       <section className={styles.panel}>
         <div className={styles.sectionHeading}><div><span>DECISÕES</span><h2>Aprovações pendentes</h2></div><Link href="/aprovacoes">Ver todas</Link></div>
@@ -84,7 +83,7 @@ export default async function CrmPage() {
 
     <div className={styles.twoColumns}>
       <section className={styles.panel}><div className={styles.sectionHeading}><div><span>AGENDA</span><h2>Próximas ações (hoje)</h2></div><Link href="/agenda">Ver agenda completa</Link></div>{model.todayActions.length ? <div>{model.todayActions.slice(0, 6).map((task) => <TaskRow key={task.id} task={task} cases={model.cases}/>)}</div> : <Empty>Nenhuma ação prevista para hoje.</Empty>}</section>
-      <section className={styles.panel}><div className={styles.sectionHeading}><div><span>HISTÓRICO</span><h2>Atividade recente</h2></div><Link href="/agenda?visao=atividade">Ver todas as atividades</Link></div>{model.recentActivity.length ? <div className={styles.activity}>{model.recentActivity.slice(0, 6).map((event) => <Link href={`/casos/${event.caseId}`} key={event.id}><i/><span><strong>{event.description || "Atualização operacional"}</strong><small>{date.format(event.occurredAt)}</small></span></Link>)}</div> : <Empty>Nenhuma atividade recente registrada.</Empty>}</section>
+      <section className={styles.panel}><div className={styles.sectionHeading}><div><span>HISTÓRICO</span><h2>Atividade recente</h2></div><Link href="/agenda?visao=atividade">Ver todas as atividades</Link></div>{model.recentActivity.length ? <div className={styles.activity}>{model.recentActivity.slice(0, 6).map((event) => <Link href={`/negociacoes/${event.caseId}`} key={event.id}><i/><span><strong>{event.description || "Atualização operacional"}</strong><small>{date.format(event.occurredAt)}</small></span></Link>)}</div> : <Empty>Nenhuma atividade recente registrada.</Empty>}</section>
     </div>
 
     <section className={styles.panel}>

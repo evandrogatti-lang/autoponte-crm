@@ -11,7 +11,7 @@ const actionLabels: Record<string, string> = {
   REQUEST_DOCUMENTS: "Solicitar documentos",
   REVIEW_PROPOSAL: "Revisar proposta",
   SCHEDULE_FOLLOW_UP: "Agendar acompanhamento",
-  MARK_CASE_LOST: "Marcar caso como perdido",
+  MARK_CASE_LOST: "Marcar negociação como perdida",
 };
 
 const lossReasons: Record<string, string> = {
@@ -107,7 +107,7 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
   const hasTradeIn = Object.keys(tradeIn).length > 0 || caseData.acquisitionMode === "trade_in" || Number(currentProposal?.tradeInCredit) > 0;
   const attention = (() => {
     const items: string[] = [];
-    if (!nextAction && caseData.status !== "lost" && caseData.finalOutcome !== "sold") items.push(text(caseData.noNextActionReason, "Caso sem próxima ação definida."));
+    if (!nextAction && caseData.status !== "lost" && caseData.finalOutcome !== "sold") items.push(text(caseData.noNextActionReason, "Negociação sem próxima ação definida."));
     if (pendingWork.length) items.push(`${pendingWork.length} serviço(s) a executar.`);
     if (payments.some((item) => item.status === "pending")) items.push("Pagamento pendente.");
     if (vehicle.documentStatus && !["approved", "regular"].includes(String(vehicle.documentStatus))) items.push(`Documentação: ${status(vehicle.documentStatus)}.`);
@@ -199,8 +199,8 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
     <main className={styles.page}>
       <header className={styles.caseHeader}>
         <div>
-          <Link href="/casos" className={styles.back}>← Voltar para casos</Link>
-          <span>CASO {text(caseData.pilotCode, caseId.slice(0, 8).toUpperCase())}</span>
+          <Link href="/negociacoes" className={styles.back}>← Voltar para negociações</Link>
+          <span>NEGOCIAÇÃO {text(caseData.pilotCode, caseId.slice(0, 8).toUpperCase())}</span>
           <h1>{text(customer.name, "Cliente não informado")}</h1>
           <p>{text(vehicle.brand, "Veículo")} {text(vehicle.model, "")} · {text(vehicle.modelYear, "Ano não informado")} · {text(data.sellerName, "Sem responsável")}</p>
         </div>
@@ -225,7 +225,7 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
             <button type="button" disabled={busy} onClick={() => openTaskForm("complete", nextAction)}>Concluir próxima ação</button>
           </> : <>
             <h2>Sem próxima ação</h2>
-            <p>{text(caseData.noNextActionReason, "Defina uma ação para manter o caso em movimento.")}</p>
+            <p>{text(caseData.noNextActionReason, "Defina uma ação para manter a negociação em movimento.")}</p>
             <button type="button" disabled={busy || !ownerId} onClick={() => openTaskForm("create")}>Definir ação</button>
           </>}
         </article>
@@ -294,7 +294,7 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
 
       <section className={styles.panel}>
         <div className={styles.sectionHead}>
-          <div><span className={styles.sectionLabel}>CASE ACTIONS</span><h2>Ações do caso</h2></div>
+          <div><span className={styles.sectionLabel}>PRÓXIMOS PASSOS</span><h2>Ações da negociação</h2></div>
           <button type="button" disabled={busy || !ownerId} onClick={() => openTaskForm("create")}>Nova ação</button>
         </div>
         {openTasks.length ? <div className={styles.actionList}>{openTasks.map((task) => <TaskRow task={task} next={nextAction?.id === task.id} busy={busy} onComplete={() => openTaskForm("complete", task)} onCancel={() => openTaskForm("cancel", task)} key={String(task.id)} />)}</div> : <p className={styles.empty}>Nenhuma ação aberta.</p>}
@@ -319,7 +319,7 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
         {timeline.length ? <div className={styles.timeline}>{timeline.map((item) => <div className={styles.timelineRow} key={String(item.id)}><time>{date(item.occurredAt)}</time><div><b>{status(item.eventType)}</b><p>{text(item.description, status(item.status))}</p></div><span>{item.amount ? amount(item.amount) : status(item.status)}</span></div>)}</div> : <p className={styles.empty}>Nenhum evento operacional registrado.</p>}
       </section>
 
-      {taskMode === "create" && <TaskDialog title="Nova ação do caso" onClose={() => setTaskMode(null)}><form onSubmit={createTask} className={styles.form}><TaskFields ownerId={ownerId} /><TaskError message={taskError} /><button disabled={busy}>Criar ação</button></form></TaskDialog>}
+      {taskMode === "create" && <TaskDialog title="Nova ação da negociação" onClose={() => setTaskMode(null)}><form onSubmit={createTask} className={styles.form}><TaskFields ownerId={ownerId} /><TaskError message={taskError} /><button disabled={busy}>Criar ação</button></form></TaskDialog>}
       {taskMode === "complete" && selectedTask && <TaskDialog title={`Concluir: ${taskName(selectedTask)}`} onClose={() => setTaskMode(null)}><form onSubmit={completeTask} className={styles.form}><label>Resultado<textarea name="result" required /></label><label>Observação<textarea name="note" /></label>{selectedTask.actionType === "MARK_CASE_LOST" && <label>Motivo da perda<select name="lossReason" required>{Object.entries(lossReasons).map(([value, item]) => <option value={value} key={value}>{item}</option>)}</select></label>}<label className={styles.checkbox}><input type="checkbox" checked={createNextAction} onChange={(event) => setCreateNextAction(event.target.checked)} /> Criar próxima ação agora</label>{createNextAction ? <div className={styles.nextFields}><TaskFields ownerId={ownerId} prefix="next" /></div> : <label>Motivo para ficar sem próxima ação<textarea name="noNextActionReason" placeholder="Obrigatório se não criar uma próxima ação." required /></label>}<TaskError message={taskError} /><button disabled={busy}>Concluir ação</button></form></TaskDialog>}
       {taskMode === "cancel" && selectedTask && <TaskDialog title={`Cancelar: ${taskName(selectedTask)}`} onClose={() => setTaskMode(null)}><form onSubmit={cancelTask} className={styles.form}><label>Motivo do cancelamento<textarea name="reason" required /></label><label>Motivo para não haver próxima ação<textarea name="noNextActionReason" /></label><TaskError message={taskError} /><button disabled={busy}>Cancelar ação</button></form></TaskDialog>}
     </main>

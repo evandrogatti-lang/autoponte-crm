@@ -9,7 +9,7 @@ test("Mission Control navigation uses approved Portuguese labels and real destin
   const expected = [
     ["Central de Operações", "/crm"], ["Leads novos", "/leads/novos"],
     ["Potenciais clientes", "/leads"], ["Clientes", "/clientes"],
-    ["Oportunidades", "/oportunidades"], ["Negociações", "/casos"],
+    ["Match", "/matches"], ["Negociações", "/negociacoes"],
     ["Propostas", "/propostas"], ["Funil de vendas", "/funil"],
     ["Estoque", "/veiculos"], ["Avaliações (trocas)", "/trocas"],
     ["Entrega de veículos", "/entregas"], ["Relatórios", "/relatorios"],
@@ -18,7 +18,7 @@ test("Mission Control navigation uses approved Portuguese labels and real destin
   for (const [label, href] of expected) {
     assert.match(shell, new RegExp(`label: "${label.replace(/[()]/g, "\\$&")}", href: "${href}"`));
   }
-  for (const route of ["crm", "funil", "agenda", "aprovacoes", "entregas", "leads/novos"]) {
+  for (const route of ["crm", "funil", "agenda", "aprovacoes", "entregas", "leads/novos", "matches", "negociacoes"]) {
     assert.equal(existsSync(new URL(`../app/${route}/page.tsx`, import.meta.url)), true, `missing /${route}`);
   }
 });

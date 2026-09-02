@@ -30,8 +30,8 @@ const NAVIGATION: NavGroup[] = [
       { label: "Leads novos", href: "/leads/novos", icon: "spark" },
       { label: "Potenciais clientes", href: "/leads", icon: "target" },
       { label: "Clientes", href: "/clientes", icon: "users" },
-      { label: "Oportunidades", href: "/oportunidades", icon: "target" },
-      { label: "Negociações", href: "/casos", icon: "file" },
+      { label: "Match", href: "/matches", icon: "target" },
+      { label: "Negociações", href: "/negociacoes", icon: "file" },
       { label: "Propostas", href: "/propostas", icon: "file" },
       { label: "Funil de vendas", href: "/funil", icon: "chart" },
     ],
@@ -64,8 +64,8 @@ const NAVIGATION: NavGroup[] = [
 const MOBILE_PRIMARY_HREFS = [
   "/crm",
   "/clientes",
-  "/oportunidades",
-  "/casos",
+  "/matches",
+  "/negociacoes",
   "/veiculos",
 ];
 
@@ -89,6 +89,7 @@ const MANAGED_PREFIXES = [
   "/configuracoes",
   "/recomendacoes",
   "/matches",
+  "/negociacoes",
   ];
 
 
