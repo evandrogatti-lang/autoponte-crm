@@ -18,5 +18,5 @@ export function getPublicAppUrl() {
 }
 
 export function getPasswordRedirectUrl() {
-  return `${getPublicAppUrl()}/nova-senha`;
+  return `${getPublicAppUrl()}/api/auth/confirm`;
 }

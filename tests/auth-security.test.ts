@@ -22,12 +22,15 @@ test("protected access blocks a pending password flow and inactive CRM users", (
   assert.match(auth, /redirect\("\/acesso-negado"\)/);
 });
 
-test("password links are exchanged server-side and cannot be reused", () => {
+test("password links use a server-side token-hash callback and cannot be reused", () => {
   const proxy = read("proxy.ts");
+  const confirm = read("app/api/auth/confirm/route.ts");
   const password = read("app/api/auth/password/route.ts");
-  assert.match(proxy, /exchangeCodeForSession\(code\)/);
-  assert.match(proxy, /PASSWORD_FLOW_COOKIE, "pending"/);
+  assert.doesNotMatch(proxy, /exchangeCodeForSession/);
   assert.match(proxy, /status=invalid/);
+  assert.match(confirm, /type !== "recovery" && type !== "invite"/);
+  assert.match(confirm, /verifyOtp\(\{ token_hash: tokenHash, type \}\)/);
+  assert.match(confirm, /PASSWORD_FLOW_COOKIE, "pending"/);
   assert.match(password, /value !== "pending"/);
   assert.match(password, /store\.delete\(PASSWORD_FLOW_COOKIE\)/);
   assert.match(password, /auth\.signOut/);
@@ -38,9 +41,33 @@ test("invite and recovery use the centralized Preview password URL", () => {
   const invite = read("app/api/configuracoes/usuarios/route.ts");
   const recovery = read("app/api/auth/recovery/route.ts");
   assert.match(urls, /autoponte-crm-git-codex-mission-control-cockpit-auto-ponte\.vercel\.app/);
-  assert.match(urls, /return `\$\{getPublicAppUrl\(\)\}\/nova-senha`/);
+  assert.match(urls, /return `\$\{getPublicAppUrl\(\)\}\/api\/auth\/confirm`/);
   assert.match(invite, /getPasswordRedirectUrl\(\)/);
   assert.match(recovery, /getPasswordRedirectUrl\(\)/);
+});
+
+test("password failures are safe and rate limits preserve the recovery state", () => {
+  const password = read("app/api/auth/password/route.ts");
+  const errors = read("lib/auth-password-errors.ts");
+  const deletePosition = password.indexOf("store.delete(PASSWORD_FLOW_COOKIE)");
+  const updatePosition = password.indexOf("supabase.auth.updateUser");
+  assert.match(password, /recovery_state_missing/);
+  assert.match(password, /recovery_session_invalid/);
+  assert.match(password, /password_policy/);
+  assert.match(password, /rate_limit/);
+  assert.match(password, /password_update_failed/);
+  assert.match(password, /Muitas tentativas\. Aguarde alguns minutos e tente novamente\./);
+  assert.match(errors, /over_request_rate_limit/);
+  assert.ok(deletePosition > updatePosition);
+});
+
+test("normal login always validates the password with Supabase", () => {
+  const login = read("app/login/AuthForm.tsx");
+  const messages = read("lib/auth-error-messages.ts");
+  assert.match(login, /auth\.signInWithPassword\(\{ email, password \}\)/);
+  assert.doesNotMatch(login, /getSession\(\)[\s\S]*router\.replace/);
+  assert.match(messages, /E-mail ou senha inválidos\./);
+  assert.match(messages, /Muitas tentativas\. Aguarde alguns minutos e tente novamente\./);
 });
 
 test("navigation hides settings without admin context and exposes secure logout", () => {

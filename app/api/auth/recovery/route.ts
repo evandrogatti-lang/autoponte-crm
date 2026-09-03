@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { getPasswordRedirectUrl } from "../../../../lib/auth-flow";
+import { assertServerSupabaseEnvironment } from "../../../../lib/supabase-environment";
 
 export async function POST(request: Request) {
   const generic = "Se o e-mail estiver cadastrado, você receberá um link para definir uma nova senha.";
@@ -9,6 +10,7 @@ export async function POST(request: Request) {
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   if (!url || !key || !email.includes("@")) return Response.json({ message: generic });
   try {
+    assertServerSupabaseEnvironment();
     const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
     await supabase.auth.resetPasswordForEmail(email, { redirectTo: getPasswordRedirectUrl() });
   } catch { /* Keep the response indistinguishable and free of provider details. */ }
