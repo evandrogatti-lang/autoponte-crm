@@ -8,6 +8,7 @@ import {
   type OpportunityView,
 } from "../../lib/opportunities/view-preference";
 import styles from "./OpportunityViewToggle.module.css";
+import { leadQualificationHref } from "../../lib/commercial-navigation";
 
 type OpportunityRow = {
   id: string;
@@ -97,6 +98,8 @@ export function OpportunityViewList({ rows }: { rows: OpportunityRow[] }) {
   useEffect(() => {
     const stored = window.localStorage.getItem(OPPORTUNITY_VIEW_STORAGE_KEY);
     const resolved = resolveOpportunityView(stored);
+    // Read after hydration so browser preferences cannot diverge from the server markup.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setView(resolved);
     if (stored !== resolved) setStoredView(resolved);
   }, []);
@@ -110,7 +113,7 @@ export function OpportunityViewList({ rows }: { rows: OpportunityRow[] }) {
 
   return (
     <div>
-      <div className={styles.toggle} aria-label="Modo de visualização da oportunidade" role="tablist">
+      <div className={styles.toggle} aria-label="Modo de visualização da qualificação" role="tablist">
         {VIEW_OPTIONS.map((option) => (
           <button
             key={option.value}
@@ -126,9 +129,9 @@ export function OpportunityViewList({ rows }: { rows: OpportunityRow[] }) {
       </div>
 
       {view === "list" && (
-        <div className={styles.list} aria-label="Lista de oportunidades">
+        <div className={styles.list} aria-label="Lista de qualificações">
           {rows.map((item) => (
-            <Link key={item.id} href={`/oportunidades/${item.id}`} className={styles.listRow}>
+            <Link key={item.id} href={leadQualificationHref(item.id)} className={styles.listRow}>
               <div className={styles.primary}>
                 <strong>{item.name || "Cliente em revisão"}</strong>
                 <span>{getInterest(item)}</span>
@@ -150,7 +153,7 @@ export function OpportunityViewList({ rows }: { rows: OpportunityRow[] }) {
       {view === "details" && (
         <div className={styles.details}>
           {rows.map((item) => (
-            <Link key={item.id} href={`/oportunidades/${item.id}`} className={styles.detailRow}>
+            <Link key={item.id} href={leadQualificationHref(item.id)} className={styles.detailRow}>
               <div className={styles.primary}>
                 <strong>{item.name || "Cliente em revisão"}</strong>
                 <span>{getInterest(item)}</span>
@@ -171,7 +174,7 @@ export function OpportunityViewList({ rows }: { rows: OpportunityRow[] }) {
       {view === "cards" && (
         <div className={styles.cards}>
           {rows.map((item) => (
-            <Link key={item.id} href={`/oportunidades/${item.id}`} className={styles.card}>
+            <Link key={item.id} href={leadQualificationHref(item.id)} className={styles.card}>
               <div className={styles.cardHeader}>
                 <div className={styles.primary}>
                   <strong>{item.name || "Cliente em revisão"}</strong>

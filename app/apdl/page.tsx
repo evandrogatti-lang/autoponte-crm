@@ -1,15 +1,16 @@
 ﻿import {
   AIInsightCard, APButton, APPanel, CashFlowWidget, CommandPalette, DecisionPanel,
   EnterpriseSidebar, HeatMap, KPICard, MissionCard, MissionControlHeader,
-  NotificationCenter, OpportunityScore, PipelineCard, PulseIndicator, Radar,
+  NotificationCenter, PipelineCard, PulseIndicator, Radar,
   SmartFilters, UniversalSearch, VehicleCard, WorkspaceGrid,
 } from "../../components/apdl";
+import { commercialRoutes } from "../../lib/commercial-navigation";
 
 export default function APDLShowcasePage() {
   return <main className="ap-showcase-shell">
-    <EnterpriseSidebar items={[{label:"Mission Control",href:"/crm",active:true},{label:"Clientes",href:"#"},{label:"Estoque",href:"#"},{label:"Trocas",href:"/oportunidades"},{label:"Correspondências IA",href:"/matches"}]}/>
+    <EnterpriseSidebar items={[{label:"Mission Control",href:commercialRoutes.missionControl,active:true},{label:"Clientes",href:"/clientes"},{label:"Estoque",href:"/veiculos"},{label:"Funil",href:commercialRoutes.funnel},{label:"Match",href:commercialRoutes.match},{label:"Negociação",href:commercialRoutes.negotiations}]}/>
     <div className="ap-showcase-main">
-      <MissionControlHeader title="APDL Foundation" subtitle="Biblioteca operacional, intuitiva e preparada para IA com custo controlado." actions={<APButton>Nova oportunidade</APButton>}/>
+      <MissionControlHeader title="APDL Foundation" subtitle="Biblioteca operacional, intuitiva e preparada para IA com custo controlado."/>
       <CommandPalette/>
       <SmartFilters filters={["Hoje","Esta semana","Minha loja","Alta prioridade"]}/>
       <WorkspaceGrid columns={4}>
@@ -46,7 +47,7 @@ export default function APDLShowcasePage() {
           <APPanel title="Três decisões"><DecisionPanel decisions={[{title:"Ligar para João",detail:"Maior probabilidade de fechamento"},{title:"Revisar Compass",detail:"Margem acima da média"},{title:"Ajustar Civic",detail:"Preço 3,1% acima do mercado"}]}/></APPanel>
           <APPanel title="Radar"><Radar items={[{label:"Comercial",value:97},{label:"Estoque",value:84},{label:"Financeiro",value:90},{label:"Atendimento",value:95}]}/></APPanel>
           <APPanel title="Caixa"><CashFlowWidget available="R$ 1,52 mi" committed="R$ 730 mil" required="R$ 1,18 mi"/></APPanel>
-          <APPanel title="Alertas"><NotificationCenter items={[{title:"2 reservas vencem hoje",tone:"warning"},{title:"1 documentação atrasada",tone:"danger"},{title:"7 oportunidades com score > 90",tone:"success"}]}/></APPanel>
+          <APPanel title="Alertas"><NotificationCenter items={[{title:"2 reservas vencem hoje",tone:"warning"},{title:"1 documentação atrasada",tone:"danger"},{title:"7 matches com score > 90",tone:"success"}]}/></APPanel>
         </aside>
       </div>
       <APPanel title="Mapa de calor"><HeatMap items={[{label:"Follow-ups",value:78},{label:"Avaliações",value:46},{label:"Documentos",value:21},{label:"Estoque parado",value:63}]}/></APPanel>

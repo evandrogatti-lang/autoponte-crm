@@ -1,5 +1,5 @@
 import { desc } from "drizzle-orm";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { vehicles } from "../../db/vehicle-schema";
 import tradeStyles from "./Trocas.module.css";
@@ -7,6 +7,7 @@ import { CoreShell, coreStyles as styles } from "../../components/crm/CoreShell"
 import { VehicleListFilters } from "../../features/vehicle-registry/components/VehicleListFilters";
 import { activeVehicleFilterChips, buildVehicleListHref, filterVehicleList, type VehicleFilterParams } from "../../features/vehicle-registry/vehicle-list-filters";
 import Link from "next/link";
+import { commercialRoutes } from "../../lib/commercial-navigation";
 
 export const dynamic = "force-dynamic";
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -14,7 +15,7 @@ const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL
 const statusLabels: Record<string, string> = { available: "Disponível", evaluation: "Em avaliação", reserved: "Reservado", sold: "Vendido", unavailable: "Indisponível" };
 
 export default async function TrocasPage({ searchParams }: { searchParams: Promise<VehicleFilterParams> }) {
-  await requireChatGPTUser("/trocas");
+  await requireSellerOperations("/trocas");
   const filters = await searchParams;
   const allVehicles = await getDb().select().from(vehicles).orderBy(desc(vehicles.updatedAt)).limit(1000);
   const rows = allVehicles.filter((v) => v.sourceType === "trade_in");
@@ -24,7 +25,7 @@ export default async function TrocasPage({ searchParams }: { searchParams: Promi
   const totalAsked = active.reduce((s, v) => s + (v.askingPrice || v.fipeValue || 0), 0);
   const currentHref = buildVehicleListHref("/trocas", filters);
 
-  return <CoreShell activeHref="/trocas" title="Trocas" subtitle="Veículos recebidos ou avaliados em operações de troca, separados das oportunidades." actions={<><Link href="/veiculos/novo">Cadastrar veículo</Link><Link className="primary" href="/oportunidades">Ver oportunidades</Link></>}>
+  return <CoreShell activeHref="/trocas" title="Trocas" subtitle="Veículos recebidos ou avaliados em operações de troca, separados do Match." actions={<><Link href={commercialRoutes.tradeEvaluation}>Avaliar troca</Link><Link className="primary" href={commercialRoutes.match}>Ver Match</Link></>}>
     <section className={styles.metrics}>
       <article className={styles.metric}><span>Trocas registradas</span><strong>{rows.length}</strong></article>
       <article className={styles.metric}><span>Ativas</span><strong>{active.length}</strong></article>

@@ -94,7 +94,7 @@ export function HeatMap({ items }: { items: Array<{ label: string; value: number
 }
 
 export function OpportunityScore({ score, trend = "estável", risk = "baixo" }: { score: number; trend?: string; risk?: string }) {
-  return <div className="ap-score"><strong>{score}</strong><div><span>Pontuação da oportunidade</span><small>{trend} · risco {risk}</small></div></div>;
+  return <div className="ap-score"><strong>{score}</strong><div><span>Pontuação da qualificação</span><small>{trend} · risco {risk}</small></div></div>;
 }
 
 export function DecisionPanel({ decisions }: { decisions: Array<{ title: string; detail: string }> }) {

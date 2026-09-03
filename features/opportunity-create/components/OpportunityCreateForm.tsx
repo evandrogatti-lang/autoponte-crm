@@ -10,6 +10,7 @@ import type { DesiredVehicleProfileInput } from "../../../lib/vehicles/desired-p
 import { TradeInFipeSelector, emptyTradeInFipeValue } from "../../vehicle-trade";
 import type { TradeInFipeValue } from "../../vehicle-trade";
 import { InternationalPhoneField } from "../../contact";
+import { commercialRoutes, leadQualificationHref } from "../../../lib/commercial-navigation";
 
 export function OpportunityCreateForm() {
   const router = useRouter();
@@ -65,12 +66,12 @@ export function OpportunityCreateForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const result = await response.json() as { error?: string; href?: string };
-      if (!response.ok || !result.href) throw new Error(result.error || "Não foi possível cadastrar a oportunidade.");
-      router.push(result.href);
+      const result = await response.json() as { error?: string; href?: string; id?: string };
+      if (!response.ok || !result.id) throw new Error(result.error || "Não foi possível cadastrar o lead.");
+      router.push(leadQualificationHref(result.id));
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Não foi possível cadastrar a oportunidade.");
+      setError(cause instanceof Error ? cause.message : "Não foi possível cadastrar o lead.");
       setPending(false);
     }
   }
@@ -118,8 +119,8 @@ export function OpportunityCreateForm() {
       <label className="consent-confirmation"><input name="consentConfirmed" type="checkbox" required /><span><strong>Consentimento de contato confirmado *</strong><small>Confirmo que o cliente autorizou o registro e o contato comercial pela AutoPonte.</small></span></label>
 
       <footer className="form-footer">
-        <a href="/oportunidades">Cancelar</a>
-        <button type="submit" disabled={pending || (hasTradeIn && !tradeInFipe.fipeCode)}>{pending ? "Validando FIPE e cadastrando..." : "Cadastrar e abrir workspace"}</button>
+        <a href={commercialRoutes.leads}>Cancelar</a>
+        <button type="submit" disabled={pending || (hasTradeIn && !tradeInFipe.fipeCode)}>{pending ? "Validando FIPE e cadastrando..." : "Cadastrar e qualificar lead"}</button>
       </footer>
     </form>
   );

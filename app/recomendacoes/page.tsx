@@ -5,6 +5,7 @@ import { opportunityEvents, tradeIns } from "../../db/schema";
 import { buildMissionControl } from "../../lib/mission-control/mapper";
 import type { MissionEventRow, TradeInRow } from "../../lib/mission-control/model";
 import styles from "./recommendations.module.css";
+import { leadQualificationHref } from "../../lib/commercial-navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -74,7 +75,7 @@ export default async function RecommendationsPage() {
             <a href="/crm">Mission Control</a><span>›</span><strong>Recomendações da IA</strong>
           </nav>
           <h1>Recomendações da IA</h1>
-          <p>Cada recomendação abre a oportunidade correspondente e preserva o contexto específico do cliente.</p>
+          <p>Cada recomendação abre a qualificação correspondente e preserva o contexto específico do cliente.</p>
         </div>
         <a className={styles.back} href="/crm">Voltar ao Mission Control</a>
       </header>
@@ -88,7 +89,7 @@ export default async function RecommendationsPage() {
 
       <section className={styles.list}>
         {opportunities.length === 0 && (
-          <div className={styles.empty}>Sem recomendações acionáveis enquanto não houver oportunidades ativas.</div>
+          <div className={styles.empty}>Sem recomendações acionáveis enquanto não houver qualificações ativas.</div>
         )}
 
         {opportunities.map((item, index) => {
@@ -114,7 +115,7 @@ export default async function RecommendationsPage() {
                   </section>
                   <section>
                     <span>Por que agora?</span>
-                    <strong>{item.recommendation.rationale || "Oportunidade priorizada pelo score operacional."}</strong>
+                    <strong>{item.recommendation.rationale || "Qualificação priorizada pelo score operacional."}</strong>
                     <p>Temperatura {item.temperature.label.toLowerCase()} · Momentum {item.momentum}</p>
                   </section>
                   <section>
@@ -134,7 +135,7 @@ export default async function RecommendationsPage() {
                 </div>
 
                 <footer>
-                  <a href={`/oportunidades/${item.id}`}>Abrir oportunidade de {item.name}</a>
+                  <a href={leadQualificationHref(item.id)}>Abrir qualificação de {item.name}</a>
                 </footer>
               </div>
             </article>

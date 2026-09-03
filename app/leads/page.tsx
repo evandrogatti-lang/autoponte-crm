@@ -1,11 +1,12 @@
 ﻿import styles from "./Leads.module.css";
 import { desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { tradeIns } from "../../db/schema";
 import { InventoryShell } from "../../features/vehicle-registry/components/InventoryShell";
 import Link from "next/link";
+import { commercialRoutes, leadQualificationHref } from "../../lib/commercial-navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,7 @@ export default async function LeadsPage({
 }: {
   searchParams: Promise<Partial<Record<(typeof filterKeys)[number], string | string[]>>>;
 }) {
-  await requireChatGPTUser("/leads");
+  await requireSellerOperations("/leads");
 
   const requestedParams = await searchParams;
   const filters = filterKeys.reduce((result, key) => {
@@ -212,7 +213,7 @@ export default async function LeadsPage({
             </Link>
 
             <Link
-              href="/oportunidades/nova"
+              href={commercialRoutes.newLead}
               style={{
                 textDecoration: "none",
                 padding: "10px 14px",
@@ -366,7 +367,7 @@ export default async function LeadsPage({
               </strong>
 
               <span>
-                Tente outro termo ou cadastre uma nova oportunidade.
+                Tente outro termo ou cadastre um novo lead.
               </span>
             </div>
           ) : (
@@ -391,7 +392,7 @@ export default async function LeadsPage({
               <tr key={lead.id} className={styles.clickableRow}>
                   <td style={tdStyle}>
                     <Link
-                  href={`/oportunidades/${lead.id}?returnTo=${encodeURIComponent(currentHref)}`}
+                  href={`${leadQualificationHref(lead.id)}?returnTo=${encodeURIComponent(currentHref)}`}
                   className={styles.rowLink}
                 >
                   {lead.name}

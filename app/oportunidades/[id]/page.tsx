@@ -1,16 +1,7 @@
-import { notFound } from "next/navigation";
-import { requireChatGPTUser } from "../../chatgpt-auth";
-import { OpportunityWorkspace } from "../../../features/opportunity-workspace";
-import { getOpportunityWorkspace } from "../../../lib/opportunities/service";
+import { redirect } from "next/navigation";
+import { leadQualificationHref, withSearchParams, type CommercialSearchParams } from "../../../lib/commercial-navigation";
 
-export const dynamic = "force-dynamic";
-
-type OpportunityPageProps = { params: Promise<{ id: string }> };
-
-export default async function OpportunityPage({ params }: OpportunityPageProps) {
+export default async function LegacyOpportunityPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<CommercialSearchParams> }) {
   const { id } = await params;
-  await requireChatGPTUser(`/oportunidades/${id}`);
-  const opportunity = await getOpportunityWorkspace(id);
-  if (!opportunity) notFound();
-  return <OpportunityWorkspace initialData={opportunity} />;
+  redirect(withSearchParams(leadQualificationHref(id), await searchParams));
 }
