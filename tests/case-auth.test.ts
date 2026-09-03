@@ -24,8 +24,6 @@ test("authenticated Case users still require seller_operations.manage", () => {
   for (const file of [
     "app/api/cases/route.ts",
     "app/api/cases/[id]/route.ts",
-    "app/casos/page.tsx",
-    "app/casos/[id]/page.tsx",
     "app/crm/page.tsx",
   ]) {
     assert.match(read(file), /requirePermission\(\w+,\s*"seller_operations\.manage"\)/);
@@ -56,13 +54,18 @@ test("Case access no longer depends on ChatGPT identity headers", () => {
   for (const file of [
     "app/api/cases/route.ts",
     "app/api/cases/[id]/route.ts",
-    "app/casos/page.tsx",
-    "app/casos/[id]/page.tsx",
     "app/crm/page.tsx",
   ]) {
     const source = read(file);
     assert.doesNotMatch(source, /getChatGPTUser|requireChatGPTUser|signin-with-chatgpt/);
   }
+});
+
+test("legacy Case pages only redirect to the authenticated negotiation workspace", () => {
+  assert.match(read("app/casos/page.tsx"), /withSearchParams\(commercialRoutes\.negotiations, await searchParams\)/);
+  assert.match(read("app/casos/[id]/page.tsx"), /withSearchParams\(negotiationHref\(id\), await searchParams\)/);
+  assert.match(read("app/negociacoes/page.tsx"), /requirePermission\(user,\s*"seller_operations\.manage"\)/);
+  assert.match(read("app/negociacoes/[id]/page.tsx"), /requirePermission\(user,\s*"seller_operations\.manage"\)/);
 });
 
 test("login return path is constrained to local non-login URLs", () => {

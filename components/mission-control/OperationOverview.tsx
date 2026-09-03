@@ -6,7 +6,7 @@ export function OperationOverview({ model }: { model: MissionControlViewModel })
   return <section className="mc-overview">
     <div className="mc-pulse-panel">
       <PulseIndicator value={model.operationScore} label="Pulso"/>
-      <div><span>SAÚDE DA OPERAÇÃO</span><h2>Operação saudável</h2><p>O principal ponto de atenção são retornos vencidos e oportunidades sem próxima ação.</p></div>
+      <div><span>SAÚDE DA OPERAÇÃO</span><h2>Operação saudável</h2><p>O principal ponto de atenção são retornos vencidos e negociações sem próxima ação.</p></div>
     </div>
     <Radar items={[
       { label: "Comercial", value: 97 },
@@ -21,7 +21,7 @@ export function OperationOverview({ model }: { model: MissionControlViewModel })
       { label: "Documentos", value: 38 },
     ]}/>
     <WorkspaceGrid columns={4}>
-      <KPICard label="Oportunidades ativas" value={String(model.activeCount)} trend={`${model.highPriority} prioritárias`} tone="success"/>
+      <KPICard label="Negociações ativas" value={String(model.activeCount)} trend={`${model.highPriority} prioritárias`} tone="success"/>
       <KPICard label="Potencial do funil" value={brl.format(model.activeValue)} trend={`${model.proposalCount} propostas`} tone="neutral"/>
       <KPICard label="Capital necessário" value={brl.format(model.capitalNeeded)} trend="Trocas em curso" tone="warning"/>
       <KPICard label="Conversão" value={`${model.conversion}%`} trend={`Ticket ${brl.format(model.averageTicket)}`} tone="ai"/>

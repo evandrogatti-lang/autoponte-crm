@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./CRMAppShell.module.css";
+import { commercialRoutes } from "../../lib/commercial-navigation";
 
 type NavItem = {
   label: string;
@@ -533,7 +534,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
 
           <div className={styles.actions}>
             <Link href="/recomendacoes">Recomendações IA</Link>
-            <Link href="/oportunidades/nova" className={styles.primary}>+ Nova oportunidade</Link>
+            <Link href={commercialRoutes.newLead} className={styles.primary}>+ Novo lead</Link>
           </div>
         </header>
 

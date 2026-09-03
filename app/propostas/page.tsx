@@ -8,6 +8,7 @@ import {
 } from "../../components/crm/CoreShell";
 import proposalStyles from "./Propostas.module.css";
 import Link from "next/link";
+import { commercialRoutes, leadQualificationHref } from "../../lib/commercial-navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -35,14 +36,14 @@ export default async function PropostasPage() {
     <CoreShell
       activeHref="/propostas"
       title="Propostas"
-      subtitle="Oportunidades em negociação que podem gerar propostas comerciais."
-      actions={<Link href="/oportunidades">Abrir funil comercial</Link>}
+      subtitle="Qualificações avançadas que podem gerar propostas comerciais."
+      actions={<Link href={commercialRoutes.funnel}>Abrir funil comercial</Link>}
     >
-      <h2 className={styles.sectionTitle}>Oportunidades elegíveis</h2>
+      <h2 className={styles.sectionTitle}>Qualificações elegíveis</h2>
 
       {proposalCandidates.length === 0 ? (
         <div className={styles.empty}>
-          Nenhuma oportunidade em estágio de proposta ou negociação foi encontrada.
+          Nenhuma qualificação em estágio de proposta ou negociação foi encontrada.
         </div>
       ) : (
         <div className={styles.tableWrap}>
@@ -62,7 +63,7 @@ export default async function PropostasPage() {
     <tr key={row.id} className={proposalStyles.clickableRow}>
       <td>
         <Link
-          href={`/oportunidades/${row.id}`}
+          href={leadQualificationHref(row.id)}
           className={proposalStyles.rowLink}
         >
           <strong>{row.name}</strong>

@@ -64,7 +64,7 @@ export type MissionControlModel = {
 };
 
 const funnelLabels: Record<FunnelStage, string> = {
-  new_leads: "Leads novos", potential_clients: "Potenciais clientes", opportunities: "Oportunidades",
+  new_leads: "Leads novos", potential_clients: "Qualificação", opportunities: "Match",
   negotiations: "Negociações", proposals: "Propostas", closed: "Fechadas",
 };
 

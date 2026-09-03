@@ -129,7 +129,7 @@ export default function CaseWorkspace({ initialData }: { initialData: Row }) {
       const result = await response.json() as Row;
       if (!response.ok) throw new Error(text(result.error, "Não foi possível concluir a operação."));
       const fresh = await fetch(`/api/cases/${encodeURIComponent(caseId)}`, { cache: "no-store" });
-      if (!fresh.ok) throw new Error("A operação foi registrada, mas não foi possível atualizar o caso.");
+      if (!fresh.ok) throw new Error("A operação foi registrada, mas não foi possível atualizar a negociação.");
       setData(await fresh.json() as Row);
       setNotice(text(result.title, "Operação concluída."));
       setTaskMode(null);

@@ -4,6 +4,7 @@ import { getDb } from "../../db";
 import { buyerProfiles, vehicleMatches } from "../../db/schema";
 import { buildWhatsAppUrl, cleanContactText, formatBrazilianPhone, normalizeEmail } from "../../lib/contact";
 import Link from "next/link";
+import { commercialRoutes } from "../../lib/commercial-navigation";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
@@ -26,7 +27,7 @@ export default async function MatchesPage() {
     city: buyerProfiles.city, alerts_consent: buyerProfiles.alertsConsent,
   }).from(vehicleMatches).innerJoin(buyerProfiles, eq(buyerProfiles.id, vehicleMatches.buyerProfileId)).orderBy(desc(vehicleMatches.score), desc(vehicleMatches.createdAt)).limit(200);
 
-  return <main className="crm-page"><header className="crm-header"><Link className="brand" href="/crm"><span>AutoPonte</span> Veículos</Link><div><strong>Match</strong><Link href="/crm">Central de Operações</Link><Link href="/clientes">Clientes</Link><Link href="/veiculos">Veículos</Link><Link className="crm-header-cta" href="/oportunidades/nova">+ Gerar Match</Link></div></header>
+  return <main className="crm-page"><header className="crm-header"><Link className="brand" href={commercialRoutes.missionControl}><span>AutoPonte</span> Veículos</Link><div><strong>Match</strong><Link href={commercialRoutes.missionControl}>Central de Operações</Link><Link href="/clientes">Clientes</Link><Link href="/veiculos">Veículos</Link><Link className="crm-header-cta" href={commercialRoutes.matchIntake}>+ Gerar Match</Link></div></header>
     <section className="crm-summary"><div><span>Correspondências</span><strong>{rows.length}</strong></div><div><span>Aguardando revisão</span><strong>{rows.filter((row) => row.status === "review_pending").length}</strong></div><div><span>Compatibilidade alta</span><strong>{rows.filter((row) => row.score >= 80).length}</strong></div></section>
     <section className="crm-content"><div className="crm-title"><div><p className="eyebrow dark">CLIENTE · VEÍCULO · TROCA · CONSIGNAÇÃO · FINANCIAMENTO</p><h1>Matches comerciais explicados</h1></div><p>Compatibilidades calculadas com dados reais, disponibilidade e consentimento antes de qualquer contato.</p></div>
       {rows.length === 0 ? <div className="crm-empty">Nenhuma correspondência ainda.</div> : <div className="match-queue">{rows.map((row) => {

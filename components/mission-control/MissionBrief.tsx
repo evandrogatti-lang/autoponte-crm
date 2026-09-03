@@ -11,7 +11,7 @@ export function MissionBrief({ model }: { model: MissionControlViewModel }) {
   return <>
     <MissionControlHeader
       title={model.greeting}
-      subtitle={`Hoje existem ${model.immediateActions} ações imediatas e ${model.highPriority} oportunidades prioritárias.`}
+      subtitle={`Hoje existem ${model.immediateActions} ações imediatas e ${model.highPriority} negociações prioritárias.`}
       actions={<APBadge tone="success">Operação online</APBadge>}
     />
     <div className="mc-filter-row"><SmartFilters filters={["Hoje", "Todas as lojas", "Todos os vendedores"]}/></div>
