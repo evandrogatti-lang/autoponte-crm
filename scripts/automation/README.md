@@ -57,7 +57,17 @@ Uses `git status` without reading file contents to classify modified and untrack
 .\scripts\automation\validate.ps1 -RunId <id>
 ```
 
-Before running tools, prints all expected generated paths. It then runs `git diff --check`, lint, TypeScript with incremental output disabled, Match Core tests, build, and general rendered HTML tests. Checks continue after a failure so the report is complete, but any failure produces a nonzero exit code.
+Before running any tool, validation blocks fail-closed when Git status cannot be read or the checkout contains tracked modifications, staged files, or conflicts. Untracked paths are listed in `validation.json` but do not block and are never added or removed.
+
+Run only the checkout checks, without lint, TypeScript, tests, build, or `git diff --check`:
+
+```powershell
+.\scripts\automation\validate.ps1 -RunId <id> -Preflight
+```
+
+Preflight requires a RunId previously created by inventory and creates that run's `validation.json`. Reports are immutable, so use a new run for a later full validation.
+
+After a clean checkout preflight, full validation prints all expected generated paths. It then runs `git diff --check`, lint, TypeScript with incremental output disabled, Match Core tests, build, and general rendered HTML tests. Checks continue after a tool failure so the report is complete, but any failure produces a nonzero exit code.
 
 Build tools may update `.next/**`, `next-env.d.ts`, or `tsconfig.tsbuildinfo`. These effects are announced before execution and detected afterward. The script never removes or restores them.
 

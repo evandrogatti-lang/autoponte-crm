@@ -207,6 +207,52 @@ function Get-AutomationPathFromStatusLine {
     return $path.Trim('"') -replace '\\', '/'
 }
 
+function Get-AutomationCheckoutPreflight {
+    param([Parameter(Mandatory = $true)]$Snapshot)
+
+    $statusCommand = @($Snapshot.commands | Where-Object { $_.command -match '(?i)\bgit\.exe\b.*\bstatus\b' } | Select-Object -Last 1)
+    $statusAvailable = $statusCommand.Count -eq 1 -and $statusCommand[0].exitCode -eq 0
+    $trackedModified = @()
+    $staged = @()
+    $conflicts = @()
+    $untracked = @()
+    $conflictCodes = @("DD", "AU", "UD", "UA", "DU", "AA", "UU")
+
+    if ($statusAvailable) {
+        foreach ($line in $Snapshot.status) {
+            if ($line.Length -lt 3) {
+                $conflicts += [ordered]@{ status = "INVALID"; path = $null }
+                continue
+            }
+            $code = $line.Substring(0, 2)
+            $path = Get-AutomationPathFromStatusLine $line
+            $entry = [ordered]@{ status = $code; path = $path }
+            if ($code -eq "??") {
+                $untracked += $entry
+            } elseif ($conflictCodes -contains $code) {
+                $conflicts += $entry
+            } else {
+                if ($code[0] -ne ' ') { $staged += $entry }
+                if ($code[1] -ne ' ') { $trackedModified += $entry }
+            }
+        }
+    }
+
+    $blocked = -not $statusAvailable -or $trackedModified.Count -gt 0 -or
+        $staged.Count -gt 0 -or $conflicts.Count -gt 0
+    return [ordered]@{
+        status = $(if ($blocked) { "BLOCKED" } else { "PASS" })
+        statusCommandSucceeded = $statusAvailable
+        trackedModified = $trackedModified
+        staged = $staged
+        conflicts = $conflicts
+        untracked = $untracked
+        untrackedAllowed = $true
+        fileContentsRead = $false
+        toolExecutionAllowed = -not $blocked
+    }
+}
+
 function Get-AutomationWorkingTreeEvidence {
     param([Parameter(Mandatory = $true)]$Snapshot)
 

@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$RunId,
+    [switch]$Preflight,
     [switch]$ImportOnly
 )
 
@@ -25,14 +26,55 @@ function New-ValidationResult {
 }
 
 $context = New-AutomationRunContext -RunId $RunId
+$before = Get-AutomationGitSnapshot
+$beforeEvidence = Get-AutomationWorkingTreeEvidence -Snapshot $before
+$checkoutPreflight = Get-AutomationCheckoutPreflight -Snapshot $before
+$outputPath = Get-AutomationRunFile -Context $context -Name "validation.json"
+
+if ($Preflight -or -not $checkoutPreflight.toolExecutionAllowed) {
+    $preflightResult = [ordered]@{
+        schemaVersion = 1
+        command = "validate"
+        runId = $context.runId
+        timestamp = [DateTime]::UtcNow.ToString("o")
+        mode = "preflight"
+        status = $checkoutPreflight.status
+        checkoutPreflight = $checkoutPreflight
+        toolsExecuted = $false
+        checks = @()
+        baseline = [ordered]@{
+            available = $false
+            failureClassification = $(if ($checkoutPreflight.status -eq "BLOCKED") { "UNBASELINED" } else { $null })
+            note = "No versioned and proven baseline is configured."
+        }
+        workingTree = [ordered]@{
+            before = $before.status
+            afterOperationsBeforeReportWrite = $before.status
+            preservation = [ordered]@{
+                unchangedOutsideAutomationArtifacts = $true
+                before = $beforeEvidence
+                after = $beforeEvidence
+            }
+            automaticCorrectionAttempted = $false
+            cleanupOrRestoreAttempted = $false
+        }
+        recommendations = $(if ($checkoutPreflight.status -eq "BLOCKED") {
+            @("Use a checkout with no tracked modifications, staged files, or conflicts. Untracked files may remain.")
+        } else {
+            @("Checkout preflight passed. No validation tools were executed.")
+        })
+    }
+    Write-AutomationJson -Path $outputPath -Value $preflightResult
+    Write-Output ("Validation preflight: {0}" -f $outputPath)
+    if ($checkoutPreflight.status -eq "BLOCKED") { exit 1 }
+    exit 0
+}
+
 $expectedEffects = Get-AutomationExpectedEffects
 Write-Output "Planned validation effects (no cleanup or restoration will be attempted):"
 foreach ($effect in $expectedEffects) {
     Write-Output ("- {0}: {1} ({2})" -f $effect.path, $effect.effect, $effect.producer)
 }
-
-$before = Get-AutomationGitSnapshot
-$beforeEvidence = Get-AutomationWorkingTreeEvidence -Snapshot $before
 $checks = @()
 
 $diffCheck = Invoke-AutomationGit -Operation DiffCheck
@@ -79,7 +121,9 @@ $result = [ordered]@{
     command = "validate"
     runId = $context.runId
     timestamp = [DateTime]::UtcNow.ToString("o")
+    mode = "full"
     status = $(if ($failures.Count -eq 0 -and $preservation.unchangedOutsideAutomationArtifacts) { "PASS" } else { "FAIL" })
+    checkoutPreflight = $checkoutPreflight
     baseline = [ordered]@{
         available = $false
         failureClassification = $(if ($failures.Count -gt 0) { "UNBASELINED" } else { $null })
@@ -103,7 +147,6 @@ $result = [ordered]@{
     recommendations = @($failures | ForEach-Object { "Review '$($_.name)' without automatic correction; failure is UNBASELINED." })
 }
 
-$outputPath = Get-AutomationRunFile -Context $context -Name "validation.json"
 Write-AutomationJson -Path $outputPath -Value $result
 Write-Output ("Validation: {0}" -f $outputPath)
 if ($result.status -ne "PASS") { exit 1 }
