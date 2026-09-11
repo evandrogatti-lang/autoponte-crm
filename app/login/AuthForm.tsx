@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createAuthClient } from "../../lib/supabase-auth-client";
+import { getLoginErrorMessage } from "../../lib/auth-error-messages";
 import styles from "./auth.module.css";
 
 export default function AuthForm({ mode, returnTo }: { mode: "login" | "recovery"; returnTo?: string }) {
@@ -26,15 +27,19 @@ export default function AuthForm({ mode, returnTo }: { mode: "login" | "recovery
         router.replace(safeReturnPath(returnTo));
         router.refresh();
       } else {
-        const redirectTo = `${window.location.origin}/nova-senha`;
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-        if (error) throw error;
-        setMessage("Se o e-mail estiver cadastrado, você receberá um link para definir uma nova senha.");
+        const response = await fetch("/api/auth/recovery", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await response.json() as { message?: string };
+        setMessage(data.message ?? "Se o e-mail estiver cadastrado, você receberá um link para definir uma nova senha.");
         event.currentTarget.reset();
       }
     } catch (error) {
-      const text = error instanceof Error ? error.message : "Não foi possível concluir a solicitação.";
-      setMessage(text === "Invalid login credentials" ? "E-mail ou senha inválidos." : text);
+      setMessage(mode === "login"
+        ? getLoginErrorMessage(error)
+        : "Não foi possível concluir a solicitação.");
     } finally {
       setLoading(false);
     }

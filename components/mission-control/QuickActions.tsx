@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const actions = [
-  ["Nova oportunidade", "/oportunidades"],
+  ["Novo lead", "/leads/novo"],
   ["Avaliar troca", "/atendimento"],
   ["Buscar match", "/matches"],
   ["Abrir consignação", "/consignacao"],

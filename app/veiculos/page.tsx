@@ -1,5 +1,5 @@
 ﻿import { desc } from "drizzle-orm";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { vehicles } from "../../db/vehicle-schema";
 import { partners } from "../../db/partner-schema";
@@ -22,7 +22,7 @@ function daysSince(value?: string | Date | null) {
 }
 
 export default async function VehiclesPage({ searchParams }: { searchParams: Promise<{ scope?: string } & VehicleFilterParams> }) {
-  await requireChatGPTUser("/veiculos");
+  await requireSellerOperations("/veiculos");
   const { scope = "all", ...queryFilters } = await searchParams;
   const filters = { ...queryFilters, status: queryFilters.status || "all" };
   const rows = await getDb().select().from(vehicles).orderBy(desc(vehicles.updatedAt)).limit(1000);

@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import Link from "next/link";
+import { commercialRoutes } from "../../../lib/commercial-navigation";
 import { notFound } from "next/navigation";
-import { requireChatGPTUser } from "../../chatgpt-auth";
+import { requireSellerOperations } from "../../app-auth";
 import { getDb } from "../../../db";
 import { vehicleDataProvenance } from "../../../db/vehicle-intelligence-schema";
 import { vehicles } from "../../../db/vehicle-schema";
@@ -41,7 +42,7 @@ export default async function VehicleDetailPage({
 }) {
   const { id } = await params;
   const { returnTo, edit, updated } = await searchParams;
-  await requireChatGPTUser(`/veiculos/${id}`);
+  await requireSellerOperations(`/veiculos/${id}`);
 
   const [vehicle] = await getDb().select().from(vehicles).where(eq(vehicles.id, id)).limit(1);
   if (!vehicle) notFound();
@@ -179,7 +180,7 @@ export default async function VehicleDetailPage({
           <Link href={returnHref}>Voltar ao estoque</Link>
           <Link href={editHref}>Editar veículo</Link>
           {partner ? <Link href={`/parceiros/${partner.id}`}>Abrir parceiro</Link> : null}
-          <Link className={styles.primaryAction} href="/oportunidades/nova">Criar oportunidade</Link>
+          <Link className={styles.primaryAction} href={commercialRoutes.matchIntake}>Gerar Match</Link>
         </div>
       </div>
 

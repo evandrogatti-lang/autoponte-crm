@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { requirePermission } from "../lib/access-control";
+import { PASSWORD_FLOW_COOKIE } from "../lib/auth-flow";
+import { getDb } from "../db";
+import { crmRoles, crmUsers } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 export type AppUser = {
   displayName: string;
@@ -54,10 +59,47 @@ export async function getCurrentAppUser(): Promise<AppUser | null> {
 export async function requireCurrentAppUser(
   returnTo: string,
 ): Promise<AppUser> {
+  const cookieStore = await cookies();
+  if (cookieStore.get(PASSWORD_FLOW_COOKIE)?.value === "pending") {
+    redirect("/nova-senha");
+  }
   const user = await getCurrentAppUser();
-  if (user) return user;
+  if (user) {
+    try {
+      const [row] = await getDb().select({ status: crmUsers.status }).from(crmUsers)
+        .where(eq(crmUsers.email, user.email)).limit(1);
+      if (row?.status === "active") return user;
+      if (row?.status === "invited") redirect("/nova-senha?status=invalid");
+      redirect("/acesso-negado");
+    } catch (error) {
+      if (typeof error === "object" && error && "digest" in error) throw error;
+      redirect("/acesso-negado");
+    }
+  }
 
   redirect(`/login?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`);
+}
+
+export async function getCurrentAccessContext() {
+  const user = await getCurrentAppUser();
+  if (!user) return { user: null, isAdmin: false };
+  try {
+    const db = getDb();
+    const [row] = await db.select({ status: crmUsers.status, roleCode: crmRoles.code })
+      .from(crmUsers)
+      .innerJoin(crmRoles, eq(crmRoles.id, crmUsers.roleId))
+      .where(eq(crmUsers.email, user.email))
+      .limit(1);
+    return { user, isAdmin: row?.status === "active" && row.roleCode === "admin" };
+  } catch {
+    return { user, isAdmin: false };
+  }
+}
+
+export async function requireSellerOperations(returnTo: string) {
+  const user = await requireCurrentAppUser(returnTo);
+  const crmUser = await requirePermission(user, "seller_operations.manage");
+  return { user, crmUser };
 }
 
 export function safeReturnPath(value: string): string {

@@ -103,6 +103,8 @@
   color:var(--ap-lime);font-weight:900
 }
 .footer strong,.footer small{display:block}
+.logout{border:0;background:transparent;color:#b9ced6;font:inherit;font-size:10px;text-decoration:underline;cursor:pointer;padding:2px 0}
+.logout:hover,.logout:focus-visible{color:#fff}
 .footer strong{font-size:12px}
 .footer small{font-size:9px;color:#8da8b4;margin-top:2px}
 

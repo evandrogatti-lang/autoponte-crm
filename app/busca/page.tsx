@@ -1,5 +1,5 @@
     import { desc } from "drizzle-orm";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { buyerProfiles, tradeIns } from "../../db/schema";
 import { partners } from "../../db/partner-schema";
@@ -13,7 +13,7 @@ export default async function GlobalSearchPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  await requireChatGPTUser("/busca");
+  await requireSellerOperations("/busca");
 
   const { q = "" } = await searchParams;
   const query = q.trim().toLocaleLowerCase("pt-BR");

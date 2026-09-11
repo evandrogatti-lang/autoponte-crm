@@ -62,7 +62,7 @@ type ActionPayload =
 
 function recommendationContext(data: OpportunityWorkspaceData) {
   const reasons = data.assessment.explainability.reasons.filter(Boolean);
-  const evidence = reasons[0] || data.assessment.recommendation.rationale || "A recomendação foi calculada a partir dos dados atuais da oportunidade.";
+  const evidence = reasons[0] || data.assessment.recommendation.rationale || "A recomendação foi calculada a partir dos dados atuais da qualificação.";
   const impact = data.assessment.dna.chance >= 70
     ? "Aproveitar o momento de alta aderência e reduzir o risco de perda por demora."
     : data.assessment.dna.chance >= 40
@@ -99,7 +99,7 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
   const [error, setError] = useState("");
 
   const whatsappUrl = useMemo(() => buildWhatsAppUrl(data.client.whatsapp), [data.client.whatsapp]);
-  const emailUrl = useMemo(() => buildGmailComposeUrl(data.client.email, `AutoPonte · ${data.desiredVehicle || "oportunidade"}`), [data.client.email, data.desiredVehicle]);
+  const emailUrl = useMemo(() => buildGmailComposeUrl(data.client.email, `AutoPonte · ${data.desiredVehicle || "qualificação"}`), [data.client.email, data.desiredVehicle]);
   const whatsappDisplay = useMemo(() => formatInternationalPhone(data.client.whatsapp), [data.client.whatsapp]);
   const photo = data.tradeIn.photoKeys[0];
   const recommendation = recommendationContext(data);
@@ -148,7 +148,7 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
      
       <section className={styles.hero}>
         <div>
-          <span className={styles.eyebrow}>OPORTUNIDADE · {data.id.slice(0, 8).toUpperCase()}</span>
+          <span className={styles.eyebrow}>QUALIFICAÇÃO · {data.id.slice(0, 8).toUpperCase()}</span>
           <h1>{data.client.name}</h1>
           <p>{data.desiredVehicle || "Veículo desejado ainda não definido"} · {data.client.city}</p>
         </div>
@@ -161,7 +161,7 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
 
       {(message || error) && <div className={error ? styles.error : styles.success}>{error || message}</div>}
 
-      <section className={styles.intelligence} aria-label="Inteligência da oportunidade">
+      <section className={styles.intelligence} aria-label="Inteligência da qualificação">
         <article><span>Probabilidade</span><strong>{data.assessment.dna.chance}%</strong><small>chance calibrada</small></article>
         <article><span>Confiança</span><strong>{data.assessment.confidence.score}%</strong><small>{data.assessment.confidence.level === "high" ? "alta" : data.assessment.confidence.level === "medium" ? "média" : "baixa"}</small></article>
         <article><span>Temperatura</span><strong>{data.assessment.temperature.score}</strong><small>{data.assessment.temperature.label}</small></article>
@@ -223,7 +223,7 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
           </section>
 
           <section className={styles.panel}>
-            <header className={styles.simpleHeader}><span>HISTÓRICO</span><h2>Eventos da oportunidade</h2></header>
+            <header className={styles.simpleHeader}><span>HISTÓRICO</span><h2>Eventos da qualificação</h2></header>
             {data.events.length === 0 ? <div className={styles.empty}>Nenhum evento registrado ainda.</div> : <div className={styles.timeline}>{data.events.map((event) => <article key={event.id}><i /><div><header><strong>{event.title}</strong><time>{formatDate(event.createdAt)}</time></header>{event.description && <p>{event.description}</p>}<small>{event.actorName}</small></div></article>)}</div>}
           </section>
         </div>

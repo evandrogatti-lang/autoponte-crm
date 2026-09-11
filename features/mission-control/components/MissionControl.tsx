@@ -4,6 +4,7 @@ import type { MissionControlViewModel, MissionOpportunity } from "../../../lib/m
 import { Icons } from "./icons";
 import styles from "./MissionControl.module.css";
 import { FlowEngineV2 } from "./FlowEngineV2";
+import { commercialRoutes, leadQualificationHref } from "../../../lib/commercial-navigation";
 
 const brl = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -14,10 +15,10 @@ const brl = new Intl.NumberFormat("pt-BR", {
 const nav = [
   ["Mission Control", "/crm", Icons.Grid],
   ["Clientes", "/clientes", Icons.Users],
-  ["Leads", "/oportunidades", Icons.Target],
-  ["Oportunidades", "/oportunidades", Icons.Target],
+  ["Leads", commercialRoutes.leads, Icons.Target],
+  ["Match", commercialRoutes.match, Icons.Target],
   ["Estoque", "/veiculos", Icons.Car],
-  ["Trocas", "/oportunidades", Icons.Swap],
+  ["Trocas", "/trocas", Icons.Swap],
   ["Propostas", "/propostas", Icons.File],
   ["Parceiros", "/parceiros", Icons.Store],
   ["Financeiro", "/financeiro", Icons.Wallet],
@@ -135,13 +136,13 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                 </header>
 
                 <div className={styles.missionGrid}>
-                  {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma oportunidade ativa. Novos dados reais aparecerão aqui.</div>}
+                  {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma qualificação ativa. Novos dados reais aparecerão aqui.</div>}
                   {priorities.map((item, index) => {
                     const reasons = reasonLines(item, index);
                     return (
                       <Link
                         className={`${styles.missionCard} ${index === 0 ? styles.primaryMission : ""}`}
-                        href={`/oportunidades/${item.id}`}
+                        href={leadQualificationHref(item.id)}
                         key={item.id}
                       >
                         <header>
@@ -194,12 +195,12 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                         <small>O que aconteceu agora</small>
                       </span>
                     </div>
-                    <Link href="/oportunidades">Ver tudo</Link>
+                    <Link href={commercialRoutes.leads}>Ver tudo</Link>
                   </header>
                   <div className={styles.feed}>
                     {model.recentEvents.length === 0 && <div className={styles.emptyState}>O histórico operacional aparecerá após a primeira ação.</div>}
                     {model.recentEvents.slice(0, 5).map((event, index) => (
-                      <Link className={styles.feedRow} href={`/oportunidades/${event.opportunityId}`} key={event.id}>
+                      <Link className={styles.feedRow} href={leadQualificationHref(event.opportunityId)} key={event.id}>
                         <time>{new Date(event.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</time>
                         <i data-index={index} />
                         <p>{event.title}{event.description ? ` · ${event.description}` : ""}</p>
@@ -225,9 +226,9 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   <h2>Bom dia, Evandro.</h2>
                   <p>Minha análise aponta onde você pode ganhar mais hoje:</p>
                   <div className={styles.insightList}>
-                    {model.recommendations.length === 0 && <div className={styles.emptyState}>Sem recomendações enquanto não houver oportunidades ativas.</div>}
+                    {model.recommendations.length === 0 && <div className={styles.emptyState}>Sem recomendações enquanto não houver qualificações ativas.</div>}
                     {model.recommendations.slice(0, 6).map((recommendation, index) => (
-                      <Link href={`/oportunidades/${recommendation.opportunityId}`} className={styles.insight} key={recommendation.opportunityId}>
+                      <Link href={leadQualificationHref(recommendation.opportunityId)} className={styles.insight} key={recommendation.opportunityId}>
                         <b>{index + 1}</b>
                         <p>{recommendation.text}</p>
                         <Icons.Arrow />
@@ -252,7 +253,7 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                 <div className={styles.agenda}>
                   {priorities.length === 0 && <div className={styles.emptyState}>Nenhuma ação agendada.</div>}
                   {priorities.map((item) => (
-                    <Link className={styles.agendaRow} href={`/oportunidades/${item.id}`} key={item.id}>
+                    <Link className={styles.agendaRow} href={leadQualificationHref(item.id)} key={item.id}>
                       <time>{item.nextFollowUp ? new Date(item.nextFollowUp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}</time>
                       <strong>{item.recommendation.action}</strong>
                       <span>{item.name}</span>
@@ -269,9 +270,9 @@ export function MissionControl({ model }: { model: MissionControlViewModel }) {
                   </div>
                 </header>
                 <div className={styles.quick}>
-                  <Link href="/oportunidades"><Icons.Target />Novo lead</Link>
-                  <Link href="/oportunidades"><Icons.Swap />Avaliar troca</Link>
-                  <Link href="/matches"><Icons.Search />Buscar veículo</Link>
+                  <Link href={commercialRoutes.newLead}><Icons.Target />Novo lead</Link>
+                  <Link href={commercialRoutes.tradeEvaluation}><Icons.Swap />Avaliar troca</Link>
+                  <Link href={commercialRoutes.match}><Icons.Search />Buscar veículo</Link>
                   <Link href="/propostas"><Icons.File />Nova proposta</Link>
                 </div>
               </section>

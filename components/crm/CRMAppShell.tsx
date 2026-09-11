@@ -1,11 +1,12 @@
 ﻿"use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./CRMAppShell.module.css";
+import { commercialRoutes } from "../../lib/commercial-navigation";
 
 type NavItem = {
   label: string;
@@ -27,33 +28,30 @@ const NAVIGATION: NavGroup[] = [
   {
     title: "COMERCIAL",
     items: [
+      { label: "Leads novos", href: "/leads/novos", icon: "spark" },
       { label: "Potenciais clientes", href: "/leads", icon: "target" },
       { label: "Clientes", href: "/clientes", icon: "users" },
-      { label: "Oportunidades", href: "/oportunidades", icon: "target" },
-      { label: "Casos", href: "/casos", icon: "file" },
+      { label: "Match", href: "/matches", icon: "target" },
+      { label: "Negociações", href: "/negociacoes", icon: "file" },
       { label: "Propostas", href: "/propostas", icon: "file" },
+      { label: "Funil de vendas", href: "/funil", icon: "chart" },
     ],
   },
   {
     title: "VEÍCULOS",
     items: [
       { label: "Estoque", href: "/veiculos", icon: "car" },
-      { label: "Trocas", href: "/trocas", icon: "swap" },
-      { label: "Correspondências IA", href: "/matches", icon: "spark" },
-    ],
-  },
-  {
-    title: "REDE",
-    items: [
-      { label: "Parceiros", href: "/parceiros", icon: "store" },
+      { label: "Avaliações (trocas)", href: "/trocas", icon: "swap" },
+      { label: "Entrega de veículos", href: "/entregas", icon: "car" },
     ],
   },
   {
     title: "GESTÃO",
     items: [
-      { label: "Financeiro", href: "/financeiro", icon: "wallet" },
+      { label: "Agenda", href: "/agenda", icon: "file" },
+      { label: "Aprovações", href: "/aprovacoes", icon: "file" },
       { label: "Relatórios", href: "/relatorios", icon: "chart" },
-      { label: "Recomendações IA", href: "/recomendacoes", icon: "bulb" },
+      { label: "Financeiro", href: "/financeiro", icon: "wallet" },
     ],
   },
   {
@@ -67,8 +65,8 @@ const NAVIGATION: NavGroup[] = [
 const MOBILE_PRIMARY_HREFS = [
   "/crm",
   "/clientes",
-  "/oportunidades",
-  "/casos",
+  "/matches",
+  "/negociacoes",
   "/veiculos",
 ];
 
@@ -77,10 +75,14 @@ const MANAGED_PREFIXES = [
   "/busca",
   "/clientes",
   "/leads",
+  "/funil",
+  "/agenda",
+  "/aprovacoes",
   "/oportunidades",
   "/veiculos",
   "/estoque",
   "/trocas",
+  "/entregas",
   "/propostas",
   "/parceiros",
   "/financeiro",
@@ -88,6 +90,7 @@ const MANAGED_PREFIXES = [
   "/configuracoes",
   "/recomendacoes",
   "/matches",
+  "/negociacoes",
   ];
 
 
@@ -106,8 +109,15 @@ function activeFor(pathname: string, href: string) {
       pathname.startsWith("/veiculos/")
     );
   }
+
   return pathname === href || pathname.startsWith(`${href}/`);
   }
+
+const subscribeDevice = () => () => {};
+function getAppleTouchSnapshot() {
+  const appleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  return appleMobile || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
 
  
 function Icon({ name }: { name: string }) {
@@ -136,14 +146,14 @@ function Icon({ name }: { name: string }) {
   return <svg {...common} aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg>;
 }
 
-export function CRMAppShell({ children }: { children: ReactNode }) {
+export function CRMAppShell({ children, authenticated, canManageSettings }: { children: ReactNode; authenticated: boolean; canManageSettings: boolean }) {
   const pathname = usePathname() || "/";
   const managed = isManaged(pathname);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const mobileSearchRef = useRef<HTMLInputElement>(null);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const [isAppleTouch, setIsAppleTouch] = useState(false);
+  const isAppleTouch = useSyncExternalStore(subscribeDevice, getAppleTouchSnapshot, () => false);
   const mobileMoreButtonRef = useRef<HTMLButtonElement | null>(null);
   const mobileMorePanelRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
@@ -187,12 +197,6 @@ export function CRMAppShell({ children }: { children: ReactNode }) {
     window.removeEventListener("keydown", handleShortcut);
   };
 }, [isAppleTouch]);
-
-useEffect(() => {
-  const appleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent);
-  const iPadDesktopMode = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
-  setIsAppleTouch(appleMobile || iPadDesktopMode);
-}, []);
 
 useEffect(() => {
   if (!mobileSearchOpen) return;
@@ -246,11 +250,6 @@ useEffect(() => {
   return () => {};
 }, [managed, pathname]);
 
-// Close mobile more panel on route change
-useEffect(() => {
-  closeMobileMore(false);
-}, [closeMobileMore, pathname]);
-
 // Move focus to first item when opening mobile more panel
 useEffect(() => {
   if (!mobileMoreOpen) return;
@@ -296,6 +295,17 @@ useEffect(() => {
   return () => window.removeEventListener("hashchange", onHash);
 }, [closeMobileMore]);
 
+useEffect(() => {
+  if (!managed || !authenticated) return;
+  const validate = async () => {
+    const response = await fetch("/api/auth/session", { cache: "no-store" });
+    if (response.status === 401) window.location.replace("/login");
+  };
+  const onFocus = () => { void validate(); };
+  window.addEventListener("focus", onFocus);
+  return () => window.removeEventListener("focus", onFocus);
+}, [authenticated, managed]);
+
 // Close panel when leaving mobile breakpoint
 useEffect(() => {
   if (typeof window === "undefined" || !window.matchMedia) return;
@@ -331,7 +341,8 @@ useEffect(() => {
 
 // primary mobile items are used implicitly by MOBILE_PRIMARY_HREFS; no separate variable needed
 
-const mobileMoreItems = NAVIGATION
+const visibleNavigation = NAVIGATION.map((group) => ({ ...group, items: group.items.filter((item) => item.href !== "/configuracoes" || canManageSettings) }));
+const mobileMoreItems = visibleNavigation
   .flatMap((group) => group.items)
   .filter((item) =>
     !MOBILE_PRIMARY_HREFS.includes(item.href)
@@ -383,7 +394,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
         </Link>
 
        <nav className={styles.nav}>
-  {NAVIGATION.map((group, groupIndex) => (
+  {visibleNavigation.map((group, groupIndex) => (
     <div
       className={styles.group}
       key={`${group.title || "main"}-${groupIndex}`}
@@ -474,6 +485,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
             <strong>AutoPonte</strong>
             <small>Operação comercial</small>
           </span>
+          <form action="/api/auth/logout" method="POST"><button className={styles.logout} type="submit">Sair com segurança</button></form>
         </div>
       </aside>
 
@@ -482,7 +494,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
           <div>
             <div className={styles.breadcrumb}>AutoPonte CRM</div>
             <div className={styles.routeLabel}>
-              {NAVIGATION.flatMap(group => group.items).find(item => activeFor(pathname, item.href))?.label || "Operação"}
+              {visibleNavigation.flatMap(group => group.items).find(item => activeFor(pathname, item.href))?.label || "Operação"}
             </div>
           </div>
 
@@ -522,7 +534,7 @@ const mobileSearchModal = mobileSearchOpen && typeof document !== "undefined"
 
           <div className={styles.actions}>
             <Link href="/recomendacoes">Recomendações IA</Link>
-            <Link href="/oportunidades/nova" className={styles.primary}>+ Nova oportunidade</Link>
+            <Link href={commercialRoutes.newLead} className={styles.primary}>+ Novo lead</Link>
           </div>
         </header>
 

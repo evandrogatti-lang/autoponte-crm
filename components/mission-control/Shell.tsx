@@ -5,7 +5,7 @@ import { CommandPalette, EnterpriseSidebar } from "../apdl";
 const navigation = [
   { label: "Mission Control", href: "/crm", active: true },
   { label: "Clientes", href: "/clientes" },
-  { label: "Oportunidades", href: "/oportunidades" },
+  { label: "Match", href: "/matches" },
   { label: "Estoque", href: "/veiculos" },
   { label: "Trocas", href: "/trocas" },
   { label: "Propostas", href: "/propostas" },
@@ -25,14 +25,13 @@ export function MissionControlShell({ children }: { children: ReactNode }) {
         <CommandPalette/>
         <div className="mc-topbar-actions">
           <Link className="ap-button ap-button--secondary" href="/matches">Correspondências IA</Link>
-          <Link className="ap-button ap-button--primary" href="/oportunidades/nova">Nova oportunidade</Link>
+          <Link className="ap-button ap-button--primary" href="/leads/novo">Novo lead</Link>
         </div>
       </header>
       <div className="mc-content">{children}</div>
     </section>
   </main>;
 }
-
 
 
 

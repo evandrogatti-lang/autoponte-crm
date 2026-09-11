@@ -1,6 +1,7 @@
 ﻿import type { FlowEngineView, Momentum, TemperatureLevel } from "../../../lib/ade";
 import type { MissionOpportunity } from "../../../lib/mission-control/model";
 import styles from "./FlowEngineV2.module.css";
+import { commercialRoutes, leadQualificationHref } from "../../../lib/commercial-navigation";
 
 const brl = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -24,12 +25,20 @@ function momentumLabel(momentum: Momentum) {
   return "Estável";
 }
 
+function stageDestination(stage: string, leadId?: string) {
+  if (leadId) return leadQualificationHref(leadId);
+  if (stage === "store") return commercialRoutes.match;
+  if (stage === "proposal") return commercialRoutes.proposals;
+  if (stage === "closed") return commercialRoutes.sales;
+  return commercialRoutes.qualification;
+}
+
 export function FlowEngineV2({ flow, opportunities }: { flow: FlowEngineView; opportunities: MissionOpportunity[] }) {
   const stageLinks = new Map(flow.stages.map((stage) => {
     const top = opportunities
       .filter((item) => item.stage === stage.key && item.status !== "lost")
       .sort((a, b) => b.priorityScore - a.priorityScore)[0];
-    return [stage.key, top ? `/oportunidades/${top.id}` : `/oportunidades?stage=${stage.key}`];
+    return [stage.key, stageDestination(stage.key, top?.id)];
   }));
   return (
     <article className={styles.panel}>
@@ -55,7 +64,7 @@ export function FlowEngineV2({ flow, opportunities }: { flow: FlowEngineView; op
         <div>
           <span>Acelerando</span>
           <strong>{flow.acceleratingCount}</strong>
-          <small>oportunidades</small>
+          <small>qualificações</small>
         </div>
         <div>
           <span>Chance calibrada</span>
@@ -99,7 +108,7 @@ export function FlowEngineV2({ flow, opportunities }: { flow: FlowEngineView; op
               <div className={styles.stageSignals}>
                 {stage.stalled > 0 && <b>{stage.stalled} travada{stage.stalled > 1 ? "s" : ""}</b>}
                 {stage.highPriority > 0 && <em>{stage.highPriority} alta prioridade</em>}
-                {stage.count === 0 && <small>Sem oportunidades</small>}
+                {stage.count === 0 && <small>Sem qualificações</small>}
               </div>
 
               {bottleneck && <span className={styles.bottleneckFlag}>GARGALO</span>}
@@ -126,7 +135,7 @@ export function FlowEngineV2({ flow, opportunities }: { flow: FlowEngineView; op
         <div className={styles.nextAction}>
           <span>Próxima ação</span>
           <strong>{flow.bottleneck.nextAction}</strong>
-          <a href={flow.bottleneck.stage ? `/oportunidades?stage=${flow.bottleneck.stage}` : "/oportunidades"}>
+          <a href={flow.bottleneck.stage ? stageDestination(flow.bottleneck.stage) : commercialRoutes.funnel}>
             Abrir etapa
           </a>
         </div>

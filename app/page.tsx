@@ -320,6 +320,11 @@ export default function Home() {
         <a href="/atendimento">Iniciar atendimento inteligente →</a>
       </section>
 
+      <section className="match-invite" aria-labelledby="home-ai-insights">
+        <div><p className="eyebrow dark">AI INSIGHTS</p><h2 id="home-ai-insights">Recomendações que explicam o porquê.</h2><p>A Home só apresenta uma recomendação depois de receber seu perfil de compra e compará-lo com dados disponíveis de veículo, orçamento, uso, troca e financiamento. Sem perfil suficiente, não inventamos compatibilidade.</p></div>
+        <a href="/atendimento">Criar meu perfil e ver recomendações →</a>
+      </section>
+
       <section className="inventory-section" id="estoque">
         <div className="section-heading">
           <div>

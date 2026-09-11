@@ -1,4 +1,4 @@
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { vehicles } from "../../db/vehicle-schema";
 import { tradeIns } from "../../db/schema";
@@ -7,11 +7,12 @@ import {
   coreStyles as styles,
 } from "../../components/crm/CoreShell";
 import Link from "next/link";
+import { commercialRoutes } from "../../lib/commercial-navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function RelatoriosPage() {
-  await requireChatGPTUser("/relatorios");
+  await requireSellerOperations("/relatorios");
 
   const [vehicleRows, opportunityRows] = await Promise.all([
     getDb().select().from(vehicles).limit(1000),
@@ -51,11 +52,11 @@ export default async function RelatoriosPage() {
       activeHref="/relatorios"
       title="Relatórios"
       subtitle="Visão consolidada dos principais indicadores da operação."
-      actions={<Link href="/oportunidades">Funil comercial</Link>}
+      actions={<Link href={commercialRoutes.funnel}>Funil comercial</Link>}
     >
       <div className={styles.metrics}>
         <div className={styles.metric}>
-          <span>Oportunidades</span>
+          <span>Qualificações</span>
           <strong>{opportunityRows.length}</strong>
         </div>
 
@@ -96,11 +97,11 @@ export default async function RelatoriosPage() {
           <h2>Indicadores comerciais</h2>
 
           <p>
-            <strong>Oportunidades abertas:</strong> {open.length}
+            <strong>Qualificações abertas:</strong> {open.length}
           </p>
 
           <p>
-            <strong>Oportunidades fechadas:</strong> {closed.length}
+            <strong>Qualificações fechadas:</strong> {closed.length}
           </p>
 
           <p>

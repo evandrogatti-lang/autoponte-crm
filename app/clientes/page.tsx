@@ -1,10 +1,11 @@
 import { desc } from "drizzle-orm";
-import { requireChatGPTUser } from "../chatgpt-auth";
+import { requireSellerOperations } from "../app-auth";
 import { getDb } from "../../db";
 import { buyerProfiles, tradeIns } from "../../db/schema";
 import { buildGmailComposeUrl, buildWhatsAppUrl, formatBrazilianPhone, normalizeEmail } from "../../lib/contact";
 import { matchesClientNamePrefix } from "../../lib/clients/search";
 import Link from "next/link";
+import { commercialRoutes, leadQualificationHref } from "../../lib/commercial-navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export default async function ClientsPage({
 }: {
   searchParams: Promise<{ client?: string; q?: string }>;
 }) {
-  await requireChatGPTUser("/clientes");
+  await requireSellerOperations("/clientes");
   const query = await searchParams;
   const [opportunities, profiles] = await Promise.all([
     getDb().select().from(tradeIns).orderBy(desc(tradeIns.updatedAt)).limit(500),
@@ -102,7 +103,7 @@ const selected =
   return <main className="crm-page client-dense-page">
     <header className="crm-header client-topbar">
       <Link className="brand" href="/crm"><span>AutoPonte</span> Veículos</Link>
-      <div><Link href="/crm">Mission Control</Link><Link className="active-nav" href="/clientes">Clientes</Link><Link href="/oportunidades">Oportunidades</Link><Link className="crm-header-cta" href="/oportunidades/nova">+ Nova oportunidade</Link></div>
+      <div><Link href={commercialRoutes.missionControl}>Mission Control</Link><Link className="active-nav" href="/clientes">Clientes</Link><Link href={commercialRoutes.match}>Match</Link><Link className="crm-header-cta" href={commercialRoutes.newLead}>+ Novo lead</Link></div>
     </header>
 
     <section className="client-dense-shell">
@@ -120,24 +121,24 @@ const selected =
         <div className="client-list-scroll">
           {filteredRows.map((client) => <Link key={client.key} href={`/clientes?client=${encodeURIComponent(client.key)}`} className={`client-list-item ${selected?.key === client.key ? "selected" : ""}`}>
             <span className="client-avatar compact">{initials(client.name)}</span>
-            <span><strong>{client.name}</strong><small>{client.city || "Cidade não informada"} · {client.opportunities.length} oportunidade{client.opportunities.length === 1 ? "" : "s"}</small></span>
+            <span><strong>{client.name}</strong><small>{client.city || "Cidade não informada"} · {client.opportunities.length} qualificaç{client.opportunities.length === 1 ? "ão" : "ões"}</small></span>
             <b>{client.opportunities[0]?.probability ?? 0}%</b>
           </Link>)}
         </div>
       </aside>
 
       <section className="client-detail-panel">
-        {!selected ? <div className="crm-empty client-empty"><strong>Nenhum cliente cadastrado.</strong><span>Crie a primeira oportunidade para iniciar a base comercial.</span><Link href="/oportunidades/nova">Cadastrar primeira oportunidade</Link></div> : <>
+        {!selected ? <div className="crm-empty client-empty"><strong>Nenhum cliente cadastrado.</strong><span>Crie o primeiro lead para iniciar a base comercial.</span><Link href={commercialRoutes.newLead}>Cadastrar primeiro lead</Link></div> : <>
           <div className="client-detail-actions">
             {whatsappUrl ? <a className="quick-whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a> : <span className="quick-disabled">WhatsApp indisponível</span>}
             {emailUrl ? <a href={emailUrl} target="_blank" rel="noreferrer">Enviar e-mail</a> : <span className="quick-disabled">E-mail indisponível</span>}
-            {primaryOpportunity ? <Link href={`/oportunidades/${primaryOpportunity.id}`}>Abrir oportunidade</Link> : <Link href="/oportunidades/nova">Nova oportunidade</Link>}
+            {primaryOpportunity ? <Link href={leadQualificationHref(primaryOpportunity.id)}>Abrir qualificação</Link> : <Link href={commercialRoutes.newLead}>Novo lead</Link>}
           </div>
 
           <article className="client-identity-card">
             <div className="client-identity-main"><span className="client-avatar large">{initials(selected.name)}</span><div><div className="client-name-row"><h2>{selected.name}</h2><span>Cliente ativo</span></div><p>{formatBrazilianPhone(selected.whatsapp) || "WhatsApp não informado"} · {email || "E-mail não informado"} · {selected.city || "Cidade não informada"}</p></div></div>
             <dl className="client-kpi-strip">
-              <div><dt>Oportunidades</dt><dd>{selected.opportunities.length}</dd></div>
+              <div><dt>Qualificações</dt><dd>{selected.opportunities.length}</dd></div>
               <div><dt>Probabilidade média</dt><dd>{averageProbability}%</dd></div>
               <div><dt>Perfis compradores</dt><dd>{selected.profileCount}</dd></div>
               <div><dt>Última atividade</dt><dd>{selected.latestAt.toLocaleDateString("pt-BR")}</dd></div>
@@ -146,8 +147,8 @@ const selected =
 
           <div className="client-detail-grid">
             <article className="client-section-card client-opportunities-card">
-              <header><div><span>OPORTUNIDADES</span><h3>Resumo comercial</h3></div><Link href="/oportunidades/nova">Adicionar</Link></header>
-              {selected.opportunities.length === 0 ? <p className="client-muted">Nenhuma oportunidade ativa.</p> : <div className="client-opportunity-list">{selected.opportunities.slice(0, 5).map((item) => <Link href={`/oportunidades/${item.id}`} key={item.id}>
+              <header><div><span>QUALIFICAÇÕES</span><h3>Resumo comercial</h3></div><Link href={commercialRoutes.newLead}>Adicionar lead</Link></header>
+              {selected.opportunities.length === 0 ? <p className="client-muted">Nenhuma qualificação ativa.</p> : <div className="client-opportunity-list">{selected.opportunities.slice(0, 5).map((item) => <Link href={leadQualificationHref(item.id)} key={item.id}>
                 <span><strong>{item.desiredVehicle || "Veículo a definir"}</strong><small>{item.nextAction || "Próxima ação não definida"}</small></span>
                 <span className="client-opportunity-meta"><b>{item.probability}%</b><em>{statusLabel(item.status)}</em></span>
               </Link>)}</div>}
@@ -159,15 +160,15 @@ const selected =
                <div><span>Próxima ação</span><strong>{primaryOpportunity?.nextAction || "Sem compromisso agendado"}</strong></div>
                 <div><span>Demanda principal</span><strong>{primaryOpportunity?.desiredVehicle || "Ainda não definida"}</strong></div>
                <div><span>Canal preferencial</span><strong>{whatsappUrl ? "WhatsApp" : email ? "E-mail" : "Não definido"}</strong></div>
-                <div><span>Etapa atual</span><strong>{primaryOpportunity ? statusLabel(primaryOpportunity.status) : "Sem oportunidade"}</strong></div>
+                <div><span>Etapa atual</span><strong>{primaryOpportunity ? statusLabel(primaryOpportunity.status) : "Sem qualificação"}</strong></div>
               </div>
             </article>
 
             <article className="client-section-card client-recommendation-card">
               <header><div><span>RECOMENDAÇÃO EXPLICADA</span><h3>{primaryOpportunity ? "Continuar acompanhamento comercial" : "Estruturar primeira demanda"}</h3></div></header>
-              <p><b>Por que agora:</b> {primaryOpportunity ? `A oportunidade está em ${statusLabel(primaryOpportunity.status).toLowerCase()} e a última atividade ocorreu em ${selected.latestAt.toLocaleDateString("pt-BR")}.` : "O cliente ainda não possui oportunidade vinculada, portanto não há contexto suficiente para uma ação comercial específica."}</p>
+              <p><b>Por que agora:</b> {primaryOpportunity ? `A qualificação está em ${statusLabel(primaryOpportunity.status).toLowerCase()} e a última atividade ocorreu em ${selected.latestAt.toLocaleDateString("pt-BR")}.` : "O cliente ainda não possui qualificação vinculada, portanto não há contexto suficiente para uma ação comercial específica."}</p>
               <p><b>Impacto esperado:</b> {primaryOpportunity ? "Manter o contexto atualizado, reduzir perda por demora e avançar a próxima ação registrada." : "Criar uma demanda estruturada para permitir matching e recomendações relevantes."}</p>
-              {primaryOpportunity ? <Link href={`/oportunidades/${primaryOpportunity.id}`}>Ver contexto completo</Link> : <Link href="/oportunidades/nova">Criar oportunidade</Link>}
+              {primaryOpportunity ? <Link href={leadQualificationHref(primaryOpportunity.id)}>Ver contexto completo</Link> : <Link href={commercialRoutes.newLead}>Criar lead</Link>}
             </article>
 
             <article className="client-section-card client-activity-card">
