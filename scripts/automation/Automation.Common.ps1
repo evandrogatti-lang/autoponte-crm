@@ -155,7 +155,7 @@ function Invoke-AutomationProcess {
         $process.Dispose()
     }
 
-    return [ordered]@{
+    return [pscustomobject][ordered]@{
         command = (@($FilePath) + $Arguments) -join " "
         exitCode = $exitCode
         durationMs = [int64]([DateTime]::UtcNow - $start).TotalMilliseconds
@@ -188,7 +188,7 @@ function Get-AutomationGitSnapshot {
     if ($upstream.exitCode -eq 0) {
         $divergence = Invoke-AutomationGit -Operation Divergence
     }
-    return [ordered]@{
+    return [pscustomobject][ordered]@{
         branch = $branch.stdout.Trim()
         head = $head.stdout.Trim()
         upstream = $(if ($upstream.exitCode -eq 0) { $upstream.stdout.Trim() } else { $null })
@@ -240,7 +240,7 @@ function Get-AutomationCheckoutPreflight {
 
     $blocked = -not $statusAvailable -or $trackedModified.Count -gt 0 -or
         $staged.Count -gt 0 -or $conflicts.Count -gt 0
-    return [ordered]@{
+    return [pscustomobject][ordered]@{
         status = $(if ($blocked) { "BLOCKED" } else { "PASS" })
         statusCommandSucceeded = $statusAvailable
         trackedModified = $trackedModified
@@ -272,7 +272,7 @@ function Get-AutomationWorkingTreeEvidence {
     } finally {
         $sha256.Dispose()
     }
-    return [ordered]@{
+    return [pscustomobject][ordered]@{
         sha256 = $digest
         entries = $entries
         contentRead = $false
@@ -282,7 +282,7 @@ function Get-AutomationWorkingTreeEvidence {
 function Compare-AutomationWorkingTreeEvidence {
     param($Before, $After)
 
-    return [ordered]@{
+    return [pscustomobject][ordered]@{
         unchangedOutsideAutomationArtifacts = ($Before.sha256 -ceq $After.sha256)
         before = $Before
         after = $After
