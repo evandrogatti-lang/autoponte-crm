@@ -2,6 +2,7 @@ import { CRMAppShell } from "../components/crm/CRMAppShell";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./safari-ios-touch-fix.css";
 import { getCurrentAccessContext } from "./app-auth";
 
 const geistSans = Geist({

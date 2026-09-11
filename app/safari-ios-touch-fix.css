@@ -1,0 +1,99 @@
+/*
+ * Safari / iOS touch fix
+ *
+ * `-webkit-overflow-scrolling: touch` promueve el contenedor a su própria camada
+ * de composição em WebKit. Quando um ancestral de uma tabela ou painel de
+ * filtros possui essa camada, os eventos de toque iOS podem cair no lugar
+ * errado — fazendo inputs, selects, botões e links parecerem insensíveis ao
+ * toque, mesmo com z-index aparentemente correto.
+ *
+ * A `@supports (-webkit-touch-callout: none)` só é reconhecida por Safari /
+ * WebKit, portanto não afeta Chrome/Android nem navegadores desktop.
+ *
+ * Estratégia:
+ *  1. Neutralizar `-webkit-overflow-scrolling: touch` nos wrappers de
+ *     tabela e filtros (usa `auto` em vez de `touch`).
+ *  2. Garantir `position: relative` + `z-index` coerente + `pointer-events:
+ *     auto` nesses containers e em seus elementos interativos.
+ *  3. Não alterar `overflow` em si — apenas o comportamento de camada.
+ */
+
+@supports (-webkit-touch-callout: none) {
+  /* Wrappers de tabela / scroll horizontal */
+  .tableWrap,
+  .tableWrapper,
+  .inventoryTableCard,
+  .pipelineStats {
+    -webkit-overflow-scrolling: auto;
+    position: relative;
+    z-index: 0;
+    pointer-events: auto;
+  }
+
+  .client-list-scroll,
+  .client-detail-panel,
+  .owner-tabs,
+  .stage-track,
+  .ap-funnel,
+  .nav,
+  .mobileMorePanel {
+    -webkit-overflow-scrolling: auto;
+  }
+
+  /* Painéis de filtros */
+  .filterPanel {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+    -webkit-overflow-scrolling: auto;
+  }
+
+  .filterPanel input,
+  .filterPanel select,
+  .filterPanel button,
+  .filterPanel a,
+  .filterPanel summary,
+  .filterForm input,
+  .filterForm select,
+  .filterForm button,
+  .filterForm a,
+  .filterChip,
+  .clearFilters,
+  .form input,
+  .form select,
+  .form textarea,
+  .form button {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+  }
+
+  /* Evita overlays de linha que podem capturar toques em iOS. */
+  .rowLink::after,
+  .vehicleRowLink::after,
+  .clickableRow::after,
+  .actionLink::after {
+    content: none;
+    display: none;
+    pointer-events: none;
+  }
+
+  .rowLink,
+  .clickableRow,
+  .actionLink,
+  .vehicleRowLink {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  input,
+  select,
+  button,
+  summary,
+  label,
+  a {
+    pointer-events: auto;
+  }
+}
