@@ -15,6 +15,7 @@ const declarations = new Map([
   ["evaluateYear", ts.SyntaxKind.FunctionDeclaration],
   ["evaluateMileage", ts.SyntaxKind.FunctionDeclaration],
   ["evaluateCity", ts.SyntaxKind.FunctionDeclaration],
+  ["evaluateUseCase", ts.SyntaxKind.FunctionDeclaration],
   ["scoreBuyerVehicle", ts.SyntaxKind.FunctionDeclaration],
 ]);
 
