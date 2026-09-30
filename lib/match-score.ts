@@ -33,6 +33,13 @@ function evaluateUseCase(useCase: string, vehicleUseCases?: readonly string[]): 
   if (useCase && vehicleUseCases?.some((item) => normalize(item) === normalize(useCase))) return { points: 7, reason: "adequado ao uso informado" };
   return { points: 0 };
 }
+function evaluateTransmission(profileTransmission: string, vehicleTransmission?: string): { points: number; reason?: string } {
+  if (profileTransmission === "Indiferente" || !vehicleTransmission || normalize(profileTransmission) === normalize(vehicleTransmission)) {
+    if (profileTransmission !== "Indiferente") return { points: 8, reason: "câmbio desejado" };
+    return { points: 8 };
+  }
+  return { points: 0 };
+}
 export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehicle) {
   let score = 0; const reasons: string[] = []; const types = parseTypes(profile.vehicle_types).map(normalize);
   const vehicleType = normalize(vehicle.type || guessedType(vehicle.label)); const preferred = normalize(profile.preferred_models); const label = normalize(vehicle.label);
@@ -49,7 +56,9 @@ export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehic
   const city = evaluateCity(profile.city, vehicle.city);
   score += city.points;
   if (city.reason !== undefined) reasons.push(city.reason);
-  if (profile.transmission === "Indiferente" || !vehicle.transmission || normalize(profile.transmission) === normalize(vehicle.transmission)) { score += 8; if (profile.transmission !== "Indiferente") reasons.push("câmbio desejado"); }
+  const transmission = evaluateTransmission(profile.transmission, vehicle.transmission);
+  score += transmission.points;
+  if (transmission.reason !== undefined) reasons.push(transmission.reason);
   const useCase = evaluateUseCase(profile.use_case, vehicle.useCases);
   score += useCase.points;
   if (useCase.reason !== undefined) reasons.push(useCase.reason);
