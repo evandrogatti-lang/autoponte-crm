@@ -17,6 +17,10 @@ function evaluateBudget(price: number, budgetMax: number): { points: number; rea
   if (price <= budgetMax * 1.08) return { points: 12, reason: "próximo do orçamento" };
   return { points: 0 };
 }
+function evaluateYear(year: number, minYear: number): { points: number; reason?: string } {
+  if (!minYear || year >= minYear) return { points: 15, reason: "ano compatível" };
+  return { points: 0 };
+}
 export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehicle) {
   let score = 0; const reasons: string[] = []; const types = parseTypes(profile.vehicle_types).map(normalize);
   const vehicleType = normalize(vehicle.type || guessedType(vehicle.label)); const preferred = normalize(profile.preferred_models); const label = normalize(vehicle.label);
@@ -24,7 +28,9 @@ export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehic
   score += budget.points;
   if (budget.reason !== undefined) reasons.push(budget.reason);
   if (preferred && preferred.split(/[,;/]+/).some((term) => term.trim().length >= 3 && label.includes(term.trim()))) { score += 25; reasons.push("modelo solicitado"); } else if (!types.length || types.includes(vehicleType)) { score += 20; reasons.push("categoria preferida"); }
-  if (!profile.min_year || vehicle.year >= profile.min_year) { score += 15; reasons.push("ano compatível"); }
+  const year = evaluateYear(vehicle.year, profile.min_year);
+  score += year.points;
+  if (year.reason !== undefined) reasons.push(year.reason);
   if (!profile.max_mileage || vehicle.mileage <= profile.max_mileage) { score += 12; reasons.push("quilometragem compatível"); }
   if (normalize(profile.city) === normalize(vehicle.city)) { score += 8; reasons.push("na mesma cidade"); }
   if (profile.transmission === "Indiferente" || !vehicle.transmission || normalize(profile.transmission) === normalize(vehicle.transmission)) { score += 8; if (profile.transmission !== "Indiferente") reasons.push("câmbio desejado"); }

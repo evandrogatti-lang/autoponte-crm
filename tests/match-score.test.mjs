@@ -12,6 +12,7 @@ const declarations = new Map([
   ["parseTypes", ts.SyntaxKind.FunctionDeclaration],
   ["guessedType", ts.SyntaxKind.FunctionDeclaration],
   ["evaluateBudget", ts.SyntaxKind.FunctionDeclaration],
+  ["evaluateYear", ts.SyntaxKind.FunctionDeclaration],
   ["scoreBuyerVehicle", ts.SyntaxKind.FunctionDeclaration],
 ]);
 
