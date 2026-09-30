@@ -4,7 +4,7 @@ import test from "node:test";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
 
-const source = readFileSync(new URL("../lib/match-engine.ts", import.meta.url), "utf8");
+const source = readFileSync(new URL("../lib/match-score.ts", import.meta.url), "utf8");
 const declarations = new Map([
   ["BuyerProfile", ts.SyntaxKind.TypeAliasDeclaration],
   ["MatchableVehicle", ts.SyntaxKind.TypeAliasDeclaration],
