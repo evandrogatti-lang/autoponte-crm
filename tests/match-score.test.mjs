@@ -13,6 +13,7 @@ const declarations = new Map([
   ["guessedType", ts.SyntaxKind.FunctionDeclaration],
   ["evaluateBudget", ts.SyntaxKind.FunctionDeclaration],
   ["evaluateYear", ts.SyntaxKind.FunctionDeclaration],
+  ["evaluateMileage", ts.SyntaxKind.FunctionDeclaration],
   ["scoreBuyerVehicle", ts.SyntaxKind.FunctionDeclaration],
 ]);
 

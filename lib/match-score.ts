@@ -21,6 +21,10 @@ function evaluateYear(year: number, minYear: number): { points: number; reason?:
   if (!minYear || year >= minYear) return { points: 15, reason: "ano compatível" };
   return { points: 0 };
 }
+function evaluateMileage(mileage: number, maxMileage: number): { points: number; reason?: string } {
+  if (!maxMileage || mileage <= maxMileage) return { points: 12, reason: "quilometragem compatível" };
+  return { points: 0 };
+}
 export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehicle) {
   let score = 0; const reasons: string[] = []; const types = parseTypes(profile.vehicle_types).map(normalize);
   const vehicleType = normalize(vehicle.type || guessedType(vehicle.label)); const preferred = normalize(profile.preferred_models); const label = normalize(vehicle.label);
@@ -31,7 +35,9 @@ export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehic
   const year = evaluateYear(vehicle.year, profile.min_year);
   score += year.points;
   if (year.reason !== undefined) reasons.push(year.reason);
-  if (!profile.max_mileage || vehicle.mileage <= profile.max_mileage) { score += 12; reasons.push("quilometragem compatível"); }
+  const mileage = evaluateMileage(vehicle.mileage, profile.max_mileage);
+  score += mileage.points;
+  if (mileage.reason !== undefined) reasons.push(mileage.reason);
   if (normalize(profile.city) === normalize(vehicle.city)) { score += 8; reasons.push("na mesma cidade"); }
   if (profile.transmission === "Indiferente" || !vehicle.transmission || normalize(profile.transmission) === normalize(vehicle.transmission)) { score += 8; if (profile.transmission !== "Indiferente") reasons.push("câmbio desejado"); }
   if (profile.use_case && vehicle.useCases?.some((item) => normalize(item) === normalize(profile.use_case))) { score += 7; reasons.push("adequado ao uso informado"); }
