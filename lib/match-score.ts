@@ -40,13 +40,20 @@ function evaluateTransmission(profileTransmission: string, vehicleTransmission?:
   }
   return { points: 0 };
 }
+function evaluateModelCategory(preferred: string, label: string, types: readonly string[], vehicleType: string): { points: number; reason?: string } {
+  if (preferred && preferred.split(/[,;/]+/).some((term) => term.trim().length >= 3 && label.includes(term.trim()))) return { points: 25, reason: "modelo solicitado" };
+  else if (!types.length || types.includes(vehicleType)) return { points: 20, reason: "categoria preferida" };
+  return { points: 0 };
+}
 export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehicle) {
   let score = 0; const reasons: string[] = []; const types = parseTypes(profile.vehicle_types).map(normalize);
   const vehicleType = normalize(vehicle.type || guessedType(vehicle.label)); const preferred = normalize(profile.preferred_models); const label = normalize(vehicle.label);
   const budget = evaluateBudget(vehicle.price, profile.budget_max);
   score += budget.points;
   if (budget.reason !== undefined) reasons.push(budget.reason);
-  if (preferred && preferred.split(/[,;/]+/).some((term) => term.trim().length >= 3 && label.includes(term.trim()))) { score += 25; reasons.push("modelo solicitado"); } else if (!types.length || types.includes(vehicleType)) { score += 20; reasons.push("categoria preferida"); }
+  const modelCategory = evaluateModelCategory(preferred, label, types, vehicleType);
+  score += modelCategory.points;
+  if (modelCategory.reason !== undefined) reasons.push(modelCategory.reason);
   const year = evaluateYear(vehicle.year, profile.min_year);
   score += year.points;
   if (year.reason !== undefined) reasons.push(year.reason);
