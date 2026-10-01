@@ -13,7 +13,7 @@ runInNewContext(ts.transpileModule(scorerSource, {
 
 // Select only the consumer and its local helpers; never load database modules.
 const parsed = ts.createSourceFile("engine.ts", engineSource, ts.ScriptTarget.ES2022, true);
-const selected = ["draftMessage", "toLegacyProfile", "createMatchesForVehicle"].map((name) => {
+const selected = ["draftMessage", "toLegacyProfile", "prepareVehicleMatch", "createMatchesForVehicle"].map((name) => {
   const matches = parsed.statements.filter((node) => ts.isFunctionDeclaration(node) && node.name?.text === name);
   assert.equal(matches.length, 1);
   return matches[0].getText(parsed).replace(/^export /, "");
@@ -87,4 +87,69 @@ test("AP-MATCH-015: empty active-buyer selection remains a no-op", async () => {
   assert.equal(actual.count, 0);
   assert.deepEqual(actual.evaluated, []);
   assert.deepEqual(actual.inserted, []);
+});
+
+function boundaryAdapter() {
+  return runInNewContext(`${consumerScript}\n({ prepareVehicleMatch, toLegacyProfile });`,
+    { crypto: { randomUUID: () => "synthetic-match-id" } });
+}
+
+test("AP-MATCH-016: CRM preparation retains semantic evidence without changing persistence fields", () => {
+  const { prepareVehicleMatch, toLegacyProfile } = boundaryAdapter();
+  const profile = toLegacyProfile({ ...row, transmission: "Automático", useCase: "" });
+  const missing = { ...vehicle, type: undefined, label: "SUV Sintético", transmission: undefined };
+  const evaluation = scorerExports.evaluateBuyerVehicle(profile, missing);
+  const before = structuredClone(evaluation);
+  const prepared = prepareVehicleMatch(profile, missing, evaluation);
+  assert.deepEqual(Object.keys(prepared), ["ruleResults", "values"]);
+  assert.equal(prepared.ruleResults, evaluation.ruleResults);
+  assert.equal(prepared.ruleResults[1].outcome, "matched");
+  assert.equal(prepared.ruleResults[1].vehicleDataSource, "inferred");
+  assert.equal(prepared.ruleResults[5].outcome, "missing_vehicle_data");
+  assert.equal(prepared.ruleResults[6].outcome, "no_preference");
+  const legacy = scorerExports.scoreBuyerVehicle(profile, missing);
+  assert.equal(prepared.values.score, legacy.score);
+  assert.equal(prepared.values.reasons, JSON.stringify(legacy.reasons));
+  assert.deepEqual(Object.keys(prepared.values), ["id", "buyerProfileId", "sourceType", "sourceId", "vehicleLabel", "vehiclePrice", "score", "reasons", "messageDraft", "status"]);
+  // Evidence comes from rule outcomes/provenance even when legacy text is unrelated.
+  const changedText = { ...evaluation, reasons: ["unrelated legacy text"],
+    ruleResults: evaluation.ruleResults.map((item) => ({ ...item, reason: "unrelated legacy text" })) };
+  const changedPrepared = prepareVehicleMatch(profile, missing, changedText);
+  assert.equal(changedPrepared.ruleResults, changedText.ruleResults);
+  assert.equal(changedPrepared.ruleResults[5].outcome, "missing_vehicle_data");
+  assert.equal(changedPrepared.ruleResults[1].vehicleDataSource, "inferred");
+  assert.equal(changedPrepared.values.reasons, JSON.stringify(changedText.reasons));
+  assert.deepEqual(JSON.parse(JSON.stringify(evaluation)), JSON.parse(JSON.stringify(before)));
+  assert.deepEqual(JSON.parse(JSON.stringify(prepareVehicleMatch(profile, missing, evaluation))), JSON.parse(JSON.stringify(prepared)));
+});
+
+test("AP-MATCH-016: one CRM handoff per accepted Match preserves generation and evidence identity", async () => {
+  const rows = [row, { ...row, id: "accepted", transmission: "Automático", useCase: "" }];
+  const db = { select: () => ({ from: () => ({ where: () => rows }) }),
+    insert: () => ({ values: (values) => ({ onConflictDoNothing: () => { inserted.push(values); } }) }) };
+  const inserted = []; const evaluations = []; const handoffs = [];
+  const context = { getDb: () => db, buyerProfiles: { status: "status" }, vehicleMatches: "matches",
+    eq: () => ({}), crypto: { randomUUID: () => "synthetic-match-id" },
+    evaluateBuyerVehicle: (profile, item) => {
+      const result = scorerExports.evaluateBuyerVehicle(profile, item);
+      evaluations.push(result);
+      return result;
+    } };
+  const consumer = runInNewContext(`${consumerScript}\ncreateMatchesForVehicle;`, context);
+  const originalPrepare = context.prepareVehicleMatch;
+  context.prepareVehicleMatch = (profile, item, evaluation) => {
+    const result = originalPrepare(profile, item, evaluation);
+    handoffs.push({ evaluation, result });
+    return result;
+  };
+  assert.equal(await consumer(vehicle), 1);
+  assert.equal(evaluations.length, 2);
+  assert.equal(handoffs.length, 1);
+  assert.equal(handoffs[0].evaluation, evaluations[1]);
+  assert.equal(handoffs[0].result.ruleResults, evaluations[1].ruleResults);
+  assert.equal(inserted[0], handoffs[0].result.values);
+  assert.equal(inserted[0].score, 55);
+  assert.ok(!Object.hasOwn(inserted[0], "ruleResults"));
+  assert.ok(!Object.hasOwn(inserted[0], "coverage"));
+  assert.ok(!Object.hasOwn(inserted[0], "explanation"));
 });

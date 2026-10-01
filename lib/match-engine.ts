@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../db";
 import { buyerProfiles, consignments, tradeIns, vehicleMatches } from "../db/schema";
 
-import { evaluateBuyerVehicle, scoreBuyerVehicle, type BuyerProfile, type MatchableVehicle } from "./match-score";
+import { evaluateBuyerVehicle, scoreBuyerVehicle, type BuyerProfile, type MatchableVehicle, type MatchEvaluation } from "./match-score";
 export { scoreBuyerVehicle, type BuyerProfile, type MatchableVehicle } from "./match-score";
 
 function draftMessage(profile: BuyerProfile, vehicle: MatchableVehicle) {
@@ -12,10 +12,18 @@ function draftMessage(profile: BuyerProfile, vehicle: MatchableVehicle) {
 function toLegacyProfile(row: typeof buyerProfiles.$inferSelect): BuyerProfile {
   return { id: row.id, name: row.name, whatsapp: row.whatsapp, email: row.email, city: row.city, budget_max: row.budgetMax, vehicle_types: row.vehicleTypes, preferred_models: row.preferredModels, min_year: row.minYear, max_mileage: row.maxMileage, transmission: row.transmission, fuel: row.fuel, use_case: row.useCase, purchase_timeline: row.purchaseTimeline, alerts_consent: row.alertsConsent ? 1 : 0 };
 }
+// Structured rule evidence stays in this internal handoff, never in the insert payload.
+function prepareVehicleMatch(profile: BuyerProfile, vehicle: MatchableVehicle, match: Pick<MatchEvaluation, "score" | "reasons" | "ruleResults">) {
+  return {
+    ruleResults: match.ruleResults,
+    values: { id: crypto.randomUUID(), buyerProfileId: profile.id, sourceType: vehicle.sourceType, sourceId: vehicle.sourceId, vehicleLabel: vehicle.label, vehiclePrice: vehicle.price, score: match.score, reasons: JSON.stringify(match.reasons), messageDraft: draftMessage(profile, vehicle), status: profile.alerts_consent ? "review_pending" : "internal_only" },
+  };
+}
 export async function createMatchesForVehicle(vehicle: MatchableVehicle) {
   const db = getDb(); const profiles = await db.select().from(buyerProfiles).where(eq(buyerProfiles.status, "active")); let created = 0;
   for (const row of profiles) { const profile = toLegacyProfile(row); const match = evaluateBuyerVehicle(profile, vehicle); if (match.score < 55) continue;
-    await db.insert(vehicleMatches).values({ id: crypto.randomUUID(), buyerProfileId: profile.id, sourceType: vehicle.sourceType, sourceId: vehicle.sourceId, vehicleLabel: vehicle.label, vehiclePrice: vehicle.price, score: match.score, reasons: JSON.stringify(match.reasons), messageDraft: draftMessage(profile, vehicle), status: profile.alerts_consent ? "review_pending" : "internal_only" }).onConflictDoNothing(); created += 1; }
+    const prepared = prepareVehicleMatch(profile, vehicle, match);
+    await db.insert(vehicleMatches).values(prepared.values).onConflictDoNothing(); created += 1; }
   return created;
 }
 export async function createMatchesForBuyer(profile: BuyerProfile) {
