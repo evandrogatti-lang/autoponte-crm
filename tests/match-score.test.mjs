@@ -8,6 +8,8 @@ const source = readFileSync(new URL("../lib/match-score.ts", import.meta.url), "
 const declarations = new Map([
   ["BuyerProfile", ts.SyntaxKind.TypeAliasDeclaration],
   ["MatchableVehicle", ts.SyntaxKind.TypeAliasDeclaration],
+  ["MatchRuleId", ts.SyntaxKind.TypeAliasDeclaration],
+  ["MatchRuleResult", ts.SyntaxKind.TypeAliasDeclaration],
   ["normalize", ts.SyntaxKind.FunctionDeclaration],
   ["parseTypes", ts.SyntaxKind.FunctionDeclaration],
   ["guessedType", ts.SyntaxKind.FunctionDeclaration],
@@ -18,12 +20,14 @@ const declarations = new Map([
   ["evaluateUseCase", ts.SyntaxKind.FunctionDeclaration],
   ["evaluateTransmission", ts.SyntaxKind.FunctionDeclaration],
   ["evaluateModelCategory", ts.SyntaxKind.FunctionDeclaration],
+  ["evaluateBuyerVehicleRules", ts.SyntaxKind.FunctionDeclaration],
   ["scoreBuyerVehicle", ts.SyntaxKind.FunctionDeclaration],
 ]);
 
 // Select actual declarations, never imports or database-writing functions.
 // This is a dependency guard for this known source, not a general JS sandbox.
-function isolateScorer(text) {
+function isolateScorer(text, entryPoint = "scoreBuyerVehicle") {
+  assert.ok(["scoreBuyerVehicle", "evaluateBuyerVehicleRules"].includes(entryPoint));
   const parsed = ts.createSourceFile("match.ts", text, ts.ScriptTarget.ES2022, true);
   assert.equal(parsed.parseDiagnostics.length, 0, "source must parse");
   const selected = [];
@@ -73,7 +77,7 @@ function isolateScorer(text) {
     reportDiagnostics: true,
   });
   assert.deepEqual(compiled.diagnostics ?? [], [], "transpilation diagnostics");
-  return runInNewContext(`${compiled.outputText}\nscoreBuyerVehicle;`, Object.create(null), {
+  return runInNewContext(`${compiled.outputText}\n${entryPoint};`, Object.create(null), {
     timeout: 1000, contextCodeGeneration: { strings: false, wasm: false },
   });
 }
@@ -183,4 +187,111 @@ test("source guards reject missing, duplicate, unsupported and external declarat
   assert.throws(() => isolateScorer(source.replace("let score = 0", "let score = getDb()")), /unexpected dependency: getDb/);
   assert.throws(() => isolateScorer(source.replace("let score = 0", "let score = process.exit()")), /unexpected dependency: process/);
   assert.throws(() => isolateScorer(source.replace("let score = 0", "let score = import('database')")), /unsupported source dependency/);
+});
+
+// AP-MATCH-010: exercise the structured entry point without changing legacy assertions.
+const evaluateBuyerVehicleRules = isolateScorer(source, "evaluateBuyerVehicleRules");
+const ruleIds = ["budget", "model_category", "year", "mileage", "city", "transmission", "use_case"];
+function structuredResults(profileChanges = {}, vehicleChanges = {}) {
+  const profile = structuredClone({ ...baseProfile, ...profileChanges });
+  const vehicle = structuredClone({ ...baseVehicle, ...vehicleChanges });
+  const before = structuredClone({ profile, vehicle });
+  const results = evaluateBuyerVehicleRules(profile, vehicle);
+  const plain = Array.from(results, (result) => ({ ...result }));
+  assert.deepEqual(plain.map((result) => result.ruleId), ruleIds);
+  assert.equal(new Set(plain.map((result) => result.ruleId)).size, 7);
+  assert.deepEqual({ profile, vehicle }, before);
+  assert.deepEqual(Array.from(evaluateBuyerVehicleRules(profile, vehicle), (result) => ({ ...result })), plain);
+  const legacy = scoreBuyerVehicle(profile, vehicle);
+  assert.deepEqual(Object.keys(legacy), ["score", "reasons"]);
+  assert.equal(legacy.score, Math.min(100, plain.reduce((sum, result) => sum + result.points, 0)));
+  assert.deepEqual(Array.from(legacy.reasons), plain.flatMap((result) => result.reason === undefined ? [] : [result.reason]));
+  return plain;
+}
+
+test("AP-MATCH-010: all eligible rules expose exact contributions and ordered explanations", () => {
+  const results = structuredResults({ preferred_models: "Inventado" }, {
+    price: 10000, city: "Cidade A", year: 2020, mileage: 10000,
+    transmission: "Manual", useCases: ["Trabalho"],
+  });
+  assert.deepEqual(results, [
+    { ruleId: "budget", eligible: true, points: 25, reason: "dentro do orçamento" },
+    { ruleId: "model_category", eligible: true, points: 25, reason: "modelo solicitado" },
+    { ruleId: "year", eligible: true, points: 15, reason: "ano compatível" },
+    { ruleId: "mileage", eligible: true, points: 12, reason: "quilometragem compatível" },
+    { ruleId: "city", eligible: true, points: 8, reason: "na mesma cidade" },
+    { ruleId: "transmission", eligible: true, points: 8, reason: "câmbio desejado" },
+    { ruleId: "use_case", eligible: true, points: 7, reason: "adequado ao uso informado" },
+  ]);
+});
+
+test("AP-MATCH-010: every nonmatching rule remains visible with zero points and no reason", () => {
+  assert.deepEqual(structuredResults(), ruleIds.map((ruleId) => ({ ruleId, eligible: false, points: 0 })));
+});
+
+test("AP-MATCH-010: mixed results aggregate only contributions and preserve sparse reason order", () => {
+  const results = structuredResults({ transmission: "Indiferente" }, { price: 10800, type: "SUV", year: 2020 });
+  assert.deepEqual(results.map((result) => result.eligible), [true, true, true, false, false, true, false]);
+  assert.deepEqual(results.map((result) => result.points), [12, 20, 15, 0, 0, 8, 0]);
+  assert.deepEqual(results.flatMap((result) => result.reason === undefined ? [] : [result.reason]),
+    ["próximo do orçamento", "categoria preferida", "ano compatível"]);
+});
+
+test("AP-MATCH-010: budget boundaries retain their structured eligibility and reasons", () => {
+  for (const [price, eligible, points, reason] of [
+    [10000, true, 25, "dentro do orçamento"], [10001, true, 12, "próximo do orçamento"],
+    [10800, true, 12, "próximo do orçamento"], [10801, false, 0, undefined],
+  ]) {
+    const expected = { ruleId: "budget", eligible, points };
+    if (reason !== undefined) expected.reason = reason;
+    assert.deepEqual(structuredResults({}, { price })[0], expected);
+  }
+});
+
+test("AP-MATCH-010: model precedence and unrestricted-category fallbacks share one result", () => {
+  assert.deepEqual(structuredResults({ preferred_models: "Inventado" }, { type: "SUV" })[1],
+    { ruleId: "model_category", eligible: true, points: 25, reason: "modelo solicitado" });
+  for (const vehicle_types of ['["SUV"]', "[]", "", "not JSON"]) {
+    assert.deepEqual(structuredResults({ preferred_models: "Ausente", vehicle_types }, { type: "SUV" })[1],
+      { ruleId: "model_category", eligible: true, points: 20, reason: "categoria preferida" });
+  }
+});
+
+test("AP-MATCH-010: permissive missing values mean legacy eligibility, not verified suitability", () => {
+  const results = structuredResults({ min_year: 0, max_mileage: 0, city: "", use_case: "" },
+    { city: "", transmission: undefined, useCases: undefined });
+  assert.deepEqual(results.slice(2, 6), [
+    { ruleId: "year", eligible: true, points: 15, reason: "ano compatível" },
+    { ruleId: "mileage", eligible: true, points: 12, reason: "quilometragem compatível" },
+    { ruleId: "city", eligible: true, points: 8, reason: "na mesma cidade" },
+    { ruleId: "transmission", eligible: true, points: 8, reason: "câmbio desejado" },
+  ]);
+  assert.deepEqual(results[6], { ruleId: "use_case", eligible: false, points: 0 });
+  for (const transmission of [undefined, ""]) {
+    assert.deepEqual(structuredResults({}, { transmission })[5],
+      { ruleId: "transmission", eligible: true, points: 8, reason: "câmbio desejado" });
+  }
+  assert.deepEqual(structuredResults({ transmission: "Indiferente" })[5],
+    { ruleId: "transmission", eligible: true, points: 8 });
+  assert.deepEqual(structuredResults({ transmission: "indiferente" })[5],
+    { ruleId: "transmission", eligible: false, points: 0 });
+});
+
+test("AP-MATCH-010: normalization, non-trimming and use-case short-circuiting are preserved", () => {
+  const results = structuredResults({ city: "Cídade A", use_case: "Família" },
+    { city: "CIDADE A", useCases: ["FAMILIA", null] });
+  assert.equal(results[4].eligible, true);
+  assert.deepEqual(results[6], { ruleId: "use_case", eligible: true, points: 7, reason: "adequado ao uso informado" });
+  const spaced = structuredResults({ use_case: "Trabalho " }, { city: "Cidade A ", useCases: ["Trabalho"] });
+  assert.equal(spaced[4].eligible, false);
+  assert.equal(spaced[6].eligible, false);
+  assert.equal(structuredResults({ use_case: "" }, { useCases: [null] })[6].eligible, false);
+});
+
+test("AP-MATCH-010: malformed category shapes retain existing exceptions", () => {
+  for (const vehicle_types of ["null", "{}", '"SUV"', "[1]"]) {
+    const profile = { ...baseProfile, vehicle_types };
+    assert.throws(() => evaluateBuyerVehicleRules(profile, baseVehicle));
+    assert.throws(() => scoreBuyerVehicle(profile, baseVehicle));
+  }
 });
