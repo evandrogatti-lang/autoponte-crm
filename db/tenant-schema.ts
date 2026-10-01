@@ -1,0 +1,24 @@
+import { sql } from "drizzle-orm";
+import { check, foreignKey, index, pgSchema, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+
+// Auth owns this table; this reference is not an application-owned migration target.
+const authUsers = pgSchema("auth").table("users", { id: uuid("id").primaryKey() });
+const times = () => ({ createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(), updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow() });
+export const tenants = pgTable("tenants", {
+  id: uuid("id").primaryKey().defaultRandom(), name: text("name").notNull(), status: text("status").notNull(), ...times(),
+}, t => [check("tenants_status_check", sql`${t.status} in ('active','suspended','archived')`)]).enableRLS();
+export const stores = pgTable("stores", {
+  id: uuid("id").primaryKey().defaultRandom(), tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "restrict" }), name: text("name").notNull(), status: text("status").notNull(), ...times(),
+}, t => [unique("stores_tenant_id_id_key").on(t.tenantId,t.id), check("stores_status_check",sql`${t.status} in ('active','inactive','archived')`), index("stores_active_tenant_idx").on(t.tenantId).where(sql`${t.status} = 'active'`)]).enableRLS();
+export const memberships = pgTable("memberships", {
+  id: uuid("id").primaryKey().defaultRandom(), tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "restrict" }), userId: uuid("user_id").notNull().references(() => authUsers.id, { onDelete: "restrict" }), status: text("status").notNull(), ...times(), activatedAt: timestamp("activated_at", { withTimezone: true }), revokedAt: timestamp("revoked_at", { withTimezone: true }),
+}, t => [unique("memberships_tenant_id_user_id_key").on(t.tenantId,t.userId), unique("memberships_tenant_id_id_key").on(t.tenantId,t.id), check("memberships_status_check",sql`${t.status} in ('active','suspended','revoked')`), check("memberships_revoked_at_check",sql`(${t.status} = 'revoked' and ${t.revokedAt} is not null) or (${t.status} <> 'revoked' and ${t.revokedAt} is null)`), index("memberships_active_user_tenant_idx").on(t.userId,t.tenantId).where(sql`${t.status} = 'active'`)]).enableRLS();
+export const roleAssignments = pgTable("role_assignments", {
+  id: uuid("id").primaryKey().defaultRandom(), membershipId: uuid("membership_id").notNull().references(() => memberships.id, { onDelete: "restrict" }), roleCode: text("role_code").notNull(), status: text("status").notNull(), ...times(), revokedAt: timestamp("revoked_at", { withTimezone: true }),
+}, t => [unique("role_assignments_membership_id_role_code_key").on(t.membershipId,t.roleCode), check("role_assignments_role_code_check",sql`${t.roleCode} in ('owner','manager','seller')`), check("role_assignments_status_check",sql`${t.status} in ('active','revoked')`), check("role_assignments_revoked_at_check",sql`(${t.status} = 'revoked' and ${t.revokedAt} is not null) or (${t.status} = 'active' and ${t.revokedAt} is null)`), index("role_assignments_active_membership_role_idx").on(t.membershipId,t.roleCode).where(sql`${t.status} = 'active'`)]).enableRLS();
+export const storeAccess = pgTable("store_access", {
+  id: uuid("id").primaryKey().defaultRandom(), tenantId: uuid("tenant_id").notNull(), membershipId: uuid("membership_id").notNull(), storeId: uuid("store_id").notNull(), status: text("status").notNull(), ...times(), revokedAt: timestamp("revoked_at", { withTimezone: true }),
+}, t => [foreignKey({name:"store_access_membership_same_tenant_fkey",columns:[t.tenantId,t.membershipId],foreignColumns:[memberships.tenantId,memberships.id]}).onDelete("restrict"), foreignKey({name:"store_access_store_same_tenant_fkey",columns:[t.tenantId,t.storeId],foreignColumns:[stores.tenantId,stores.id]}).onDelete("restrict"), unique("store_access_membership_id_store_id_key").on(t.membershipId,t.storeId), check("store_access_status_check",sql`${t.status} in ('active','revoked')`), check("store_access_revoked_at_check",sql`(${t.status} = 'revoked' and ${t.revokedAt} is not null) or (${t.status} = 'active' and ${t.revokedAt} is null)`), index("store_access_active_tenant_membership_store_idx").on(t.tenantId,t.membershipId,t.storeId).where(sql`${t.status} = 'active'`)]).enableRLS();
+export const intakeRoutes = pgTable("intake_routes", {
+  routeKey: text("route_key").primaryKey(), intakeKind: text("intake_kind").notNull(), tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete:"restrict" }), storeId: uuid("store_id"), status: text("status").notNull(), ...times(),
+}, t => [check("intake_routes_kind_check",sql`${t.intakeKind} in ('buyer_profile','trade_in')`), check("intake_routes_status_check",sql`${t.status} in ('active','inactive')`), foreignKey({name:"intake_routes_store_same_tenant_fkey",columns:[t.tenantId,t.storeId],foreignColumns:[stores.tenantId,stores.id]}).onDelete("restrict")]).enableRLS();

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export type AppUser = {
+  id: string;
   displayName: string;
   email: string;
   fullName: string | null;
@@ -44,6 +45,7 @@ export async function getCurrentAppUser(): Promise<AppUser | null> {
         : "";
 
   return {
+    id: user.id,
     displayName: metadataName || email,
     email,
     fullName: metadataName || null,

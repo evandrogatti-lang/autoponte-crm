@@ -19,18 +19,19 @@ function prepareVehicleMatch(profile: BuyerProfile, vehicle: MatchableVehicle, m
     values: { id: crypto.randomUUID(), buyerProfileId: profile.id, sourceType: vehicle.sourceType, sourceId: vehicle.sourceId, vehicleLabel: vehicle.label, vehiclePrice: vehicle.price, score: match.score, reasons: JSON.stringify(match.reasons), messageDraft: draftMessage(profile, vehicle), status: profile.alerts_consent ? "review_pending" : "internal_only" },
   };
 }
-export async function createMatchesForVehicle(vehicle: MatchableVehicle) {
-  const db = getDb(); const profiles = await db.select().from(buyerProfiles).where(eq(buyerProfiles.status, "active")); let created = 0;
+export async function createMatchesForVehicle(vehicle: MatchableVehicle, tenantId?: string) {
+  const db = getDb(); const profiles = await db.select().from(buyerProfiles).where(tenantId ? and(eq(buyerProfiles.status, "active"),eq(buyerProfiles.tenantId,tenantId)) : eq(buyerProfiles.status, "active")); let created = 0;
   for (const row of profiles) { const profile = toLegacyProfile(row); const match = evaluateBuyerVehicle(profile, vehicle); if (match.score < 55) continue;
     const prepared = prepareVehicleMatch(profile, vehicle, match);
     await db.insert(vehicleMatches).values(prepared.values).onConflictDoNothing(); created += 1; }
   return created;
 }
-export async function createMatchesForBuyer(profile: BuyerProfile) {
+export async function createMatchesForBuyer(profile: BuyerProfile, tenantId?: string) {
   const db = getDb(); const vehicles: MatchableVehicle[] = [];
-  const consignmentRows = await db.select().from(consignments).orderBy(desc(consignments.createdAt)).limit(100);
+  // Unscoped consignments cannot be candidates for a tenant-scoped intake.
+  const consignmentRows = tenantId ? [] : await db.select().from(consignments).orderBy(desc(consignments.createdAt)).limit(100);
   for (const item of consignmentRows) vehicles.push({ sourceType: "consignment", sourceId: item.id, label: item.vehicleName, price: item.askingPrice, city: item.city, year: Number(item.year.match(/\d{4}/)?.[0] || 0), mileage: item.mileage });
-  const tradeRows = await db.select().from(tradeIns).orderBy(desc(tradeIns.createdAt)).limit(100);
+  const tradeRows = await db.select().from(tradeIns).where(tenantId ? eq(tradeIns.tenantId,tenantId) : undefined).orderBy(desc(tradeIns.createdAt)).limit(100);
   for (const item of tradeRows) vehicles.push({ sourceType: "trade_in", sourceId: item.id, label: `${item.brand} ${item.model}`, price: item.estimatedMax, city: item.city, year: Number(item.year.match(/\d{4}/)?.[0] || 0), mileage: item.mileage });
   let created = 0;
   for (const vehicle of vehicles) { const match = scoreBuyerVehicle(profile, vehicle); if (match.score < 55) continue;

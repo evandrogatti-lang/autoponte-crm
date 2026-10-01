@@ -1,7 +1,10 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+
+import { tenants } from "./tenant-schema.ts";
 
 export const tradeIns = pgTable("trade_ins", {
+  tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "restrict" }),
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   whatsapp: text("whatsapp").notNull(),
@@ -49,7 +52,7 @@ export const tradeIns = pgTable("trade_ins", {
   consentAt: text("consent_at").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, table => [uniqueIndex("trade_ins_tenant_id_id_key").on(table.tenantId, table.id)]);
 
 export const opportunityEvents = pgTable("opportunity_events", {
   id: text("id").primaryKey(),
@@ -85,6 +88,7 @@ export const consignments = pgTable("consignments", {
 });
 
 export const buyerProfiles = pgTable("buyer_profiles", {
+  tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "restrict" }),
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   whatsapp: text("whatsapp").notNull(),
@@ -237,3 +241,5 @@ export const sellerAssignments = pgTable("seller_assignments", {
 
 export { vehicleDataProvenance, vehicleEvidenceObservations, vehicleScores } from "./vehicle-intelligence-schema.ts";
 export * from "./pilot-schema.ts";
+
+export * from "./tenant-schema.ts";

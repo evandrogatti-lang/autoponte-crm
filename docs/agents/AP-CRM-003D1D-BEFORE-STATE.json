@@ -1,0 +1,1437 @@
+{
+  "operation": "AP-CRM-003D1D",
+  "capturedAt": "2026-10-01T18:54:13.369Z",
+  "projectRef": "prcmlynykncfgzwluoef",
+  "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+  "assignmentBasis": "APPROVED_PROJECT_POLICY",
+  "rows": [
+    {
+      "table": "customers",
+      "id": "afd1a366-6945-4934-96d9-8c974727e7c5",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4de8fdeb8a311b37ebd32e55997be160"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-01-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "e3df1baa905f706c12e12eb18822dc1c"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-02-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "2f1da045732b22c0ccebcfe65c682b82"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-03-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "d97e6446ed724cc11a1fe8827987a51d"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-04-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "d412abb1fcb5c3dedbbe6605af4a68b8"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-05-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "574361a2cca6ab9de79a8d90843778f5"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-06-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7a4deb57a79c72644b22013f8918a455"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-07-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "233b2692eafcbb6477c4d2bed079b700"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-08-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ddd70f9b3a0e6d1f7f321a13b9402d65"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-09-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "cd0d6357f7ae02277dd5297a18e418e1"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-10-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "2e6c9d83bfe6d2fbbea16ef4d9892832"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-11-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0e4f1e4c5b72612b8f9f761b12f045d1"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-12-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7aec90b46abd0d89bd8b441aeff20220"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-13-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "125dddfdc782a868ad7aa851c179663d"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-14-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "44960bbf5ee08af72197ad74a138a128"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-15-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0cd6615a2b59dc384bb15ac4589d27e6"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-16-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0cd954adcddd63df7590db63a3f18a7f"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-17-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9cfd0f022cf5725964a7b0a92a11d975"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-18-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "fb9b12708d6f1b3e67a741d3b9732aa0"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-19-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "c3354626206a72e01989f934a0ac4a17"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-20-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ee77a2400f668fe5b8924401c42e074e"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-21-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b807822553d4d2a85973f9917b718cf5"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-22-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b1d307ad3b3bc29442abe3e4a1433e08"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-23-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b4cd4a1c757fb03226cafc32736a46e2"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-24-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b796844fb62533e236692de650da9c77"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-25-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ee455fc51e9ccad65dc60ed0519e5a56"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-26-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "721525a6209cdc5ac4d6ada04f435d9d"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-27-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7d68a8603242e9eee9b3c4f71b4ef9d0"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-28-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "60aff231e3391b86bd665bea02a8b82e"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-29-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4ef969390b8efbc2e714c579c414d308"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-30-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "6d57f78d0ed14a7c077ec03f72b5a9a3"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-31-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "8fd51a05327d148cc42475614de230fc"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-32-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "444153f3dc5a3d1134ba5790378397da"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-33-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "5b8bfe846e1d3fe69e570f008d051562"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-34-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "56ebee027b118cfb53c3ceff47057f15"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-35-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "68f0734fad33762f9bab6bc13065eeff"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-36-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "aa464be15025ac30c424d76ef1e5477b"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-37-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "3efca8e2770ce11b18e3fe4a0e866e9b"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-38-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ae19ab1ebe67a2fb593993e9f3ce6336"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-39-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "d62e240ca7e42a54b352e2b5e4e0a3dc"
+    },
+    {
+      "table": "customers",
+      "id": "phase2-p2-40-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4687dff066fe3ead46bb0dbc7b8708e6"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-01-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "32d2bf3d591a5bb6c1ede3edb53ddcbd"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-02-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "73697f91eb6cdf80d285b1fe70b852cd"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-03-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "08ccb95e52bba42f41545c9631fae109"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-04-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4edd1c219c43866d5b4233752671233b"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-05-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9535d69ba58fe3a429d505c8c22f3f4d"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-06-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "76ce38b2f29b28a1ace67ef75beb7d22"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-07-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ecdb33e725706495790affa03d494e99"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-08-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "86cfd6274dd5af8db3cac65339bdc912"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-09-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "388e6a81b69a83f0be429e32ca3737b1"
+    },
+    {
+      "table": "customers",
+      "id": "pilot-p1-10-customer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "d1582b064b55edd2dc29f76b9f631cc0"
+    },
+    {
+      "table": "trade_ins",
+      "id": "2ecab4d7-9b16-452d-854c-4dc7057d295e",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "e02a5b1a69ff90d239ae3ec7dc572a28"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-01-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4b2a1cb1a3ad9e6b9ecd15d9017d1bc8"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-02-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "d663a082d23ddd50c5d45cab9194febc"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-03-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "de3dc82fbbe1a969355420ee2cb7c3c4"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-04-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9e649fb65639929eee0cc1732ce21545"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-05-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b732a51cd49c0537cf3e8d636395596c"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-06-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "cda9db94bb3b261d8ec7e101bd759b11"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-07-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "716592f98db040db2187adfb7b485c4b"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-08-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "98bce1dabf1d25a76621b18ccf1c3731"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-09-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b956a8b3748efeede0cf3536bb9d3415"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-10-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "17d4fabbbb4750c5cdab0c32b0808dcb"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-11-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "6bc8ab66723aedb77a559dec7935c465"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-12-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "3649fd60c71871f3962cd1425548f9c6"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-13-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "1b1e53b38c1dc64967656ffcbc27773a"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-14-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "01a34d1be7532eff4d47b6b2a48ceae7"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-15-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a16c57dc4476bd2d3eb981187efa4efd"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-16-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a783c57abace2a9ec45fcb67150af3c1"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-17-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "355cfab9e5752d193b4dc882223dc514"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-18-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "18e5e20f3959fb27c6c8af97a706880e"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-19-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "00c36f50a0b5502c5480b107eeae0783"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-20-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "cc8b19031dd4dd85a31bef3982e65155"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-21-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "c6988d210fd69c18ba5caa97b99d9a89"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-22-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "26f8b0ac831fbb2a70345131d8f4f448"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-23-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "3603da6ba79ae8a7b59633faf17d7e40"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-24-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0e12a48060c0b1352843582839320de9"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-25-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "09fe580f2eeed6084a2698c5b1ac7989"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-26-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "3d53344f9ecf807319c976b13447012e"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-27-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9de9b9603383041846e92cce2c80214b"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-28-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "c28e0cc7963434357c86994803002931"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-29-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b4c4d08e3cbbb9979300c01b0eff5405"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-30-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "dd06508ebdd98fb4cf013e9e104bfd60"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-31-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0395f7535fd27cf243a36b4e69577d13"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-32-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "5b0f092d2be357a9d60651e2bb3b6b3b"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-33-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7330d282a3197f697df20754dde3258e"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-34-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "26de940e6a3fb8309d9f6677548b3fe6"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-35-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "3555791c84c21960ab049f3da5711703"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-36-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "802db43277313430ab1aef651d6b6b3c"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-37-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0f11bfaa3885ec34a954688383e2c877"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-38-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "513f664c123eab30d5318d41c02efd24"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-39-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "f131db705d148d4f18bd77306c67ddd1"
+    },
+    {
+      "table": "trade_ins",
+      "id": "phase2-p2-40-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "deb9149e14e32c4e7ad5909773c8afa2"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-01-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "dc186b47f30718a26550336a44d0f533"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-02-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "26e14fe43baffeb4ddf7555ff8fdd933"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-03-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b0c28eb8e37838eb96c0f7e168dc76b9"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-04-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "500421a0749c8f6f1cf7151af41626e9"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-05-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0b8af2628e3de2ec2d237c6dbf4e82d6"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-06-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "731b168da6950c01bb2d9c2444da3341"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-07-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "8ee67e77980ef7196d94bcad004d0357"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-08-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "8e4c102eb9a051c284ea8705bd375f8d"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-09-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "fae873f4207e23dd2de1d9b2ca4b21a2"
+    },
+    {
+      "table": "trade_ins",
+      "id": "pilot-p1-10-opportunity",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0a2e7ebfd00f718c79d2adf774f74ef1"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "ee463da0-0e67-4358-9b0a-93b6ac194f34",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "e7a9892968255572622ba39891a31d4b"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-01-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "31d9a5cf08a198b88bb45585d4fa23f7"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-02-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4713acfcc1a63d51afa0b540d9b7bc60"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-03-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "cca91636b84b216c0a261c1e4c6502a2"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-04-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "df76bb98197311cb13d0a1b7663da531"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-05-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "dd93aee6dcfe7bc92a53f85b13fa4db6"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-06-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "dcb8ec63f30663b5971dc77a5ec544c7"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-07-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "adfd60f509e500a7944c5f454e7b52ba"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-08-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9f233d485fcbff71d61310e29429daac"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-09-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "20be8e82c7949aaf0f014dd02058b347"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-10-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "55dadbec324ccc1b5d48e8a5179ebf58"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-11-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "540827f9e1a2382881fda117d35cc107"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-12-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "2f561ca6cf1896dae61d7f7ec0168e81"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-13-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9884db59576366ede93960367c62b9a5"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-14-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ceb2f4643ea2e452736fe68bfd367f29"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-15-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7719064385ebe76ff12ac140e8b15b5b"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-16-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "63362e96659357cdf078d506284e9d2e"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-17-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "805b19bf07c10f676d7bafe0004fdc44"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-18-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "e935fd169da0fde03b4d64edb4b12bd2"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-19-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "da4284dbad57b3cac1da6fc0cf059ead"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-20-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "d2068862bd8918af3d4e57b2fd347abc"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-21-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "5a33a85824df68fd65b18aee9cbcf3e6"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-22-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a30b2c6645680955651888868f06ee38"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-23-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "5d3e245769d23490627d9d5a90b7667d"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-24-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0229b7b01cff43203b5c757fd7e38cba"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-25-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4bfbf898d773c25f50e14f27659a0e13"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-26-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "d4f21b41e3d53b4fc5e35946c6149eff"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-27-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "3f50722beea6aebab432b2efdbbc04d5"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-28-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "58a4e33d8ded723512e5ea54867a9351"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-29-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "45e7549d88b04a20c495c0c49ce68ece"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-30-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b7fb4ca1ca02f07c21f53316fb9817dc"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-31-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "f96bd5222df5abeec4ce7712ee9ab2c2"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-32-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "fc7ba5d1c58bbe2c6b67a22bd2deda65"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-33-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0603122a18655766ee776da1e0d54f0e"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-34-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "f97142e470911256072f57eff014a44e"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-35-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "3eb87f71d0ad600c14803c6fa59025d4"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-36-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "fa4b0c80ff30240b2673c5daabf6a2b1"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-37-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ed8b05be0843c00f0de0f30134445a87"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-38-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7eea1745394799c5554601686232835a"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-39-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "2f4a8c84b7745f9db552d9b204bd8aa8"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "phase2-p2-40-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "905092a1371dc09363c62e0c17b95b44"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-01-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "bbdf6ba6a89090bb3b6f7fb29dd32ed7"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-02-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "38600cf3eb21d9baf01aacd3abc857ec"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-03-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "6d506e3518012e5a9a82910521506763"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-04-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "c70359ed430b1a30937dbdac1c630c5c"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-05-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "67f8edb5db688316c0407f1b5ce5134e"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-06-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "36c0dbdd23311315727f87805bdaea45"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-07-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ecc02e46781a1d06346d9280193a73cf"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-08-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "c1587acb91b3140deb1278dee3b69209"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-09-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "e85493c2b9a9634b762d8099ef1a5f75"
+    },
+    {
+      "table": "buyer_profiles",
+      "id": "pilot-p1-10-buyer",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "378c46046783ef721359ebea4a936596"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "3ed2fe56-0103-4efe-9d67-b11796136afd",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "398929abb4349b87a39c4c1f96575b14"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-01-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7c4355bc1c879a3b07cadf9f946278bf"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-02-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "3cda24a3d154e88b873e224e2ba7d3e7"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-03-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "908720b811308a0bc6bafd0678b95389"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-04-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7c483d99066f21ee9a9506e2837f0fc5"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-05-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ca5c4a697cea62b2cc77a05da69283fd"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-06-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "d2e8f982010b6c46652ed49dbc19f603"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-07-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "2ec4a7550563a2c0d9af60662d33e437"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-08-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "bc0f08bfd9fb9a9657f7fbd7ad7d6bee"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-09-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "c2760ad95b1035726249002ecb6559a9"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-10-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "80874f80da06b614fe95fdcb295cde7c"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-11-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "84f1e2227c406549677f7f778ac3792a"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-12-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a57816314ef1643e306c41ca03946928"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-13-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "fe83325bf6c6d29ba86242f5c64dfbec"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-14-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "6ca84a241c0d41d10ad2e22c94bbf49e"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-15-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a844e54946f4089b546612447b8f2418"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-16-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "29641965638c95d0e405bccff054db15"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-17-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9654c854cd3c45c301432bd25c8a0227"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-18-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "7a083965ca298da2480aa627c3985a02"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-19-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "220470aa37a0a5a95f6d7d72e7179a90"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-20-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ed7f218eb2d619e03ca46421cf9bc09f"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-21-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b0913206f83977734101a5560e2edb7d"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-22-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a5d524565f84e31c3ebaa86505695ac9"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-23-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "2780f1965e6b743b2367ccf5cddc6f57"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-24-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "8295e8ff801da215a4b8893e1b60609b"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-25-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9442988bf1d6511b40de32d7ded3db9c"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-26-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "0b695343f06ceb120a47718e799eb788"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-27-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "92ff138d38098daae83cd8caf00d5288"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-28-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "b0208a7ed5ef458ced7045823e4e9171"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-29-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "9aef6caa06d084b88c12403948364f5d"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-30-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "f6ccfeedbc660c897b4d128434915d16"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-31-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4388cc2eb68c1e62857dd77034cbb608"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-32-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "4830387181f214fcf443b8653446a453"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-33-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "90199016c675c2ef2e6e0c50a8c67b9a"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-34-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "411b8694a2a7c521405121c45bb2cdf2"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-35-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a4bc4aa9b5795944acf9e17831ac634d"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-36-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "42777d49e7a9b2a4fc8d56104732b6f4"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-37-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "c0982bdaa9a9c2340da98886c7d50811"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-38-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a0f9c1130e6d10511077fb280cbb0d0c"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-39-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "f4074ec1763b7ccb785f984ec1759c28"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "phase2-p2-40-case",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "ca4c9fba7ec2b3e8f517b6c907f26de3"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-01",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "12c1d072919fcca6a459d8c5e061a115"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-02",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "befb996cc5f9998eb3d5e6af11f7dad8"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-03",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "a85b419db9d7926718ee669697ec3a42"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-04",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "f7a010e707e0117d7cdcf270ee45fc49"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-05",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "74fe537748a169b91b347713e31c7707"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-06",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "99cc3568b64da0c6d49242a7a30c88ed"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-07",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "06872b7cd66275adeb8266f259d7047a"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-08",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "e348e0ccb6854e8a08ecdc8595e53444"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-09",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "bef4d4219b304cb816eba953ed4bf81b"
+    },
+    {
+      "table": "commercial_cases",
+      "id": "pilot-p1-10",
+      "previousTenantId": null,
+      "targetTenantId": "03824f9e-0924-435e-8b20-50b8ea52774b",
+      "businessRowHash": "1cb2dd8f5c3d2cb83702fd8f3c3fb8db"
+    }
+  ]
+}

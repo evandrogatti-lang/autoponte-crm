@@ -1,4 +1,5 @@
 import { getDb } from "../../../db";
+import { resolvePublicIntake } from "../../../lib/tenant-runtime";
 import { opportunityEvents, tradeIns } from "../../../db/schema";
 import { getFipeQuote, parseFipeSubmission } from "../../../lib/fipe";
 import { createMatchesForVehicle } from "../../../lib/match-engine";
@@ -19,6 +20,7 @@ function estimateTrade(referencePrice: number, mileage: number, condition: strin
 }
 export async function POST(request: Request) {
   try {
+    await resolvePublicIntake("trade_in");
     const form = await request.formData();
     const required = ["name", "whatsapp", "email", "city", "mileage", "condition", "desiredVehicle", "brandCode", "modelCode", "yearCode"];
     if (required.find((field) => !value(form, field))) return Response.json({ error: "Preencha todos os campos obrigatórios." }, { status: 400 });
@@ -39,8 +41,10 @@ export async function POST(request: Request) {
     const createdAt = new Date();
     const opportunity = { id, name: value(form, "name"), whatsapp: value(form, "whatsapp"), email: value(form, "email"), city: value(form, "city"), brand: fipe.brand, model: fipe.model, version: fipe.model, year: `${fipe.modelYear} ${fipe.fuel}`, mileage, condition: value(form, "condition"), desiredVehicle: value(form, "desiredVehicle"), referencePrice: fipe.price, fipeCode: fipe.fipeCode, fipeMonth: fipe.referenceMonth, estimatedMin: estimate.estimatedMin, estimatedMax: estimate.estimatedMax, photoKeys: JSON.stringify(photoKeys), status: "pre_evaluated", leadCategory, nextFollowUp, lastContactAt: "", notes: "", nextAction: "", consentAt: createdAt.toISOString(), createdAt, updatedAt: createdAt };
     const assessment = evaluateOpportunity(opportunitySignalsFromRow(opportunity), createdAt);
-    await getDb().transaction(async (tx) => {
+    const context = await getDb().transaction(async (tx) => {
+      const route = await resolvePublicIntake("trade_in", tx);
       await tx.insert(tradeIns).values({
+        tenantId: route.tenantId,
         ...opportunity,
         probability: assessment.dna.chance,
         confidenceScore: assessment.confidence.score,
@@ -53,9 +57,10 @@ export async function POST(request: Request) {
         recommendationRationale: assessment.recommendation.rationale,
       });
       await tx.insert(opportunityEvents).values({ id: crypto.randomUUID(), opportunityId: id, eventType: "created", title: "Oportunidade criada", description: `Avaliação online recebida para ${fipe.brand} ${fipe.model}.`, metadata: JSON.stringify({ source: "trade_in_form" }), actorName: "Sistema AutoPonte", actorEmail: "", createdAt });
+      return route;
     });
     let potentialBuyers = 0;
-    try { potentialBuyers = await createMatchesForVehicle({ sourceType: "trade_in", sourceId: id, label: `${fipe.brand} ${fipe.model}`, price: estimate.estimatedMax, city: value(form, "city"), year: fipe.modelYear, mileage, fuel: fipe.fuel }); } catch (error) { console.error("trade-in matching failed", error); }
+    try { potentialBuyers = await createMatchesForVehicle({ sourceType: "trade_in", sourceId: id, label: `${fipe.brand} ${fipe.model}`, price: estimate.estimatedMax, city: value(form, "city"), year: fipe.modelYear, mileage, fuel: fipe.fuel }, context.tenantId); } catch (error) { console.error("trade-in matching failed", error); }
     return Response.json({ protocol: id.slice(0, 8).toUpperCase(), fipeValue: fipe.price, fipeCode: fipe.fipeCode, fipeMonth: fipe.referenceMonth, ...estimate, potentialBuyers, nextStep: `Recebemos seu cadastro vinculado ao ${value(form, "desiredVehicle")}. A equipe AutoPonte revisará as fotos e entrará em contato.` }, { status: 201 });
   } catch (error) { console.error("trade-in submission failed", error); return Response.json({ error: "Não foi possível salvar a avaliação agora. Verifique a configuração do banco e do Storage." }, { status: 500 }); }
 }

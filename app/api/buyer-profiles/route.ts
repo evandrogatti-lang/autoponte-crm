@@ -1,4 +1,5 @@
 import { getDb } from "../../../db";
+import { resolvePublicIntake } from "../../../lib/tenant-runtime";
 import { buyerProfiles } from "../../../db/schema";
 import { catalogVehicles } from "../../../lib/catalog";
 import { createMatchesForBuyer, scoreBuyerVehicle, type BuyerProfile } from "../../../lib/match-engine";
@@ -26,14 +27,18 @@ export async function POST(request: Request) {
       fuel: clean(body.fuel) || "Indiferente", useCase: clean(body.useCase), purchaseTimeline: clean(body.purchaseTimeline) || "Sem urgência",
       alertsConsent: body.alertsConsent === true, consentAt,
     };
-    await getDb().insert(buyerProfiles).values(data);
+    const context = await getDb().transaction(async tx => {
+      const route = await resolvePublicIntake("buyer_profile", tx);
+      await tx.insert(buyerProfiles).values({ ...data, tenantId: route.tenantId });
+      return route;
+    });
     const profile: BuyerProfile = {
       id, name: data.name, whatsapp: data.whatsapp, email: data.email, city: data.city,
       budget_max: data.budgetMax, vehicle_types: data.vehicleTypes, preferred_models: data.preferredModels,
       min_year: data.minYear, max_mileage: data.maxMileage, transmission: data.transmission, fuel: data.fuel,
       use_case: data.useCase, purchase_timeline: data.purchaseTimeline, alerts_consent: data.alertsConsent ? 1 : 0,
     };
-    const existingMatches = await createMatchesForBuyer(profile);
+    const existingMatches = await createMatchesForBuyer(profile, context.tenantId);
     const recommendations = catalogVehicles.map((vehicle) => {
       const match = scoreBuyerVehicle(profile, {
         sourceType: "catalog", sourceId: String(vehicle.id), label: vehicle.name, price: vehicle.price,

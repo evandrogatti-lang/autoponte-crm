@@ -1,4 +1,5 @@
 import { getDb } from "../../db";
+import { resolveTenantContext } from "../tenant-runtime";
 import { opportunityEvents, tradeIns } from "../../db/schema";
 import { evaluateOpportunity } from "../ade";
 import { normalizeInternationalPhone, normalizeEmail } from "../contact";
@@ -138,6 +139,7 @@ export function parseManualOpportunityInput(input: unknown): ManualOpportunityIn
 }
 
 export async function createManualOpportunity(input: ManualOpportunityInput, actor: Actor) {
+  const context = await resolveTenantContext();
   const desiredProfile = await resolveDesiredVehicleProfile(input.desiredVehicle);
   const tradeInQuote = input.tradeIn.hasTradeIn && input.tradeIn.fipeCodes
     ? await resolveTradeInFipe(input.tradeIn.fipeCodes)
@@ -146,6 +148,7 @@ export async function createManualOpportunity(input: ManualOpportunityInput, act
   const id = crypto.randomUUID();
   const now = new Date();
   const base = {
+    tenantId: context.tenantId,
     id,
     name: input.name,
     whatsapp: input.whatsapp,
