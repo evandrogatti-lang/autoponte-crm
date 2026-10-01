@@ -19,6 +19,7 @@ type LegacyMatchRuleResult = {
   points: number;
   // Legacy explanation text; an eligible rule may intentionally have no reason.
   reason?: string;
+  budgetFit?: "within_budget" | "near_budget" | "outside_budget";
 };
 
 export type MatchRuleOutcome = "matched" | "not_matched" | "no_preference" | "missing_buyer_data" | "missing_vehicle_data" | "not_applicable";
@@ -70,8 +71,11 @@ export function explainMatchRules(results: readonly MatchRuleResult[], coverage:
     const label = labels[result.ruleId];
     const item = (text: string): MatchExplanationItem => ({ ruleId: result.ruleId, outcome: result.outcome, text: `${label}: ${text}` });
     switch (result.outcome) {
-      case "matched": explanation.positives.push(item("compatível com a preferência informada.")); break;
-      case "not_matched": explanation.negatives.push(item("não compatível com a preferência informada.")); break;
+      case "matched": explanation.positives.push(item(result.ruleId === "budget" && result.budgetFit === "within_budget"
+        ? "dentro do orçamento informado." : result.ruleId === "budget" && result.budgetFit === "near_budget"
+          ? "acima do valor informado, mas próximo do orçamento." : "compatível com a preferência informada.")); break;
+      case "not_matched": explanation.negatives.push(item(result.ruleId === "budget" && result.budgetFit === "outside_budget"
+        ? "acima do orçamento informado." : "não compatível com a preferência informada.")); break;
       case "no_preference": explanation.neutral.push(item("sem preferência do comprador.")); break;
       case "missing_buyer_data": explanation.missingData.push(item("dados do comprador ausentes ou inválidos.")); break;
       case "missing_vehicle_data": explanation.missingData.push(item("dados do veículo indisponíveis.")); break;
@@ -118,9 +122,9 @@ function normalize(value: string) { return value.normalize("NFD").replace(/[\u03
 function parseTypes(value: string) { try { return JSON.parse(value || "[]") as string[]; } catch { return []; } }
 function guessedType(label: string) { const name = normalize(label); if (name.includes("suv")) return "SUV"; if (name.includes("sedan") || name.includes("civic") || name.includes("corolla")) return "Sedan"; if (name.includes("hatch")) return "Hatch"; if (name.includes("pickup") || name.includes("picape")) return "Picape"; return "Outro"; }
 function evaluateBudget(price: number, budgetMax: number): LegacyMatchRuleResult {
-  if (price <= budgetMax) return { ruleId: "budget", eligible: true, points: 25, reason: "dentro do orçamento" };
-  if (price <= budgetMax * 1.08) return { ruleId: "budget", eligible: true, points: 12, reason: "próximo do orçamento" };
-  return { ruleId: "budget", eligible: false, points: 0 };
+  if (price <= budgetMax) return { ruleId: "budget", eligible: true, points: 25, reason: "dentro do orçamento", budgetFit: "within_budget" };
+  if (price <= budgetMax * 1.08) return { ruleId: "budget", eligible: true, points: 12, reason: "próximo do orçamento", budgetFit: "near_budget" };
+  return { ruleId: "budget", eligible: false, points: 0, budgetFit: "outside_budget" };
 }
 function evaluateYear(year: number, minYear: number): LegacyMatchRuleResult {
   if (!minYear || year >= minYear) return { ruleId: "year", eligible: true, points: 15, reason: "ano compatível" };

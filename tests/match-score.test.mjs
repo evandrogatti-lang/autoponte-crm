@@ -476,3 +476,82 @@ test("AP-MATCH-012: explanation adapter leaves legacy score, reasons and public 
   assert.equal(before.score, 28);
   assert.deepEqual(Array.from(before.reasons), ["categoria preferida"]);
 });
+
+// AP-MATCH-013: exercise scoring, semantics, coverage and explanations together.
+const completeVehicle = { price: 10000, type: "SUV", year: 2020, mileage: 10000,
+  city: "Cidade A", transmission: "Manual", useCases: ["Trabalho"] };
+const completeReasons = ["dentro do orçamento", "categoria preferida", "ano compatível",
+  "quilometragem compatível", "na mesma cidade", "câmbio desejado", "adequado ao uso informado"];
+const scenarioCases = [
+  { name: "strong complete-data match", profile: {}, vehicle: {}, score: 95, reasons: completeReasons,
+    outcomes: ["matched", "matched", "matched", "matched", "matched", "matched", "matched"], counts: [7, 7, 0, 0, 0, 0, 0] },
+  { name: "high legacy score with incomplete evidence", profile: {}, vehicle: { price: 0, transmission: undefined }, score: 95, reasons: completeReasons,
+    outcomes: ["missing_vehicle_data", "matched", "matched", "matched", "matched", "missing_vehicle_data", "matched"], counts: [5, 5, 0, 0, 0, 2, 0] },
+  { name: "several no-preference fields", profile: { vehicle_types: "[]", min_year: 0, max_mileage: 0, transmission: "Indiferente", use_case: "" }, vehicle: {}, score: 88, reasons: completeReasons.slice(0, 5),
+    outcomes: ["matched", "no_preference", "no_preference", "no_preference", "matched", "no_preference", "no_preference"], counts: [2, 2, 0, 5, 0, 0, 0] },
+  { name: "inferred vehicle category", profile: {}, vehicle: { type: undefined, label: "SUV Sintético" }, score: 95, reasons: completeReasons,
+    outcomes: ["matched", "matched", "matched", "matched", "matched", "matched", "matched"], counts: [7, 7, 0, 0, 0, 0, 1] },
+  { name: "missing buyer budget", profile: { budget_max: Number.NaN }, vehicle: {}, score: 70, reasons: completeReasons.slice(1),
+    outcomes: ["missing_buyer_data", "matched", "matched", "matched", "matched", "matched", "matched"], counts: [6, 6, 0, 0, 1, 0, 0] },
+  { name: "missing vehicle year with meaningful preference", profile: {}, vehicle: { year: 0 }, score: 80, reasons: completeReasons.filter((_, index) => index !== 2),
+    outcomes: ["matched", "matched", "missing_vehicle_data", "matched", "matched", "matched", "matched"], counts: [6, 6, 0, 0, 0, 1, 0] },
+  { name: "mixed positive and negative rules", profile: {}, vehicle: { price: 10801, year: 2010, transmission: "Automático" }, score: 47,
+    reasons: ["categoria preferida", "quilometragem compatível", "na mesma cidade", "adequado ao uso informado"],
+    outcomes: ["not_matched", "matched", "not_matched", "matched", "matched", "not_matched", "matched"], counts: [7, 4, 3, 0, 0, 0, 0] },
+  { name: "borderline moderate compatibility", profile: {}, vehicle: { price: 10800, mileage: 20000, city: "Cidade B", transmission: "Automático", useCases: ["Lazer"] }, score: 47,
+    reasons: ["próximo do orçamento", "categoria preferida", "ano compatível"],
+    outcomes: ["matched", "matched", "matched", "not_matched", "not_matched", "not_matched", "not_matched"], counts: [7, 3, 4, 0, 0, 0, 0] },
+];
+for (const scenario of scenarioCases) {
+  test(`AP-MATCH-013: ${scenario.name}`, () => {
+    const profile = { ...baseProfile, ...scenario.profile };
+    const vehicle = { ...baseVehicle, ...completeVehicle, ...scenario.vehicle };
+    const before = structuredClone({ profile, vehicle });
+    const results = Array.from(evaluateBuyerVehicleRules(profile, vehicle), (result) => ({ ...result }));
+    const coverage = { ...aggregateMatchCoverage(results) };
+    const explanation = plainExplanation(results);
+    const legacy = scoreBuyerVehicle(profile, vehicle);
+    assert.equal(legacy.score, scenario.score);
+    assert.deepEqual(Array.from(legacy.reasons), scenario.reasons);
+    assert.deepEqual(Object.keys(legacy), ["score", "reasons"]);
+    assert.deepEqual(results.map((result) => result.outcome), scenario.outcomes);
+    const [evaluatedRules, matchedRules, notMatchedRules, neutralRules, missingBuyerDataRules, missingVehicleDataRules, inferredDataRules] = scenario.counts;
+    assert.deepEqual(coverage, { totalRules: 7, evaluatedRules, matchedRules, notMatchedRules, neutralRules,
+      missingBuyerDataRules, missingVehicleDataRules, notApplicableRules: 0, inferredDataRules });
+    assert.deepEqual(explanation.coverage, coverage);
+    const categories = { positives: ["matched"], negatives: ["not_matched"], neutral: ["no_preference"],
+      missingData: ["missing_buyer_data", "missing_vehicle_data"], notApplicable: ["not_applicable"] };
+    for (const [category, outcomes] of Object.entries(categories)) {
+      assert.deepEqual(explanation[category].map((item) => item.ruleId),
+        results.filter((result) => outcomes.includes(result.outcome)).map((result) => result.ruleId));
+      assert.ok(explanation[category].every((item) => outcomes.includes(item.outcome)));
+    }
+    assert.equal(explanation.inferredData.length, inferredDataRules);
+    if (inferredDataRules) {
+      assert.equal(results[1].vehicleDataSource, "inferred");
+      assert.equal(explanation.inferredData[0].ruleId, "model_category");
+      assert.equal(explanation.inferredData[0].text, "Modelo/categoria: dados do veículo inferidos do rótulo.");
+    }
+    assert.equal(explanation.summary, `${matchedRules} regras compatíveis; ${notMatchedRules} regras não compatíveis; ${evaluatedRules} de 7 regras avaliadas com dados disponíveis.`);
+    assert.deepEqual(plainExplanation(results), explanation);
+    assert.deepEqual({ profile, vehicle }, before);
+  });
+}
+for (const [price, budgetFit, points, reason, text] of [
+  [9999, "within_budget", 25, "dentro do orçamento", "Orçamento: dentro do orçamento informado."],
+  [10000, "within_budget", 25, "dentro do orçamento", "Orçamento: dentro do orçamento informado."],
+  [10001, "near_budget", 12, "próximo do orçamento", "Orçamento: acima do valor informado, mas próximo do orçamento."],
+  [10800, "near_budget", 12, "próximo do orçamento", "Orçamento: acima do valor informado, mas próximo do orçamento."],
+  [10801, "outside_budget", 0, undefined, "Orçamento: acima do orçamento informado."],
+]) {
+  test(`AP-MATCH-013: budget wording at price ${price}`, () => {
+    const results = semanticResults({}, { price });
+    assert.equal(results[0].budgetFit, budgetFit);
+    assert.equal(results[0].points, points);
+    assert.equal(results[0].reason, reason);
+    const explanation = plainExplanation(results);
+    const category = points ? explanation.positives : explanation.negatives;
+    assert.equal(category.find((item) => item.ruleId === "budget").text, text);
+    expectMatch({}, { price }, points, reason === undefined ? [] : [reason]);
+  });
+}
