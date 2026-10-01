@@ -194,12 +194,31 @@ export function evaluateBuyerVehicleRules(profile: BuyerProfile, vehicle: Matcha
   ];
 }
 
-// Compatibility boundary: callers continue receiving exactly { score, reasons }.
-export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehicle) {
+export type MatchEvaluation = {
+  score: number;
+  reasons: string[];
+  ruleResults: MatchRuleResult[];
+  coverage: MatchCoverage;
+  explanation: MatchExplanation;
+};
+
+function aggregateLegacyScore(ruleResults: readonly MatchRuleResult[]) {
   let score = 0; const reasons: string[] = [];
-  for (const result of evaluateBuyerVehicleRules(profile, vehicle)) {
+  for (const result of ruleResults) {
     score += result.points;
     if (result.reason !== undefined) reasons.push(result.reason);
   }
   return { score: Math.min(100, score), reasons };
+}
+
+// One evaluation supplies every part of the internal consumer contract.
+export function evaluateBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehicle): MatchEvaluation {
+  const ruleResults = evaluateBuyerVehicleRules(profile, vehicle);
+  const coverage = aggregateMatchCoverage(ruleResults);
+  return { ...aggregateLegacyScore(ruleResults), ruleResults, coverage, explanation: explainMatchRules(ruleResults, coverage) };
+}
+
+// Compatibility boundary: callers continue receiving exactly { score, reasons }.
+export function scoreBuyerVehicle(profile: BuyerProfile, vehicle: MatchableVehicle) {
+  return aggregateLegacyScore(evaluateBuyerVehicleRules(profile, vehicle));
 }

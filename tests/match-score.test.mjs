@@ -16,6 +16,9 @@ const declarations = new Map([
   ["MatchExplanation", ts.SyntaxKind.TypeAliasDeclaration],
   ["explainMatchRules", ts.SyntaxKind.FunctionDeclaration],
   ["MatchRuleResult", ts.SyntaxKind.TypeAliasDeclaration],
+  ["MatchEvaluation", ts.SyntaxKind.TypeAliasDeclaration],
+  ["aggregateLegacyScore", ts.SyntaxKind.FunctionDeclaration],
+  ["evaluateBuyerVehicle", ts.SyntaxKind.FunctionDeclaration],
   ["usableText", ts.SyntaxKind.FunctionDeclaration],
   ["usableNumber", ts.SyntaxKind.FunctionDeclaration],
   ["semanticResult", ts.SyntaxKind.FunctionDeclaration],
@@ -38,7 +41,7 @@ const declarations = new Map([
 // Select actual declarations, never imports or database-writing functions.
 // This is a dependency guard for this known source, not a general JS sandbox.
 function isolateScorer(text, entryPoint = "scoreBuyerVehicle") {
-  assert.ok(["scoreBuyerVehicle", "evaluateBuyerVehicleRules", "aggregateMatchCoverage", "explainMatchRules"].includes(entryPoint));
+  assert.ok(["scoreBuyerVehicle", "evaluateBuyerVehicleRules", "aggregateMatchCoverage", "explainMatchRules", "evaluateBuyerVehicle"].includes(entryPoint));
   const parsed = ts.createSourceFile("match.ts", text, ts.ScriptTarget.ES2022, true);
   assert.equal(parsed.parseDiagnostics.length, 0, "source must parse");
   const selected = [];
@@ -555,3 +558,50 @@ for (const [price, budgetFit, points, reason, text] of [
     expectMatch({}, { price }, points, reason === undefined ? [] : [reason]);
   });
 }
+
+const evaluateBuyerVehicle = isolateScorer(source, "evaluateBuyerVehicle");
+for (const scenario of scenarioCases) {
+  test(`AP-MATCH-014: aggregate consumer contract for ${scenario.name}`, () => {
+    const profile = { ...baseProfile, ...scenario.profile };
+    const vehicle = { ...baseVehicle, ...completeVehicle, ...scenario.vehicle };
+    const before = structuredClone({ profile, vehicle });
+    const result = JSON.parse(JSON.stringify(evaluateBuyerVehicle(profile, vehicle)));
+    const legacy = scoreBuyerVehicle(profile, vehicle);
+    const ruleResults = Array.from(evaluateBuyerVehicleRules(profile, vehicle), (item) => ({ ...item }));
+    const coverage = { ...aggregateMatchCoverage(ruleResults) };
+    assert.deepEqual(Object.keys(result), ["score", "reasons", "ruleResults", "coverage", "explanation"]);
+    assert.equal(result.score, legacy.score);
+    assert.equal(result.score, scenario.score);
+    assert.deepEqual(result.reasons, Array.from(legacy.reasons));
+    assert.deepEqual(result.reasons, scenario.reasons);
+    assert.deepEqual(result.ruleResults, ruleResults);
+    assert.deepEqual(result.coverage, coverage);
+    assert.deepEqual(result.explanation, plainExplanation(ruleResults));
+    assert.deepEqual(JSON.parse(JSON.stringify(evaluateBuyerVehicle(profile, vehicle))), result);
+    assert.deepEqual({ profile, vehicle }, before);
+    assert.deepEqual(Object.keys(legacy), ["score", "reasons"]);
+  });
+}
+
+test("AP-MATCH-014: single evaluation flow preserves score cap and inferred provenance", () => {
+  let categoryReads = 0;
+  const profile = { ...baseProfile, preferred_models: "Inventado",
+    get vehicle_types() { categoryReads += 1; return '["SUV"]'; } };
+  const vehicle = { ...baseVehicle, ...completeVehicle };
+  const result = evaluateBuyerVehicle(profile, vehicle);
+  // Existing evaluation reads categories once for parsing and once for semantic validity.
+  assert.equal(categoryReads, 2);
+  assert.equal(result.score, 100);
+  assert.equal(result.ruleResults.reduce((sum, item) => sum + item.points, 0), 100);
+  assert.equal(result.ruleResults[1].vehicleDataSource, "inferred");
+  assert.equal(result.coverage.inferredDataRules, 1);
+  assert.equal(result.explanation.inferredData[0].ruleId, "model_category");
+});
+
+test("AP-MATCH-014: malformed category exceptions remain compatible", () => {
+  for (const vehicle_types of ["null", "{}", '"SUV"', "[1]"]) {
+    const profile = { ...baseProfile, vehicle_types };
+    assert.throws(() => evaluateBuyerVehicle(profile, baseVehicle));
+    assert.throws(() => scoreBuyerVehicle(profile, baseVehicle));
+  }
+});
