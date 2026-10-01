@@ -43,8 +43,8 @@ Intake-triggered matching scopes BuyerProfiles/Leads to the resolved Tenant. Ten
 - `scripts/validate-crm-tenant-ownership.sql` executed against staging — PASS. It checks Case coherence, cross-tenant Customer/Lead rejection, tenantless BuyerProfile rejection, persisted public routing and inactive-route failure, all with rollback.
 - Post-probe staging checks — four counts remain 51, both routes remain active with null Store, zero Case tenant mismatches, zero probe rows.
 
-No HTTP Preview deployment was made or claimed. Endpoint/resolver code was exercised through focused tests; database behavior was verified directly in staging. An old deployed Preview still runs old application code until this checkpoint is deployed, and its public/manual inserts cannot satisfy the new NOT NULL constraint. Coordinate Preview rollout before intake use; do not work around this with a default Tenant.
+At implementation commit time, HTTP Preview validation was pending. The implementation checkpoint was subsequently deployed and the required public and authenticated runtime checks passed. See AP-CRM-003D1D-PREVIEW-VALIDATION.md for deployment identity, created fixture IDs and final invariants.
 
 ## Checkpoint status
 
-Database backfill and repository implementation are complete. The approved checkpoint uses scoped lint validation: zero changed-file errors. All required checks were reconfirmed before commit. Repository-wide lint debt is recorded separately in AP-CRM-003D1D-LINT-DEBT.md. The existing untracked Negotiation design is excluded. Preview deployment and runtime validation are the mandatory next gate; AP-CRM-003D remains on hold.
+Database backfill and repository implementation are complete. The approved checkpoint uses scoped lint validation: zero changed-file errors. All required checks were reconfirmed before commit. Repository-wide lint debt is recorded separately in AP-CRM-003D1D-LINT-DEBT.md. The existing untracked Negotiation design is excluded. Preview deployment and runtime validation subsequently passed. Status: READY_TO_RESUME_AP-CRM-003D. No subsequent slice was started.
