@@ -9,7 +9,15 @@ const declarations = new Map([
   ["BuyerProfile", ts.SyntaxKind.TypeAliasDeclaration],
   ["MatchableVehicle", ts.SyntaxKind.TypeAliasDeclaration],
   ["MatchRuleId", ts.SyntaxKind.TypeAliasDeclaration],
+  ["LegacyMatchRuleResult", ts.SyntaxKind.TypeAliasDeclaration],
+  ["MatchRuleOutcome", ts.SyntaxKind.TypeAliasDeclaration],
+  ["MatchCoverage", ts.SyntaxKind.TypeAliasDeclaration],
   ["MatchRuleResult", ts.SyntaxKind.TypeAliasDeclaration],
+  ["usableText", ts.SyntaxKind.FunctionDeclaration],
+  ["usableNumber", ts.SyntaxKind.FunctionDeclaration],
+  ["semanticResult", ts.SyntaxKind.FunctionDeclaration],
+  ["validCategoryInput", ts.SyntaxKind.FunctionDeclaration],
+  ["aggregateMatchCoverage", ts.SyntaxKind.FunctionDeclaration],
   ["normalize", ts.SyntaxKind.FunctionDeclaration],
   ["parseTypes", ts.SyntaxKind.FunctionDeclaration],
   ["guessedType", ts.SyntaxKind.FunctionDeclaration],
@@ -27,7 +35,7 @@ const declarations = new Map([
 // Select actual declarations, never imports or database-writing functions.
 // This is a dependency guard for this known source, not a general JS sandbox.
 function isolateScorer(text, entryPoint = "scoreBuyerVehicle") {
-  assert.ok(["scoreBuyerVehicle", "evaluateBuyerVehicleRules"].includes(entryPoint));
+  assert.ok(["scoreBuyerVehicle", "evaluateBuyerVehicleRules", "aggregateMatchCoverage"].includes(entryPoint));
   const parsed = ts.createSourceFile("match.ts", text, ts.ScriptTarget.ES2022, true);
   assert.equal(parsed.parseDiagnostics.length, 0, "source must parse");
   const selected = [];
@@ -57,7 +65,7 @@ function isolateScorer(text, entryPoint = "scoreBuyerVehicle") {
       const propertyName = (ts.isPropertyAccessExpression(parent) && parent.name === node)
         || ((ts.isPropertySignature(parent) || ts.isPropertyAssignment(parent)) && parent.name === node);
       if (!propertyName && !checker.getSymbolAtLocation(node)) {
-        assert.ok(["JSON", "Math"].includes(node.text), `unexpected dependency: ${node.text}`);
+        assert.ok(["JSON", "Math", "Number", "Array"].includes(node.text), `unexpected dependency: ${node.text}`);
       }
     }
     ts.forEachChild(node, guard);
@@ -206,7 +214,9 @@ function structuredResults(profileChanges = {}, vehicleChanges = {}) {
   assert.deepEqual(Object.keys(legacy), ["score", "reasons"]);
   assert.equal(legacy.score, Math.min(100, plain.reduce((sum, result) => sum + result.points, 0)));
   assert.deepEqual(Array.from(legacy.reasons), plain.flatMap((result) => result.reason === undefined ? [] : [result.reason]));
-  return plain;
+  // AP-MATCH-010's assertions continue checking the original fields independently.
+  return plain.map(({ ruleId, eligible, points, reason }) => reason === undefined
+    ? { ruleId, eligible, points } : { ruleId, eligible, points, reason });
 }
 
 test("AP-MATCH-010: all eligible rules expose exact contributions and ordered explanations", () => {
@@ -294,4 +304,107 @@ test("AP-MATCH-010: malformed category shapes retain existing exceptions", () =>
     assert.throws(() => evaluateBuyerVehicleRules(profile, baseVehicle));
     assert.throws(() => scoreBuyerVehicle(profile, baseVehicle));
   }
+});
+
+const aggregateMatchCoverage = isolateScorer(source, "aggregateMatchCoverage");
+function semanticResults(profileChanges = {}, vehicleChanges = {}) {
+  return Array.from(evaluateBuyerVehicleRules({ ...baseProfile, ...profileChanges },
+    { ...baseVehicle, ...vehicleChanges }), (result) => ({ ...result }));
+}
+
+test("AP-MATCH-011: every rule has a semantic outcome independent of legacy eligibility", () => {
+  const rejected = semanticResults({}, { useCases: ["Lazer"] });
+  assert.deepEqual(rejected.map((result) => result.outcome), ruleIds.map(() => "not_matched"));
+  const matched = semanticResults({ preferred_models: "Inventado" }, {
+    price: 10000, year: 2020, mileage: 10000, city: "Cidade A", transmission: "Manual", useCases: ["Trabalho"],
+  });
+  assert.deepEqual(matched.map((result) => result.outcome), ruleIds.map(() => "matched"));
+  assert.deepEqual({ ...aggregateMatchCoverage(matched) }, {
+    totalRules: 7, evaluatedRules: 7, matchedRules: 7, notMatchedRules: 0, neutralRules: 0,
+    missingBuyerDataRules: 0, missingVehicleDataRules: 0, notApplicableRules: 0, inferredDataRules: 1,
+  });
+});
+
+test("AP-MATCH-011: approved sentinels are neutral even with unavailable vehicle data", () => {
+  // The legacy empty preference short-circuits even an unusable vehicle collection.
+  assert.equal(semanticResults({ use_case: "" }, { useCases: {} })[6].outcome, "no_preference");
+  for (const max_mileage of [0, 999999]) {
+    for (const vehicle_types of ["[]", ""]) {
+      const profile = { min_year: 0, max_mileage, vehicle_types, use_case: "", transmission: "Indiferente" };
+      const vehicle = { label: "", type: undefined, year: 0, mileage: Number.NaN, transmission: undefined, useCases: undefined };
+      const results = semanticResults(profile, vehicle);
+      assert.deepEqual([1, 2, 3, 5, 6].map((index) => results[index].outcome), Array(5).fill("no_preference"));
+      assert.deepEqual([1, 2, 5, 6].map((index) => results[index].points), [20, 15, 8, 0]);
+      const score = scoreBuyerVehicle({ ...baseProfile, ...profile }, { ...baseVehicle, ...vehicle });
+      assert.equal(score.score, max_mileage === 0 ? 55 : 43);
+      assert.deepEqual(Object.keys(score), ["score", "reasons"]);
+      const coverage = aggregateMatchCoverage(results);
+      assert.equal(coverage.neutralRules, 5);
+      assert.equal(coverage.missingVehicleDataRules, 0);
+    }
+  }
+});
+
+test("AP-MATCH-011: missing buyer data wins over missing vehicle data", () => {
+  const results = semanticResults({ budget_max: Number.NaN, min_year: -1, max_mileage: -1,
+    city: "", transmission: "", use_case: " ", vehicle_types: "broken JSON" },
+  { price: 0, year: 0, mileage: -1, city: "", transmission: undefined, useCases: undefined, label: "", type: undefined });
+  assert.deepEqual(results.map((result) => result.outcome), ruleIds.map(() => "missing_buyer_data"));
+  assert.equal(aggregateMatchCoverage(results).missingBuyerDataRules, 7);
+  assert.equal(results[1].points, 20); // Invalid JSON still receives legacy unrestricted-category points.
+  assert.equal(results[5].points, 8); // Missing transmission remains permissive numerically.
+});
+
+test("AP-MATCH-011: meaningful preferences with missing vehicle facts are classified separately", () => {
+  const results = semanticResults({}, { price: 0, year: 0, mileage: Number.NaN,
+    city: "", transmission: "", useCases: [], label: "", type: undefined });
+  assert.deepEqual(results.map((result) => result.outcome), ruleIds.map(() => "missing_vehicle_data"));
+  assert.equal(results[0].points, 25);
+  assert.equal(results[5].points, 8);
+  assert.equal(aggregateMatchCoverage(results).missingVehicleDataRules, 7);
+  assert.equal(semanticResults({}, { mileage: 0 })[3].outcome, "matched"); // Zero mileage is usable.
+});
+
+test("AP-MATCH-011: inferred categories count as evaluated and preserve their source", () => {
+  const inferred = semanticResults({}, { type: undefined, label: "SUV inventado" });
+  assert.equal(inferred[1].outcome, "matched");
+  assert.equal(inferred[1].vehicleDataSource, "inferred");
+  assert.equal(aggregateMatchCoverage(inferred).inferredDataRules, 1);
+  const explicit = semanticResults({}, { type: "SUV", label: "Hatch" });
+  assert.equal(explicit[1].outcome, "matched");
+  assert.equal(explicit[1].vehicleDataSource, "explicit");
+  assert.equal(aggregateMatchCoverage(explicit).inferredDataRules, 0);
+  const unknown = semanticResults({}, { type: undefined, label: "Veículo inventado" });
+  assert.equal(unknown[1].outcome, "not_matched");
+  assert.equal(unknown[1].vehicleDataSource, "inferred");
+});
+
+test("AP-MATCH-011: unrestricted category fallback does not claim a requested model matched", () => {
+  const results = semanticResults({ vehicle_types: "[]", preferred_models: "Ausente" });
+  assert.equal(results[1].outcome, "not_matched");
+  assert.equal(results[1].eligible, true);
+  assert.equal(results[1].points, 20);
+  assert.equal(results[1].reason, "categoria preferida");
+  assert.equal(aggregateMatchCoverage(results).neutralRules, 0);
+  assert.equal(semanticResults({ vehicle_types: "[]", preferred_models: "Inventado" })[1].outcome, "matched");
+});
+
+test("AP-MATCH-011: coverage is pure, deterministic, exhaustive and handles empty/not-applicable input", () => {
+  const results = semanticResults({ min_year: 0, transmission: "Indiferente" }, { city: "", useCases: ["Lazer"] });
+  const before = structuredClone(results);
+  results.forEach(Object.freeze);
+  Object.freeze(results);
+  const first = { ...aggregateMatchCoverage(results) };
+  assert.deepEqual({ ...aggregateMatchCoverage(results) }, first);
+  assert.deepEqual(results, before);
+  assert.equal(first.totalRules, first.evaluatedRules + first.neutralRules + first.missingBuyerDataRules
+    + first.missingVehicleDataRules + first.notApplicableRules);
+  assert.equal(first.evaluatedRules, first.matchedRules + first.notMatchedRules);
+  assert.equal(first.neutralRules, 2);
+  assert.equal(first.missingVehicleDataRules, 1);
+  assert.deepEqual({ ...aggregateMatchCoverage([]) }, { totalRules: 0, evaluatedRules: 0, matchedRules: 0,
+    notMatchedRules: 0, neutralRules: 0, missingBuyerDataRules: 0, missingVehicleDataRules: 0, notApplicableRules: 0, inferredDataRules: 0 });
+  assert.equal(aggregateMatchCoverage([{ ruleId: "use_case", eligible: false, points: 0, outcome: "not_applicable" }]).notApplicableRules, 1);
+  // None of the seven current rules has a product-approved not-applicable branch.
+  assert.ok(results.every((result) => result.outcome !== "not_applicable"));
 });
