@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../db";
 import { buyerProfiles, consignments, tradeIns, vehicleMatches } from "../db/schema";
 
-import { scoreBuyerVehicle, type BuyerProfile, type MatchableVehicle } from "./match-score";
+import { evaluateBuyerVehicle, scoreBuyerVehicle, type BuyerProfile, type MatchableVehicle } from "./match-score";
 export { scoreBuyerVehicle, type BuyerProfile, type MatchableVehicle } from "./match-score";
 
 function draftMessage(profile: BuyerProfile, vehicle: MatchableVehicle) {
@@ -14,7 +14,7 @@ function toLegacyProfile(row: typeof buyerProfiles.$inferSelect): BuyerProfile {
 }
 export async function createMatchesForVehicle(vehicle: MatchableVehicle) {
   const db = getDb(); const profiles = await db.select().from(buyerProfiles).where(eq(buyerProfiles.status, "active")); let created = 0;
-  for (const row of profiles) { const profile = toLegacyProfile(row); const match = scoreBuyerVehicle(profile, vehicle); if (match.score < 55) continue;
+  for (const row of profiles) { const profile = toLegacyProfile(row); const match = evaluateBuyerVehicle(profile, vehicle); if (match.score < 55) continue;
     await db.insert(vehicleMatches).values({ id: crypto.randomUUID(), buyerProfileId: profile.id, sourceType: vehicle.sourceType, sourceId: vehicle.sourceId, vehicleLabel: vehicle.label, vehiclePrice: vehicle.price, score: match.score, reasons: JSON.stringify(match.reasons), messageDraft: draftMessage(profile, vehicle), status: profile.alerts_consent ? "review_pending" : "internal_only" }).onConflictDoNothing(); created += 1; }
   return created;
 }
