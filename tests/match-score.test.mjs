@@ -12,6 +12,9 @@ const declarations = new Map([
   ["LegacyMatchRuleResult", ts.SyntaxKind.TypeAliasDeclaration],
   ["MatchRuleOutcome", ts.SyntaxKind.TypeAliasDeclaration],
   ["MatchCoverage", ts.SyntaxKind.TypeAliasDeclaration],
+  ["MatchExplanationItem", ts.SyntaxKind.TypeAliasDeclaration],
+  ["MatchExplanation", ts.SyntaxKind.TypeAliasDeclaration],
+  ["explainMatchRules", ts.SyntaxKind.FunctionDeclaration],
   ["MatchRuleResult", ts.SyntaxKind.TypeAliasDeclaration],
   ["usableText", ts.SyntaxKind.FunctionDeclaration],
   ["usableNumber", ts.SyntaxKind.FunctionDeclaration],
@@ -35,7 +38,7 @@ const declarations = new Map([
 // Select actual declarations, never imports or database-writing functions.
 // This is a dependency guard for this known source, not a general JS sandbox.
 function isolateScorer(text, entryPoint = "scoreBuyerVehicle") {
-  assert.ok(["scoreBuyerVehicle", "evaluateBuyerVehicleRules", "aggregateMatchCoverage"].includes(entryPoint));
+  assert.ok(["scoreBuyerVehicle", "evaluateBuyerVehicleRules", "aggregateMatchCoverage", "explainMatchRules"].includes(entryPoint));
   const parsed = ts.createSourceFile("match.ts", text, ts.ScriptTarget.ES2022, true);
   assert.equal(parsed.parseDiagnostics.length, 0, "source must parse");
   const selected = [];
@@ -407,4 +410,69 @@ test("AP-MATCH-011: coverage is pure, deterministic, exhaustive and handles empt
   assert.equal(aggregateMatchCoverage([{ ruleId: "use_case", eligible: false, points: 0, outcome: "not_applicable" }]).notApplicableRules, 1);
   // None of the seven current rules has a product-approved not-applicable branch.
   assert.ok(results.every((result) => result.outcome !== "not_applicable"));
+});
+
+const explainMatchRules = isolateScorer(source, "explainMatchRules");
+const plainExplanation = (results) => JSON.parse(JSON.stringify(explainMatchRules(results, aggregateMatchCoverage(results))));
+
+test("AP-MATCH-012: semantic outcomes select explanations independently of points and legacy text", () => {
+  const outcomes = ["matched", "not_matched", "no_preference", "missing_buyer_data", "missing_vehicle_data", "not_applicable", "matched"];
+  const results = ruleIds.map((ruleId, index) => ({ ruleId, outcome: outcomes[index], eligible: false,
+    points: 0, reason: "unrelated legacy text", ...(index === 1 ? { vehicleDataSource: "inferred" } : {}) }));
+  const explanation = plainExplanation(results);
+  assert.deepEqual(explanation.positives.map((item) => item.ruleId), ["budget", "use_case"]);
+  assert.deepEqual(explanation.negatives.map((item) => item.ruleId), ["model_category"]);
+  assert.deepEqual(explanation.neutral.map((item) => item.ruleId), ["year"]);
+  assert.deepEqual(explanation.missingData.map((item) => item.outcome), ["missing_buyer_data", "missing_vehicle_data"]);
+  assert.deepEqual(explanation.notApplicable.map((item) => item.ruleId), ["transmission"]);
+  assert.deepEqual(explanation.inferredData.map((item) => item.ruleId), ["model_category"]);
+  assert.equal(explanation.positives[0].text, "Orçamento: compatível com a preferência informada.");
+  assert.equal(explanation.negatives[0].text, "Modelo/categoria: não compatível com a preferência informada.");
+  assert.equal(explanation.neutral[0].text, "Ano mínimo: sem preferência do comprador.");
+  assert.equal(explanation.missingData[0].text, "Quilometragem máxima: dados do comprador ausentes ou inválidos.");
+  assert.equal(explanation.missingData[1].text, "Cidade: dados do veículo indisponíveis.");
+  assert.equal(explanation.inferredData[0].text, "Modelo/categoria: dados do veículo inferidos do rótulo.");
+  assert.equal(explanation.notApplicable[0].text, "Câmbio: regra não aplicável.");
+});
+
+test("AP-MATCH-012: explanations preserve input order and are pure and deterministic", () => {
+  const results = semanticResults({ preferred_models: "Inventado" }, {
+    price: 10000, year: 2020, mileage: 10000, city: "Cidade A", transmission: "Manual", useCases: ["Trabalho"],
+  }).reverse();
+  const coverage = Object.freeze({ ...aggregateMatchCoverage(results) });
+  const before = structuredClone(results);
+  results.forEach(Object.freeze);
+  Object.freeze(results);
+  const first = explainMatchRules(results, coverage);
+  assert.deepEqual(Array.from(first.positives, (item) => item.ruleId), [...ruleIds].reverse());
+  assert.deepEqual(JSON.parse(JSON.stringify(first)), JSON.parse(JSON.stringify(explainMatchRules(results, coverage))));
+  assert.deepEqual(results, before);
+  assert.deepEqual({ ...first.coverage }, coverage);
+  assert.notEqual(first.coverage, coverage);
+  first.coverage.totalRules = 100;
+  assert.equal(coverage.totalRules, 7);
+});
+
+test("AP-MATCH-012: coverage is descriptive passthrough with stable summary and empty output", () => {
+  const results = semanticResults({ min_year: 0, transmission: "Indiferente" }, { city: "", useCases: ["Lazer"] });
+  const explanation = plainExplanation(results);
+  assert.deepEqual(explanation.coverage, { ...aggregateMatchCoverage(results) });
+  assert.equal(explanation.summary, "0 regras compatíveis; 4 regras não compatíveis; 4 de 7 regras avaliadas com dados disponíveis.");
+  const empty = plainExplanation([]);
+  assert.equal(empty.summary, "0 regras compatíveis; 0 regras não compatíveis; 0 de 0 regras avaliadas com dados disponíveis.");
+  for (const key of ["positives", "negatives", "neutral", "missingData", "inferredData", "notApplicable"]) assert.deepEqual(empty[key], []);
+});
+
+test("AP-MATCH-012: explanation adapter leaves legacy score, reasons and public keys unchanged", () => {
+  const profile = { ...baseProfile, vehicle_types: "[]", preferred_models: "Ausente", transmission: "Indiferente" };
+  const vehicle = { ...baseVehicle };
+  const before = scoreBuyerVehicle(profile, vehicle);
+  const results = Array.from(evaluateBuyerVehicleRules(profile, vehicle), (result) => ({ ...result }));
+  const explanation = plainExplanation(results);
+  assert.equal(explanation.negatives.find((item) => item.ruleId === "model_category").outcome, "not_matched");
+  assert.equal(results[1].points, 20);
+  assert.deepEqual(scoreBuyerVehicle(profile, vehicle), before);
+  assert.deepEqual(Object.keys(before), ["score", "reasons"]);
+  assert.equal(before.score, 28);
+  assert.deepEqual(Array.from(before.reasons), ["categoria preferida"]);
 });

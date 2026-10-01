@@ -38,6 +38,50 @@ export type MatchCoverage = {
   inferredDataRules: number;
 };
 
+export type MatchExplanationItem = {
+  ruleId: MatchRuleId;
+  outcome: MatchRuleOutcome;
+  text: string;
+};
+export type MatchExplanation = {
+  summary: string;
+  positives: MatchExplanationItem[];
+  negatives: MatchExplanationItem[];
+  neutral: MatchExplanationItem[];
+  missingData: MatchExplanationItem[];
+  inferredData: MatchExplanationItem[];
+  notApplicable: MatchExplanationItem[];
+  coverage: MatchCoverage;
+};
+
+// Semantic descriptions are independent of legacy points and reason wording.
+// Coverage is supplied by aggregateMatchCoverage for the same ordered results.
+export function explainMatchRules(results: readonly MatchRuleResult[], coverage: MatchCoverage): MatchExplanation {
+  const explanation: MatchExplanation = {
+    summary: `${coverage.matchedRules} regras compatíveis; ${coverage.notMatchedRules} regras não compatíveis; ${coverage.evaluatedRules} de ${coverage.totalRules} regras avaliadas com dados disponíveis.`,
+    positives: [], negatives: [], neutral: [], missingData: [], inferredData: [], notApplicable: [],
+    coverage: { ...coverage },
+  };
+  const labels = {
+    budget: "Orçamento", model_category: "Modelo/categoria", year: "Ano mínimo",
+    mileage: "Quilometragem máxima", city: "Cidade", transmission: "Câmbio", use_case: "Uso informado",
+  };
+  for (const result of results) {
+    const label = labels[result.ruleId];
+    const item = (text: string): MatchExplanationItem => ({ ruleId: result.ruleId, outcome: result.outcome, text: `${label}: ${text}` });
+    switch (result.outcome) {
+      case "matched": explanation.positives.push(item("compatível com a preferência informada.")); break;
+      case "not_matched": explanation.negatives.push(item("não compatível com a preferência informada.")); break;
+      case "no_preference": explanation.neutral.push(item("sem preferência do comprador.")); break;
+      case "missing_buyer_data": explanation.missingData.push(item("dados do comprador ausentes ou inválidos.")); break;
+      case "missing_vehicle_data": explanation.missingData.push(item("dados do veículo indisponíveis.")); break;
+      case "not_applicable": explanation.notApplicable.push(item("regra não aplicável.")); break;
+    }
+    if (result.vehicleDataSource === "inferred") explanation.inferredData.push(item("dados do veículo inferidos do rótulo."));
+  }
+  return explanation;
+}
+
 function usableText(value: string | undefined) { return typeof value === "string" && value.trim().length > 0; }
 function usableNumber(value: number, allowZero = false) { return Number.isFinite(value) && (allowZero ? value >= 0 : value > 0); }
 function semanticResult(result: LegacyMatchRuleResult, noPreference: boolean, buyerAvailable: boolean, vehicleAvailable: boolean, matched = result.eligible): MatchRuleResult {
