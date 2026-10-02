@@ -1,17 +1,17 @@
 # AP-CRM-004V — TenantVehicle Canonical Persistence
 
-Status: PREREQUISITE DEFINED — NOT STARTED
+Status: COMPLETE — MINIMUM CANONICAL PERSISTENCE IMPLEMENTED
 
-Created following the approved AP-CRM-004 vehicle decision. This document defines the separate slice; it does not authorize or begin implementation.
+Originally defined following the approved AP-CRM-004 vehicle decision. AP-CRM-004V was subsequently authorized, including nullable technical identity and no legacy backfill/inferred mapping. Implementation and validation are recorded in [AP-CRM-004V-CHECKPOINT](AP-CRM-004V-CHECKPOINT.md). AP-CRM-005 has not started; existing unmapped Matches remain blocked.
 
 ## Purpose and dependency
 
 Establish the canonical tenant-scoped commercial vehicle identity required by actionable Match-originated Negotiation. **AP-CRM-005 must not begin until AP-CRM-004V is complete.** The AP-CRM-004 root permits manual qualification without a vehicle.
 
 Canonical Negotiation vehicle reference:
-**DEFERRED until TenantVehicle persistence exists.**
+The canonical target now exists as `tenant_vehicles`. Negotiation's vehicle FK remains deferred to the separately authorized AP-CRM-005 integration; no FK or initiation behavior is added by this slice.
 
-## Bounded work for a separately authorized slice
+## Original bounded scope
 
 - Review Tenant Model V1, the approved Negotiation design, current hybrid vehicle/source contracts and AP-CRM-004 implementation before editing.
 - Establish canonical TenantVehicle persistence with explicit Tenant ownership and same-Tenant integrity. VehicleSpecification remains the global technical specification.
