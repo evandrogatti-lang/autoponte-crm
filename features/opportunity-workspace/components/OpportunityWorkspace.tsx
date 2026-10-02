@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
@@ -80,6 +81,8 @@ function demandValue(data: OpportunityWorkspaceData): DesiredVehicleProfileInput
 
 export function OpportunityWorkspace({ initialData }: { initialData: OpportunityWorkspaceData }) {
   const router = useRouter();
+  const tabs = ["Resumo", "Cliente", "Demanda", "Veículo", "Troca", "Financeiro", "Arquivos"] as const;
+  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Resumo");
   const [data, setData] = useState(initialData);
   const [stage, setStage] = useState<OpportunityStatus>(initialData.status);
   const [clientName, setClientName] = useState(initialData.client.name);
@@ -148,7 +151,7 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
      
       <section className={styles.hero}>
         <div>
-          <span className={styles.eyebrow}>OPORTUNIDADE · {data.id.slice(0, 8).toUpperCase()}</span>
+          <span className={styles.eyebrow}>NEGOCIAÇÃO · {data.id.slice(0, 8).toUpperCase()}</span>
           <h1>{data.client.name}</h1>
           <p>{data.desiredVehicle || "Veículo desejado ainda não definido"} · {data.client.city}</p>
         </div>
@@ -161,6 +164,60 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
 
       {(message || error) && <div className={error ? styles.error : styles.success}>{error || message}</div>}
 
+      <nav className={styles.tabs} aria-label="Seções da negociação">
+        {tabs.map((tab) => <button key={tab} type="button" aria-current={activeTab === tab ? "page" : undefined} onClick={() => setActiveTab(tab)}>{tab}</button>)}
+      </nav>
+      {activeTab !== "Resumo" && <div className={styles.returnRow}><button type="button" onClick={() => setActiveTab("Resumo")}>← Voltar ao resumo</button></div>}
+      <div className={activeTab === "Resumo" ? styles.layout : styles.tabContent}>
+        {activeTab === "Resumo" && <>
+          <div className={styles.mainColumn}>
+            <section className={styles.nextAction} aria-label="Próxima ação">
+              <span>PRÓXIMA AÇÃO</span><h2>{data.commercial.nextAction || "Próxima ação ainda não definida"}</h2>
+              <p>Prazo: {formatDate(data.commercial.nextFollowUp)}</p>
+              <details><summary>Definir compromisso</summary>
+                <section className={styles.actionPanel}>
+            <header><span>PRÓXIMA AÇÃO</span><h2>Definir compromisso</h2></header>
+            <input value={nextAction} onChange={(event: ChangeEvent<HTMLInputElement>) => setNextAction(event.target.value)} placeholder="Ex.: Retornar com proposta revisada" />
+            <input type="datetime-local" value={nextDue} onChange={(event: ChangeEvent<HTMLInputElement>) => setNextDue(event.target.value)} />
+            <button disabled={pending !== null || !nextAction.trim() || !nextDue} onClick={() => mutate("next_action", { action: "next_action", label: nextAction, dueAt: new Date(nextDue).toISOString() })}>{pending === "next_action" ? "Salvando..." : "Definir próxima ação"}</button>
+            <small>Atual: {data.commercial.nextAction || "não definida"}<br />Prazo: {formatDate(data.commercial.nextFollowUp)}</small>
+          </section>
+              </details>
+            </section>
+
+          <section className={styles.panel}>
+            <header className={styles.simpleHeader}><span>HISTÓRICO</span><h2>Eventos da oportunidade</h2></header>
+            {data.events.length === 0 ? <div className={styles.empty}>Nenhum evento registrado ainda.</div> : <div className={styles.timeline}>{data.events.map((event) => <article key={event.id}><i /><div><header><strong>{event.title}</strong><time>{formatDate(event.createdAt)}</time></header>{event.description && <p>{event.description}</p>}<small>{event.actorName}</small></div></article>)}</div>}
+          </section>
+            <div className={styles.operationalActions}>
+              <details><summary>Registrar interação</summary>
+                <section className={styles.actionPanel}>
+            <header><span>CONTATO</span><h2>Registrar interação</h2></header>
+            <select value={channel} onChange={(event: ChangeEvent<HTMLSelectElement>) => setChannel(event.target.value)}><option>WhatsApp</option><option>Telefone</option><option>E-mail</option><option>Presencial</option><option>Outro</option></select>
+            <textarea value={contactSummary} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setContactSummary(event.target.value)} placeholder="Resumo do contato, objeções e sinais do cliente..." rows={4} />
+            <button disabled={pending !== null || !contactSummary.trim()} onClick={async () => { if (await mutate("contact", { action: "contact", channel, summary: contactSummary })) setContactSummary(""); }}>{pending === "contact" ? "Registrando..." : "Registrar contato"}</button>
+          </section>
+              </details>
+              <details><summary>Adicionar observação</summary>
+                <section className={styles.actionPanel}>
+            <header><span>OBSERVAÇÃO</span><h2>Adicionar nota</h2></header>
+            <textarea value={note} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setNote(event.target.value)} placeholder="Informação comercial, objeção, condição ou decisão..." rows={5} />
+            <button disabled={pending !== null || !note.trim()} onClick={async () => { if (await mutate("note", { action: "note", note })) setNote(""); }}>{pending === "note" ? "Salvando..." : "Salvar observação"}</button>
+          </section>
+              </details>
+              <details><summary>Alterar etapa · {data.statusLabel}</summary>
+                <section className={styles.actionPanel}>
+            <header><span>ETAPA</span><h2>Alterar pipeline</h2></header>
+            <select value={stage} onChange={(event: ChangeEvent<HTMLSelectElement>) => setStage(event.target.value as OpportunityStatus)}>
+              {opportunityStatuses.map((status) => <option value={status} key={status}>{opportunityStatusLabels[status]}</option>)}
+            </select>
+            <button disabled={pending !== null || stage === data.status} onClick={() => mutate("stage", { action: "stage", status: stage })}>{pending === "stage" ? "Salvando..." : "Atualizar etapa"}</button>
+          </section>
+              </details>
+            </div>
+            {data.commercial.notes && <section className={styles.panel}><header className={styles.simpleHeader}><h2>Observações comerciais</h2></header><p className={styles.notes}>{data.commercial.notes}</p></section>}
+          </div>
+          <aside className={styles.contextColumn} aria-label="Contexto e inteligência">
       <section className={styles.intelligence} aria-label="Inteligência da oportunidade">
         <article><span>Probabilidade</span><strong>{data.assessment.dna.chance}%</strong><small>chance calibrada</small></article>
         <article><span>Confiança</span><strong>{data.assessment.confidence.score}%</strong><small>{data.assessment.confidence.level === "high" ? "alta" : data.assessment.confidence.level === "medium" ? "média" : "baixa"}</small></article>
@@ -169,8 +226,6 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
         <article><span>Margem potencial</span><strong className={styles.moneyMetric}>{brl.format(data.commercial.marginPotential)}</strong><small>FIPE menos avaliação média</small></article>
       </section>
 
-      <div className={styles.layout}>
-        <div className={styles.mainColumn}>
           <section className={`${styles.panel} ${styles.explainedRecommendation}`}>
             <header className={styles.panelHeader}><div><span>RECOMENDAÇÃO EXPLICADA</span><h2>{data.assessment.recommendation.action || "Sem recomendação acionável no momento"}</h2></div><b>{data.assessment.recommendation.channel || "Análise"}</b></header>
             <div className={styles.recommendationLead}>
@@ -185,8 +240,15 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
             </div>
           </section>
 
-          <section className={styles.detailsGrid}>
-            <article className={styles.panel}>
+          <section className={styles.metaPanel}>
+            <span>Último contato</span><strong>{formatDate(data.commercial.lastContactAt)}</strong>
+            <span>Criada em</span><strong>{formatDate(data.commercial.createdAt)}</strong>
+            <span>Atualizada em</span><strong>{formatDate(data.commercial.updatedAt)}</strong>
+          </section>
+
+          </aside>
+        </>}
+        {activeTab === "Cliente" && <div className={styles.tabGrid}>            <article className={styles.panel}>
               <header className={styles.simpleHeader}><span>CLIENTE</span><h2>Contato e interesse</h2></header>
               <dl className={styles.details}>
                 <div><dt>Nome</dt><dd>{data.client.name}</dd></div>
@@ -197,7 +259,23 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
               </dl>
             </article>
 
-            <article className={styles.panel}>
+          <section className={styles.actionPanel}>
+            <header><span>CLIENTE</span><h2>Corrigir dados e contato</h2></header>
+            <input value={clientName} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientName(event.target.value)} placeholder="Nome completo" />
+            <InternationalPhoneField ddi={clientPhoneDdi} nationalNumber={clientPhoneNational} onDdiChange={setClientPhoneDdi} onNationalNumberChange={setClientPhoneNational} disabled={pending !== null} />
+            <input type="email" value={clientEmail} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientEmail(event.target.value)} placeholder="E-mail" />
+            <input value={clientCity} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientCity(event.target.value)} placeholder="Cidade" />
+            <button disabled={pending !== null || !clientName.trim() || !clientCity.trim() || (!clientPhoneNational.trim() && !clientEmail.trim())} onClick={() => mutate("edit_client", { action: "edit_client", name: clientName, whatsapp: clientPhoneNational, whatsappDdi: clientPhoneDdi, email: clientEmail, city: clientCity })}>{pending === "edit_client" ? "Salvando..." : "Salvar dados do cliente"}</button>
+            <small>É obrigatório manter ao menos um canal válido: WhatsApp ou e-mail.</small>
+          </section></div>}
+        {activeTab === "Demanda" && <>          <section className={styles.actionPanel}>
+            <header><span>DEMANDA</span><h2>Veículo desejado</h2></header>
+            {data.desiredVehicleProfile.searchScope === "legacy" && <small>Cadastro legado: selecione a demanda no catálogo FIPE para eliminar o texto livre.</small>}
+            <DesiredVehicleSelector value={desiredVehicleProfile} onChange={setDesiredVehicleProfile} disabled={pending !== null} compact idPrefix={`workspace-demand-${data.id}`} />
+            <button disabled={pending !== null || !desiredVehicleProfile.brandCode || !desiredVehicleProfile.yearMin || !desiredVehicleProfile.yearMax || !desiredVehicleProfile.priceMax} onClick={() => mutate("edit_demand", { action: "edit_demand", desiredVehicle: desiredVehicleProfile })}>{pending === "edit_demand" ? "Validando FIPE..." : "Salvar demanda"}</button>
+          </section></>}
+        {activeTab === "Veículo" && <section className={styles.panel}><header className={styles.simpleHeader}><span>VEÍCULO / DEMANDA</span><h2>{data.desiredVehicle || "Veículo desejado ainda não definido"}</h2></header><p>Esta oportunidade contém a demanda do cliente. Nenhum veículo de oferta está disponível nos dados atuais.</p><button className={styles.inlineButton} onClick={() => setActiveTab("Demanda")}>Consultar demanda</button></section>}
+        {activeTab === "Troca" && <>            <article className={styles.panel}>
               <header className={styles.simpleHeader}><span>TROCA</span><h2>{data.tradeIn.brand && data.tradeIn.model ? `${data.tradeIn.brand} ${data.tradeIn.model}` : "Sem veículo de troca"}</h2></header>
               <div className={styles.vehicleBlock}>
                 {photo ? <img src={`/api/opportunities/photo?key=${encodeURIComponent(photo)}`} alt={`${data.tradeIn.brand} ${data.tradeIn.model}`} /> : <div className={styles.noPhoto}>{data.tradeIn.brand ? "Sem foto" : "Compra direta"}</div>}
@@ -209,8 +287,8 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
                 </dl>
               </div>
             </article>
-          </section>
-
+</>}
+        {activeTab === "Financeiro" && <>
           <section className={styles.panel}>
             <header className={styles.simpleHeader}><span>VALORES</span><h2>Leitura financeira</h2></header>
             <div className={styles.values}>
@@ -221,66 +299,8 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
               <div><span>Margem potencial</span><strong>{brl.format(data.commercial.marginPotential)}</strong><small>antes de custos e vistoria</small></div>
             </div>
           </section>
-
-          <section className={styles.panel}>
-            <header className={styles.simpleHeader}><span>HISTÓRICO</span><h2>Eventos da oportunidade</h2></header>
-            {data.events.length === 0 ? <div className={styles.empty}>Nenhum evento registrado ainda.</div> : <div className={styles.timeline}>{data.events.map((event) => <article key={event.id}><i /><div><header><strong>{event.title}</strong><time>{formatDate(event.createdAt)}</time></header>{event.description && <p>{event.description}</p>}<small>{event.actorName}</small></div></article>)}</div>}
-          </section>
-        </div>
-
-        <aside className={styles.actionsColumn}>
-          <section className={styles.actionPanel}>
-            <header><span>CLIENTE</span><h2>Corrigir dados e contato</h2></header>
-            <input value={clientName} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientName(event.target.value)} placeholder="Nome completo" />
-            <InternationalPhoneField ddi={clientPhoneDdi} nationalNumber={clientPhoneNational} onDdiChange={setClientPhoneDdi} onNationalNumberChange={setClientPhoneNational} disabled={pending !== null} />
-            <input type="email" value={clientEmail} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientEmail(event.target.value)} placeholder="E-mail" />
-            <input value={clientCity} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientCity(event.target.value)} placeholder="Cidade" />
-            <button disabled={pending !== null || !clientName.trim() || !clientCity.trim() || (!clientPhoneNational.trim() && !clientEmail.trim())} onClick={() => mutate("edit_client", { action: "edit_client", name: clientName, whatsapp: clientPhoneNational, whatsappDdi: clientPhoneDdi, email: clientEmail, city: clientCity })}>{pending === "edit_client" ? "Salvando..." : "Salvar dados do cliente"}</button>
-            <small>É obrigatório manter ao menos um canal válido: WhatsApp ou e-mail.</small>
-          </section>
-
-          <section className={styles.actionPanel}>
-            <header><span>DEMANDA</span><h2>Veículo desejado</h2></header>
-            {data.desiredVehicleProfile.searchScope === "legacy" && <small>Cadastro legado: selecione a demanda no catálogo FIPE para eliminar o texto livre.</small>}
-            <DesiredVehicleSelector value={desiredVehicleProfile} onChange={setDesiredVehicleProfile} disabled={pending !== null} compact idPrefix={`workspace-demand-${data.id}`} />
-            <button disabled={pending !== null || !desiredVehicleProfile.brandCode || !desiredVehicleProfile.yearMin || !desiredVehicleProfile.yearMax || !desiredVehicleProfile.priceMax} onClick={() => mutate("edit_demand", { action: "edit_demand", desiredVehicle: desiredVehicleProfile })}>{pending === "edit_demand" ? "Validando FIPE..." : "Salvar demanda"}</button>
-          </section>
-
-          <section className={styles.actionPanel}>
-            <header><span>ETAPA</span><h2>Alterar pipeline</h2></header>
-            <select value={stage} onChange={(event: ChangeEvent<HTMLSelectElement>) => setStage(event.target.value as OpportunityStatus)}>
-              {opportunityStatuses.map((status) => <option value={status} key={status}>{opportunityStatusLabels[status]}</option>)}
-            </select>
-            <button disabled={pending !== null || stage === data.status} onClick={() => mutate("stage", { action: "stage", status: stage })}>{pending === "stage" ? "Salvando..." : "Atualizar etapa"}</button>
-          </section>
-
-          <section className={styles.actionPanel}>
-            <header><span>CONTATO</span><h2>Registrar interação</h2></header>
-            <select value={channel} onChange={(event: ChangeEvent<HTMLSelectElement>) => setChannel(event.target.value)}><option>WhatsApp</option><option>Telefone</option><option>E-mail</option><option>Presencial</option><option>Outro</option></select>
-            <textarea value={contactSummary} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setContactSummary(event.target.value)} placeholder="Resumo do contato, objeções e sinais do cliente..." rows={4} />
-            <button disabled={pending !== null || !contactSummary.trim()} onClick={async () => { if (await mutate("contact", { action: "contact", channel, summary: contactSummary })) setContactSummary(""); }}>{pending === "contact" ? "Registrando..." : "Registrar contato"}</button>
-          </section>
-
-          <section className={styles.actionPanel}>
-            <header><span>PRÓXIMA AÇÃO</span><h2>Definir compromisso</h2></header>
-            <input value={nextAction} onChange={(event: ChangeEvent<HTMLInputElement>) => setNextAction(event.target.value)} placeholder="Ex.: Retornar com proposta revisada" />
-            <input type="datetime-local" value={nextDue} onChange={(event: ChangeEvent<HTMLInputElement>) => setNextDue(event.target.value)} />
-            <button disabled={pending !== null || !nextAction.trim() || !nextDue} onClick={() => mutate("next_action", { action: "next_action", label: nextAction, dueAt: new Date(nextDue).toISOString() })}>{pending === "next_action" ? "Salvando..." : "Definir próxima ação"}</button>
-            <small>Atual: {data.commercial.nextAction || "não definida"}<br />Prazo: {formatDate(data.commercial.nextFollowUp)}</small>
-          </section>
-
-          <section className={styles.actionPanel}>
-            <header><span>OBSERVAÇÃO</span><h2>Adicionar nota</h2></header>
-            <textarea value={note} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setNote(event.target.value)} placeholder="Informação comercial, objeção, condição ou decisão..." rows={5} />
-            <button disabled={pending !== null || !note.trim()} onClick={async () => { if (await mutate("note", { action: "note", note })) setNote(""); }}>{pending === "note" ? "Salvando..." : "Salvar observação"}</button>
-          </section>
-
-          <section className={styles.metaPanel}>
-            <span>Último contato</span><strong>{formatDate(data.commercial.lastContactAt)}</strong>
-            <span>Criada em</span><strong>{formatDate(data.commercial.createdAt)}</strong>
-            <span>Atualizada em</span><strong>{formatDate(data.commercial.updatedAt)}</strong>
-          </section>
-        </aside>
+        </>}
+        {activeTab === "Arquivos" && <section className={styles.panel}><header className={styles.simpleHeader}><span>ARQUIVOS</span><h2>Fotos do veículo de troca</h2></header>{data.tradeIn.photoKeys.length ? <div className={styles.photoGrid}>{data.tradeIn.photoKeys.map((key, index) => <a key={key} href={`/api/opportunities/photo?key=${encodeURIComponent(key)}`} target="_blank" rel="noreferrer"><Image unoptimized width={600} height={400} src={`/api/opportunities/photo?key=${encodeURIComponent(key)}`} alt={`Foto ${index + 1} do veículo de troca`} /></a>)}</div> : <p>Nenhum arquivo disponível nesta oportunidade.</p>}</section>}
       </div>
     </main>
   );
