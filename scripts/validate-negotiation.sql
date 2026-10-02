@@ -12,6 +12,7 @@ declare
   foreign_lead text := gen_random_uuid()::text;
   match text := gen_random_uuid()::text; foreign_match text := gen_random_uuid()::text;
   manual_id text := gen_random_uuid()::text; match_negotiation_id text := gen_random_uuid()::text;
+  vehicle text := gen_random_uuid()::text;
   base text; match_base text; scenario record; actual text; passed integer := 0;
 begin
   select m.tenant_id,m.id,m.user_id into tenant,creator,actor from public.memberships m
@@ -83,8 +84,10 @@ begin
     if actual is distinct from scenario.expected then raise exception 'Probe % expected %, got %',scenario.label,scenario.expected,actual; end if;
     passed := passed+1;
   end loop;
-  -- Prepared Match persistence is structural only, never an actionable production command.
-  match_base := format('insert into public.negotiations(id,tenant_id,customer_id,buyer_profile_id,match_id,responsible_membership_id,created_by_membership_id,origin) values(%L,%L,%L,%L,%L,%L,%L,''match_manual'')',match_negotiation_id,tenant,customer,profile,match,seller,creator);
+  -- AP-CRM-005 now requires explicitly mapped canonical vehicle for structural Match inserts.
+  perform public.register_tenant_vehicle(vehicle,tenant,creator,actor,null,'available','AP004/AP005 rollback fixture');
+  perform public.confirm_tenant_vehicle_source(tenant,creator,actor,vehicle,'trade_in',lead,'Explicit rollback mapping');
+  match_base := format('insert into public.negotiations(id,tenant_id,customer_id,buyer_profile_id,match_id,tenant_vehicle_id,responsible_membership_id,created_by_membership_id,origin) values(%L,%L,%L,%L,%L,%L,%L,%L,''match_manual'')',match_negotiation_id,tenant,customer,profile,match,vehicle,seller,creator);
   execute match_base;
   for scenario in select * from (values
     ('duplicate active Match',replace(match_base,quote_literal(match_negotiation_id),quote_literal(gen_random_uuid()::text)),'23505'),

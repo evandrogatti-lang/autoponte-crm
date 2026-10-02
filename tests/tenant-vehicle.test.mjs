@@ -88,35 +88,31 @@ test("mapping is a separate explicit command with authenticated Membership and r
   assert.equal(result.linkId, "confirmed");
   assert.deepEqual(Array.from(s.queries[0].values), ["tenant-A", "actor", "authenticated-user", "canonical", "inventory", "legacy", "Explicit review"]);
 });
-test("all unknown legacy source mappings remain unresolved; no read creates a canonical row", async () => {
-  for (const sourceType of ["inventory", "trade_in", "consignment", "unsupported"]) {
-    const s = service({ rows: [[{ sourceType, sourceId: "legacy", vehicleId: null }], []] });
-    const result = await s.vehicleService.resolveMatchTenantVehicle("match");
-    assert.equal(result.state, "UNRESOLVED");
-    assert.equal(result.tenantVehicleId, null);
-    assert.equal(result.actionable, false);
-    assert.ok(s.queries.every(q => !/insert|update|register_tenant_vehicle/.test(q.text)));
-  }
+test("unknown mappings remain unresolved without creating canonical rows", async () => {
+  const s = service({ rows: [[]] });
+  const result = await s.vehicleService.resolveMatchTenantVehicle("match");
+  assert.equal(result.state, "UNRESOLVED");
+  assert.equal(result.tenantVehicleId, null);
+  assert.equal(result.actionable, false);
+  assert.match(s.queries[0].text, /resolve_match_vehicle/);
+  assert.deepEqual(Array.from(s.queries[0].values), ["tenant-A", "match"]);
 });
-test("only explicit same-Tenant mapping resolves; technical absence does not block available physical identity", async () => {
-  for (const status of ["qualification", "available", "unavailable"]) {
-    const s = service({ rows: [[{ sourceType: "inventory", sourceId: "legacy", vehicleId: "legacy" }], [{ tenantVehicleId: "canonical", vehicleSpecificationId: null, status }]] });
+test("shared resolver preserves explicit vehicle and unresolved technical identity", async () => {
+  for (const actionable of [true, false]) {
+    const s = service({ rows: [[{ vehicle_id: "canonical", specification_id: null, actionable }]] });
     const result = await s.vehicleService.resolveMatchTenantVehicle("match");
     assert.equal(result.state, "RESOLVED");
     assert.equal(result.vehicleSpecificationId, null);
-    assert.equal(result.actionable, status === "available");
+    assert.equal(result.actionable, actionable);
     assert.equal(s.transactions(), 1);
-    assert.ok(s.queries.every(q => q.values.includes("tenant-A") && /for share/.test(q.text)));
   }
 });
-test("foreign Match is denied; foreign or contradictory legacy mapping cannot become actionable", async () => {
-  await assert.rejects(service().vehicleService.resolveMatchTenantVehicle("foreign"), tenant.TenantAccessError);
-  const s = service({ rows: [[{ sourceType: "inventory", sourceId: "A", vehicleId: "B" }]] });
-  assert.equal((await s.vehicleService.resolveMatchTenantVehicle("match")).state, "UNRESOLVED");
-  assert.equal(s.queries.length, 1);
-  const hidden = service({ rows: [[{ sourceType: "inventory", sourceId: "foreign-source" }], []] });
-  assert.equal((await hidden.vehicleService.resolveMatchTenantVehicle("match")).state, "UNRESOLVED");
-  assert.ok(hidden.queries[1].text.includes("l.tenant_id="));
+test("shared resolver authorization rejection retains the public access error", async () => {
+  for (const error of [{ code: "42501" }, { cause: { code: "42501" } }]) {
+    await assert.rejects(service({ error }).vehicleService.resolveMatchTenantVehicle("foreign"), tenant.TenantAccessError);
+  }
+  const error = new Error("Database unavailable");
+  await assert.rejects(service({ error }).vehicleService.resolveMatchTenantVehicle("match"), value => value === error);
 });
 test("canonical schema separates global technical facts and tenant-owned physical identity", () => {
   const global = getTableConfig(vehicleSpecifications), physical = getTableConfig(tenantVehicles), links = getTableConfig(tenantVehicleSourceLinks);

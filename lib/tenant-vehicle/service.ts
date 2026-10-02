@@ -34,28 +34,22 @@ export async function confirmTenantVehicleSource(input: ConfirmVehicleSourceInpu
   return { linkId: rows[0].linkId as string, tenantId: context.tenantId };
 }
 
-// Internal composable read: caller must authorize Tenant and keep this transaction
-// open through any future dependent write. A completed read is not a durable grant.
+// Shared with Match initiation: one typed mapping authority, locks held until commit.
+// Caller must authorize Tenant and keep this transaction open through a dependent write.
 export async function resolveMatchVehicleInTransaction(tx: Tx, tenantId: string, matchId: string): Promise<VehicleResolution> {
-  const rows = await tx.execute(sql`select m.source_type as "sourceType",m.source_id as "sourceId",m.vehicle_id as "vehicleId" from public.vehicle_matches m join public.buyer_profiles b on b.id=m.buyer_profile_id where m.id=${matchId} and b.tenant_id=${tenantId} for share of m,b`);
-  const match = rows[0];
-  if (!match) throw new TenantAccessError("Match unavailable in authorized Tenant.");
-  const unresolved: VehicleResolution = { state: "UNRESOLVED", tenantVehicleId: null, actionable: false };
-  let sourceColumn;
-  if (match.sourceType === "inventory") {
-    if (match.vehicleId && match.vehicleId !== match.sourceId) return unresolved;
-    sourceColumn = sql`l.inventory_vehicle_id`;
-  } else if (match.sourceType === "trade_in") sourceColumn = sql`l.trade_in_id`;
-  else if (match.sourceType === "consignment") sourceColumn = sql`l.consignment_id`;
-  else return unresolved;
-  // Typed source links are explicit, immutable and same-Tenant FK-backed.
-  const links = await tx.execute(sql`select v.id as "tenantVehicleId",v.vehicle_specification_id as "vehicleSpecificationId",v.status from public.tenant_vehicle_source_links l join public.tenant_vehicles v on v.id=l.tenant_vehicle_id and v.tenant_id=l.tenant_id where l.tenant_id=${tenantId} and ${sourceColumn}=${match.sourceId} for share of l,v`);
-  const vehicle = links[0];
-  if (!vehicle) return unresolved;
-  return { state: "RESOLVED", tenantVehicleId: vehicle.tenantVehicleId as string, vehicleSpecificationId: vehicle.vehicleSpecificationId as string | null, actionable: vehicle.status === "available" };
+  const rows = await tx.execute(sql`select * from public.resolve_match_vehicle(${tenantId},${matchId})`);
+  const vehicle = rows[0];
+  if (!vehicle) return { state: "UNRESOLVED", tenantVehicleId: null, actionable: false };
+  return { state: "RESOLVED", tenantVehicleId: vehicle.vehicle_id as string, vehicleSpecificationId: vehicle.specification_id as string | null, actionable: vehicle.actionable === true };
 }
 
 export async function resolveMatchTenantVehicle(matchId: string, requestedTenantId?: string) {
   const context = await resolveTenantContext(requestedTenantId);
-  return getDb().transaction(tx => resolveMatchVehicleInTransaction(tx, context.tenantId, matchId));
+  try {
+    return await getDb().transaction(tx => resolveMatchVehicleInTransaction(tx, context.tenantId, matchId));
+  } catch (error) {
+    const failure = error as { code?: string; cause?: { code?: string } };
+    if (failure?.code === "42501" || failure?.cause?.code === "42501") throw new TenantAccessError("Match unavailable in authorized Tenant.");
+    throw error;
+  }
 }

@@ -4,6 +4,7 @@ import { customers } from "./customer-schema.ts";
 import { identityLinkEvents } from "./identity-schema.ts";
 import { buyerProfiles, tradeIns, vehicleMatches } from "./schema.ts";
 import { memberships, tenants } from "./tenant-schema.ts";
+import { tenantVehicles } from "./tenant-vehicle-schema.ts";
 
 export const negotiations = pgTable("negotiations", {
   id: text("id").primaryKey(),
@@ -12,6 +13,7 @@ export const negotiations = pgTable("negotiations", {
   leadId: text("lead_id"),
   buyerProfileId: text("buyer_profile_id"),
   matchId: text("match_id").references(() => vehicleMatches.id, { onDelete: "restrict" }),
+  tenantVehicleId: text("tenant_vehicle_id"),
   buyerProfileIdentityEventId: uuid("buyer_profile_identity_event_id").references(() => identityLinkEvents.id, { onDelete: "restrict" }),
   leadIdentityEventId: uuid("lead_identity_event_id").references(() => identityLinkEvents.id, { onDelete: "restrict" }),
   responsibleMembershipId: uuid("responsible_membership_id").notNull(),
@@ -25,6 +27,9 @@ export const negotiations = pgTable("negotiations", {
   closedAt: timestamp("closed_at", { withTimezone: true }),
   formalizedAt: timestamp("formalized_at", { withTimezone: true }),
 }, t => [
+  foreignKey({ name: "negotiations_vehicle_same_tenant_fkey", columns: [t.tenantId, t.tenantVehicleId], foreignColumns: [tenantVehicles.tenantId, tenantVehicles.id] }).onDelete("restrict"),
+  check("negotiations_match_vehicle_check", sql`${t.matchId} is null or ${t.tenantVehicleId} is not null`),
+  index("negotiations_vehicle_idx").on(t.tenantId, t.tenantVehicleId),
   foreignKey({ name: "negotiations_customer_same_tenant_fkey", columns: [t.tenantId, t.customerId], foreignColumns: [customers.tenantId, customers.id] }).onDelete("restrict"),
   foreignKey({ name: "negotiations_lead_same_tenant_fkey", columns: [t.tenantId, t.leadId], foreignColumns: [tradeIns.tenantId, tradeIns.id] }).onDelete("restrict"),
   foreignKey({ name: "negotiations_profile_same_tenant_fkey", columns: [t.tenantId, t.buyerProfileId], foreignColumns: [buyerProfiles.tenantId, buyerProfiles.id] }).onDelete("restrict"),

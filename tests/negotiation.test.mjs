@@ -41,12 +41,13 @@ test("Match initiation, client actor/lifecycle and vehicle fallbacks cannot ente
   }
 });
 
-function service({ denied = false, databaseError, persisted = { id: "uuid", tenantId: "tenant-A", customerId: "customer" } } = {}) {
+function service({ denied = false, databaseError, result = [], persisted = { id: "uuid", tenantId: "tenant-A", customerId: "customer" } } = {}) {
   const queries = [], filters = [], selections = [];
+  const transactionOptions = [];
   let transactions = 0;
   const db = {
-    transaction: async callback => { transactions++; return callback(db); },
-    execute: async query => { queries.push(query); if (databaseError) throw databaseError; return []; },
+    transaction: async (callback, options) => { transactions++; transactionOptions.push(options); return callback(db); },
+    execute: async query => { queries.push(query); if (databaseError) throw databaseError; return result; },
     select: () => ({ from: table => {
       selections.push(table);
       return { where: async filter => { filters.push(filter); return persisted ? [persisted] : []; } };
@@ -63,7 +64,7 @@ function service({ denied = false, databaseError, persisted = { id: "uuid", tena
     } },
     "./contracts": contract,
   });
-  return { module: negotiationService, queries, filters, selections, transactions: () => transactions };
+  return { module: negotiationService, queries, filters, selections, transactionOptions, transactions: () => transactions };
 }
 test("creation derives creator and Tenant from authentication and reads the inserted row in its transaction", async () => {
   const s = service();
@@ -95,17 +96,17 @@ test("read uses validated Tenant and does not reveal foreign or missing rows", a
   assert.equal(s.queries.length, 0);
   await assert.rejects(s.module.readNegotiation("id", "foreign"));
 });
-test("physical schema has same-Tenant FKs, separate states and no vehicle authority", () => {
+test("physical schema has same-Tenant FKs and nullable canonical vehicle for manual qualification", () => {
   const config = getTableConfig(negotiations);
   for (const field of ["tenant_id", "customer_id", "responsible_membership_id", "created_by_membership_id"]) {
     assert.equal(config.columns.find(column => column.name === field).notNull, true);
   }
-  for (const field of ["lead_id", "buyer_profile_id", "match_id", "closure_reason"]) {
+  for (const field of ["lead_id", "buyer_profile_id", "match_id", "closure_reason", "tenant_vehicle_id"]) {
     assert.equal(config.columns.find(column => column.name === field).notNull, false);
   }
-  assert.ok(config.columns.every(column => !/vehicle|store|score|confidence|case_id/.test(column.name)));
+  assert.ok(config.columns.every(column => column.name === "tenant_vehicle_id" || !/vehicle|store|score|confidence|case_id/.test(column.name)));
   assert.equal(config.enableRLS, true);
-  for (const target of ["customer", "lead", "profile", "responsible", "creator"]) {
+  for (const target of ["customer", "lead", "profile", "responsible", "creator", "vehicle"]) {
     const fk = config.foreignKeys.find(fk => fk.getName() === `negotiations_${target}_same_tenant_fkey`);
     assert.ok(fk);
     assert.equal(fk.reference().columns[0].name, "tenant_id");
@@ -116,4 +117,40 @@ test("physical schema has same-Tenant FKs, separate states and no vehicle author
   assert.equal(active.unique, true);
   assert.match(dialect.sqlToQuery(active.where).sql, /active.*formalized/);
   assert.deepEqual(active.columns.map(column => column.name), ["tenant_id", "match_id"]);
+});
+
+test("Match initiation rejects caller-owned identity, vehicle, actor and state", () => {
+  const value = { matchId: "match", responsibleMembershipId: "seller" };
+  contract.validateStartNegotiationFromMatch(value);
+  for (const key of ["customerId", "buyerProfileId", "tenantVehicleId", "createdByMembershipId", "origin", "stage", "lifecycle"]) {
+    assert.throws(() => contract.validateStartNegotiationFromMatch({ ...value, [key]: "forged" }));
+  }
+  for (const key of ["matchId", "responsibleMembershipId"]) {
+    assert.throws(() => contract.validateStartNegotiationFromMatch({ ...value, [key]: "" }));
+  }
+});
+
+test("Match initiation preserves typed gate failures and authenticated Tenant", async () => {
+  for (const hint of contract.initiationFailures) {
+    const s = service({ databaseError: { cause: { code: "23514", hint } } });
+    await assert.rejects(s.module.startNegotiationFromMatch({ matchId: "match", responsibleMembershipId: "seller", leadId: "lead" }), error => error.code === hint);
+    assert.deepEqual(Array.from(s.queries[0].values), ["uuid", "tenant-A", "creator", "auth-user", "seller", "match", "lead"]);
+    assert.equal(s.transactions(), 1);
+  }
+  const denied = service({ denied: true });
+  await assert.rejects(denied.module.startNegotiationFromMatch({ matchId: "match", responsibleMembershipId: "seller" }));
+  assert.equal(denied.queries.length, 0);
+});
+
+test("Match initiation returns the persisted identity and created/existing indicator", async () => {
+  for (const created of [true, false]) {
+    const s = service({ result: [{ negotiation_id: "canonical", created }] });
+    const result = await s.module.startNegotiationFromMatch({ matchId: "match", responsibleMembershipId: "seller" });
+    assert.equal(result.negotiationId, "canonical");
+    assert.equal(result.created, created);
+    assert.equal(s.transactions(), 1);
+    assert.equal(s.transactionOptions[0].isolationLevel, "read committed");
+    assert.deepEqual(Array.from(s.queries[0].values), ["uuid", "tenant-A", "creator", "auth-user", "seller", "match", null]);
+  }
+  await assert.rejects(service().module.startNegotiationFromMatch({ matchId: "match", responsibleMembershipId: "seller" }));
 });
