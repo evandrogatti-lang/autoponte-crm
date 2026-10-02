@@ -1,7 +1,8 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid, foreignKey } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema.ts";
+import { customers } from "./customer-schema.ts";
 
 export const tradeIns = pgTable("trade_ins", {
   tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "restrict" }),
@@ -88,6 +89,7 @@ export const consignments = pgTable("consignments", {
 });
 
 export const buyerProfiles = pgTable("buyer_profiles", {
+  customerId: text("customer_id"),
   tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "restrict" }),
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -109,11 +111,11 @@ export const buyerProfiles = pgTable("buyer_profiles", {
   consentAt: text("consent_at").notNull(),
   status: text("status").notNull().default("active"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, table => [uniqueIndex("buyer_profiles_tenant_id_id_key").on(table.tenantId, table.id), index("buyer_profiles_customer_idx").on(table.tenantId, table.customerId), foreignKey({name:"buyer_profiles_customer_same_tenant_fkey",columns:[table.tenantId,table.customerId],foreignColumns:[customers.tenantId,customers.id]}).onDelete("restrict")]);
 
 export const vehicleMatches = pgTable("vehicle_matches", {
   id: text("id").primaryKey(),
-  buyerProfileId: text("buyer_profile_id").notNull(),
+  buyerProfileId: text("buyer_profile_id").notNull().references(() => buyerProfiles.id, {onDelete:"cascade"}),
   sourceType: text("source_type").notNull(),
   sourceId: text("source_id").notNull(),
   vehicleLabel: text("vehicle_label").notNull(),
@@ -129,6 +131,7 @@ export const vehicleMatches = pgTable("vehicle_matches", {
   outcome: text("outcome").notNull().default(""),
 }, (table) => [
   uniqueIndex("vehicle_matches_source_buyer_unique").on(table.sourceType, table.sourceId, table.buyerProfileId),
+  index("vehicle_matches_buyer_profile_idx").on(table.buyerProfileId),
 ]);
 
 /** Passwords stay exclusively with the authentication provider. */
@@ -243,3 +246,4 @@ export { vehicleDataProvenance, vehicleEvidenceObservations, vehicleScores } fro
 export * from "./pilot-schema.ts";
 
 export * from "./tenant-schema.ts";
+export * from "./identity-schema.ts";
