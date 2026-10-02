@@ -4,6 +4,8 @@
 
 APPROVED — NOT IMPLEMENTED
 
+This status records the AP-CRM-003 documentation-finalization checkpoint. The separately authorized AP-CRM-004 minimum persistence implementation is recorded in [AP-CRM-004-CHECKPOINT](AP-CRM-004-CHECKPOINT.md); the full workspace and command flows below remain deferred.
+
 The Negotiation persistence contract is approved. The Tenant and commercial-identity prerequisites are satisfied by AP-CRM-003A through AP-CRM-003D. Negotiation schema/migration implementation has not started: `negotiations` and its children do not exist in the current application schema. AP-CRM-004 remains the next implementation slice and requires its own authorization; this finalization does not start it. Exact enum values, physical constraint syntax and operation-specific capability policies remain bounded implementation details where identified below.
 
 ## Repository State
@@ -77,6 +79,8 @@ Reassignment updates the responsible reference and writes an immutable event wit
 LEGACY ADAPTER BOUNDARY: `seller_profiles` still references `crm_users`, and legacy access checks remain in use outside the completed Tenant slice. Negotiation uses implemented canonical Membership keys. Seller-profile extension/adaptation must preserve that authority; `crm_users.store_id` is never membership or authorization evidence.
 
 ## Vehicle Identity Model
+
+AP-CRM-004 vehicle decision (approved 2026-10-02): **Canonical Negotiation vehicle reference: DEFERRED until TenantVehicle persistence exists.** The minimum root has no vehicle column or legacy fallback. Manual qualification persistence is valid without vehicle. [AP-CRM-004V — TenantVehicle Canonical Persistence](AP-CRM-004V-TENANTVEHICLE-PREREQUISITE.md) is a separate prerequisite; AP-CRM-005 must not begin until AP-CRM-004V is complete.
 
 `tenantVehicleId` references the canonical physical/commercial TenantVehicle, not the global VehicleSpecification. TenantVehicle indirectly provides technical specification. Never use partner or inventory scope as ownership proof.
 
@@ -289,6 +293,7 @@ These refine implementation, not approved domain boundaries. Tenant, Membership,
 ## Recommended Implementation Slices
 
 1. AP-CRM-004: implement the approved Negotiation schema/migration contract, matching existing physical identity keys and specifying operation policy, enum values, snapshot version and database integrity/idempotency details. Identity/Tenant foundations are reused; actionable TenantVehicle mapping is a gate for the corresponding commands, not a legacy alias.
+   AP-CRM-004V follows the minimum root persistence slice and establishes canonical TenantVehicle persistence before AP-CRM-005. This prerequisite is documented separately and is not started automatically.
 2. Validate the root/children's same-Tenant constraints with positive, cross-Tenant and concurrency tests before any separately authorized rollout. No implementation is performed by this document.
 3. Add normalized creation/audit/task primitives and a pure repository/service contract with offline tests.
 4. Implement explicit Match → Negotiation creation with bounded snapshots and idempotency.
