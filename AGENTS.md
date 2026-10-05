@@ -7,6 +7,12 @@ Read the relevant Task Contract and checkpoints.
 Preserve their IDs, scope, authorization, validation, and stop conditions.
 Skill instructions do not expand an approved Task Contract.
 
+AutoPonte adopts the canonical OPERATING MODEL V1 through
+`docs/agents/AP-GOV-002-DECISION.md`. Read that reconciliation and its
+pinned authority at `C:\CommercialProjects\Governance\OPERATING_MODEL_V1.md`
+for applicability; existing project controls and Task Contract boundaries
+remain in force.
+
 ## Agent skills
 
 ### Issue tracker
