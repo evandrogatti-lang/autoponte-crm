@@ -1,3 +1,21 @@
+import type { negotiations } from "../../db/negotiation-schema";
+
+type NegotiationRecord = typeof negotiations.$inferSelect;
+export type NegotiationWorkspace = {
+  negotiation: Pick<NegotiationRecord, "id" | "tenantId" | "customerId" | "leadId" | "buyerProfileId" | "matchId" | "tenantVehicleId" | "responsibleMembershipId" | "createdByMembershipId" | "origin" | "stage" | "lifecycle" | "closureReason" | "createdAt" | "updatedAt" | "closedAt" | "formalizedAt">;
+  sections: Record<"events" | "notes" | "communications" | "tasks" | "nextAction" | "documentRequests" | "approvals" | "objections" | "checkout", {
+    state: "UNRESOLVED";
+    reason: "CANONICAL_PERSISTENCE_NOT_ESTABLISHED";
+  }>;
+};
+
+export function validateReadNegotiationWorkspace(id: string, requestedTenantId?: string) {
+  if (typeof id !== "string" || !id.trim()) throw new Error("Negotiation ID is required.");
+  if (requestedTenantId !== undefined && (typeof requestedTenantId !== "string" || !requestedTenantId.trim())) {
+    throw new Error("tenantId must be a nonempty reference.");
+  }
+}
+
 export const manualOrigins = ["manual", "whatsapp", "phone", "walk_in", "marketplace", "reactivation"] as const;
 export type ManualNegotiationOrigin = typeof manualOrigins[number];
 export type CreateNegotiationInput = {

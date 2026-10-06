@@ -50,7 +50,10 @@ function service({ denied = false, databaseError, result = [], persisted = { id:
     execute: async query => { queries.push(query); if (databaseError) throw databaseError; return result; },
     select: () => ({ from: table => {
       selections.push(table);
-      return { where: async filter => { filters.push(filter); return persisted ? [persisted] : []; } };
+      return { where: async filter => {
+        filters.push(filter);
+        return persisted && filter.every(({ column, value }) => persisted[column] === value) ? [persisted] : [];
+      } };
     } }),
   };
   const negotiationService = compile("lib/negotiation/service.ts", {
@@ -95,6 +98,63 @@ test("read uses validated Tenant and does not reveal foreign or missing rows", a
   assert.deepEqual(s.filters[0].map(condition => condition.value), ["foreign-or-missing", "tenant-A"]);
   assert.equal(s.queries.length, 0);
   await assert.rejects(s.module.readNegotiation("id", "foreign"));
+});
+
+test("workspace reads explicit canonical root fields and leaves operational sections unresolved", async () => {
+  const persisted = {
+    id: "canonical", tenantId: "tenant-A", customerId: "confirmed-customer", leadId: "legacy-demand-reference",
+    buyerProfileId: "confirmed-profile", matchId: "match", tenantVehicleId: "canonical-vehicle",
+    responsibleMembershipId: "seller-membership", createdByMembershipId: "creator-membership",
+    origin: "match_manual", stage: "contact", lifecycle: "active", closureReason: null,
+    createdAt: new Date("2026-10-01"), updatedAt: new Date("2026-10-02"), closedAt: null, formalizedAt: null,
+    // Even accidental legacy fields on a returned record must not enter the projection.
+    notes: "legacy notes", status: "won", nextAction: "legacy action", sellerProfileId: "legacy seller",
+  };
+  const s = service({ persisted });
+  const result = await s.module.readNegotiationWorkspace("canonical", "tenant-A");
+  for (const [key, value] of Object.entries(result.negotiation)) assert.equal(value, persisted[key]);
+  for (const key of ["notes", "status", "nextAction", "sellerProfileId"]) assert.equal(key in result.negotiation, false);
+  assert.equal(result.negotiation.responsibleMembershipId, "seller-membership");
+  assert.equal(result.negotiation.tenantVehicleId, "canonical-vehicle");
+  assert.equal(Object.keys(result.sections).length, 9);
+  for (const section of Object.values(result.sections)) {
+    assert.equal(section.state, "UNRESOLVED");
+    assert.equal(section.reason, "CANONICAL_PERSISTENCE_NOT_ESTABLISHED");
+  }
+  assert.deepEqual(s.filters[0].map(condition => condition.value), ["canonical", "tenant-A"]);
+  assert.equal(s.selections.length, 1); // Only the canonical Negotiation table is read.
+  assert.equal(s.queries.length, 0);
+  assert.equal(s.transactions(), 0);
+});
+
+test("workspace requires explicit nonempty references before querying", async () => {
+  const s = service();
+  for (const id of [undefined, null, "", " ", 1, { opportunityId: "legacy" }]) {
+    await assert.rejects(s.module.readNegotiationWorkspace(id), /Negotiation ID is required/);
+  }
+  for (const tenant of [null, "", " ", 1]) await assert.rejects(s.module.readNegotiationWorkspace("uuid", tenant));
+  assert.equal(s.selections.length, 0);
+});
+
+test("workspace foreign, nonexistent and legacy-only IDs share null semantics", async () => {
+  for (const [persisted, id] of [
+    [{ id: "foreign", tenantId: "tenant-B" }, "foreign"],
+    [null, "nonexistent"],
+    [{ id: "canonical", tenantId: "tenant-A" }, "legacy-opportunity"],
+  ]) assert.equal(await service({ persisted }).module.readNegotiationWorkspace(id), null);
+});
+
+test("workspace authentication or Tenant selection denial prevents any root query", async () => {
+  for (const [s, tenant] of [[service({ denied: true }), undefined], [service(), "foreign"]]) {
+    await assert.rejects(s.module.readNegotiationWorkspace("uuid", tenant), /Denied/);
+    assert.equal(s.selections.length, 0);
+  }
+});
+
+test("manual workspace preserves absent canonical references without inventing a Match or vehicle", async () => {
+  const s = service({ persisted: { id: "manual", tenantId: "tenant-A", customerId: "customer", origin: "manual", leadId: null, buyerProfileId: null, matchId: null, tenantVehicleId: null } });
+  const result = await s.module.readNegotiationWorkspace("manual");
+  for (const key of ["leadId", "buyerProfileId", "matchId", "tenantVehicleId"]) assert.equal(result.negotiation[key], null);
 });
 test("physical schema has same-Tenant FKs and nullable canonical vehicle for manual qualification", () => {
   const config = getTableConfig(negotiations);

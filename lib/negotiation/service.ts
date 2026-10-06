@@ -3,7 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "../../db";
 import { negotiations } from "../../db/negotiation-schema";
 import { resolveTenantContext } from "../tenant-runtime";
-import { initiationFailures, NegotiationInitiationError, validateCreateNegotiation, validateStartNegotiationFromMatch, type CreateNegotiationInput, type StartNegotiationFromMatchInput } from "./contracts";
+import { initiationFailures, NegotiationInitiationError, validateCreateNegotiation, validateStartNegotiationFromMatch, validateReadNegotiationWorkspace, type CreateNegotiationInput, type StartNegotiationFromMatchInput, type NegotiationWorkspace } from "./contracts";
 
 export async function startNegotiationFromMatch(input: StartNegotiationFromMatchInput): Promise<{ negotiationId: string; created: boolean }> {
   validateStartNegotiationFromMatch(input);
@@ -49,4 +49,28 @@ export async function readNegotiation(id: string, requestedTenantId?: string) {
   const context = await resolveTenantContext(requestedTenantId);
   const [row] = await getDb().select().from(negotiations).where(and(eq(negotiations.id, id), eq(negotiations.tenantId, context.tenantId)));
   return row ?? null;
+}
+
+// Tenant-level root read only; no Store-scoped data or future write capability implied.
+// Missing and foreign roots intentionally share the existing null/not-found semantics.
+export async function readNegotiationWorkspace(id: string, requestedTenantId?: string): Promise<NegotiationWorkspace | null> {
+  validateReadNegotiationWorkspace(id, requestedTenantId);
+  const row = await readNegotiation(id, requestedTenantId);
+  if (!row) return null;
+  const unavailable = () => ({ state: "UNRESOLVED", reason: "CANONICAL_PERSISTENCE_NOT_ESTABLISHED" } as const);
+  return {
+    negotiation: {
+      id: row.id, tenantId: row.tenantId, customerId: row.customerId,
+      leadId: row.leadId, buyerProfileId: row.buyerProfileId, matchId: row.matchId,
+      tenantVehicleId: row.tenantVehicleId, responsibleMembershipId: row.responsibleMembershipId,
+      createdByMembershipId: row.createdByMembershipId, origin: row.origin,
+      stage: row.stage, lifecycle: row.lifecycle, closureReason: row.closureReason,
+      createdAt: row.createdAt, updatedAt: row.updatedAt, closedAt: row.closedAt, formalizedAt: row.formalizedAt,
+    },
+    sections: {
+      events: unavailable(), notes: unavailable(), communications: unavailable(), tasks: unavailable(),
+      nextAction: unavailable(), documentRequests: unavailable(), approvals: unavailable(),
+      objections: unavailable(), checkout: unavailable(),
+    },
+  };
 }
