@@ -1,10 +1,12 @@
 ﻿"use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import type { OpportunityStatus, OpportunityWorkspaceData } from "../../../lib/opportunities";
+import type { NegotiationWorkspace } from "../../../lib/negotiation/contracts";
 import { buildGmailComposeUrl, buildMailtoUrl, buildWhatsAppUrl, formatInternationalPhone, splitInternationalPhone } from "../../../lib/contact";
 import { opportunityStatusLabels, opportunityStatuses } from "../../../lib/opportunities";
 import styles from "./OpportunityWorkspace.module.css";
@@ -79,7 +81,68 @@ function demandValue(data: OpportunityWorkspaceData): DesiredVehicleProfileInput
   return profile;
 }
 
-export function OpportunityWorkspace({ initialData }: { initialData: OpportunityWorkspaceData }) {
+export function OpportunityWorkspace(props: { initialData: OpportunityWorkspaceData } | { canonicalData: NegotiationWorkspace }) {
+  return "canonicalData" in props
+    ? <CanonicalNegotiationWorkspace data={props.canonicalData} />
+    : <LegacyOpportunityWorkspace initialData={props.initialData} />;
+}
+
+const canonicalSectionLabels: Record<keyof NegotiationWorkspace["sections"], string> = {
+  events: "Histórico", notes: "Notas", communications: "Comunicações", tasks: "Tarefas",
+  nextAction: "Próxima ação", documentRequests: "Solicitações de documentos",
+  approvals: "Aprovações", objections: "Objeções", checkout: "Checkout",
+};
+
+function CanonicalNegotiationWorkspace({ data }: { data: NegotiationWorkspace }) {
+  const [activeTab, setActiveTab] = useState("Resumo");
+  const tabs = ["Resumo", "Cliente", "Demanda", "Veículo", "Troca", "Financeiro", "Arquivos"];
+  const root = data.negotiation;
+  const reference = (value: string | null) => value ?? "Não vinculado";
+  const unresolved = (key: keyof NegotiationWorkspace["sections"]) => (
+    <article key={key} className={styles.panel} data-state={data.sections[key].state}>
+      <header className={styles.simpleHeader}><h2>{canonicalSectionLabels[key]}</h2></header>
+      <p>Informação ainda não disponível.</p>
+    </article>
+  );
+  return <main className={`${styles.shell} ${styles.canonicalWorkspace}`}>
+    <header className={styles.hero}>
+      <div><span className={styles.eyebrow}>NEGOCIAÇÃO</span><h1>Negociação {root.id}</h1><p>Consulta da negociação. As ações operacionais ainda não estão disponíveis.</p></div>
+      <div className={styles.heroActions}><span className={styles.status}>{root.stage}</span><span className={styles.status}>{root.lifecycle}</span></div>
+    </header>
+    <nav className={styles.tabs} aria-label="Seções da negociação">
+      {tabs.map(tab => <button key={tab} aria-current={activeTab === tab ? "page" : undefined} onClick={() => setActiveTab(tab)}>{tab}</button>)}
+    </nav>
+    <div className={styles.returnRow}><Link href="/oportunidades">Voltar à carteira legada</Link></div>
+    <div className={styles.tabContent}>
+      {activeTab === "Resumo" && <>
+        <section className={styles.panel}>
+          <header className={styles.simpleHeader}><h2>Dados da negociação</h2></header>
+          <dl className={styles.details}>
+            <div><dt>Responsável</dt><dd>{root.responsibleMembershipId}</dd></div>
+            <div><dt>Criada por</dt><dd>{root.createdByMembershipId}</dd></div>
+            <div><dt>Origem</dt><dd>{root.origin}</dd></div>
+            <div><dt>Motivo de encerramento</dt><dd>{reference(root.closureReason)}</dd></div>
+            <div><dt>Criada em</dt><dd>{root.createdAt.toISOString()}</dd></div>
+            <div><dt>Atualizada em</dt><dd>{root.updatedAt.toISOString()}</dd></div>
+            <div><dt>Encerrada em</dt><dd>{root.closedAt?.toISOString() ?? "Não registrado"}</dd></div>
+            <div><dt>Formalizada em</dt><dd>{root.formalizedAt?.toISOString() ?? "Não registrado"}</dd></div>
+            <div><dt>Match de origem</dt><dd>{reference(root.matchId)}</dd></div>
+          </dl>
+        </section>
+        <section className={styles.nextAction} data-state={data.sections.nextAction.state}><span>PRÓXIMA AÇÃO</span><h2>Informação ainda não disponível</h2></section>
+        {Object.keys(canonicalSectionLabels).filter(key => key !== "nextAction").map(key => unresolved(key as keyof NegotiationWorkspace["sections"]))}
+      </>}
+      {activeTab === "Cliente" && <section className={styles.panel}><header className={styles.simpleHeader}><h2>Referências do cliente</h2></header><dl className={styles.details}><div><dt>Cliente</dt><dd>{root.customerId}</dd></div><div><dt>Perfil comprador</dt><dd>{reference(root.buyerProfileId)}</dd></div></dl><p>Nome e contato ainda não estão disponíveis nesta consulta.</p></section>}
+      {activeTab === "Demanda" && <section className={styles.panel}><header className={styles.simpleHeader}><h2>Referência da demanda</h2></header><p>{reference(root.leadId)}</p><p>Detalhes da demanda ainda não disponíveis.</p></section>}
+      {activeTab === "Veículo" && <section className={styles.panel}><header className={styles.simpleHeader}><h2>Referência do veículo</h2></header><p>{reference(root.tenantVehicleId)}</p><p>Detalhes do veículo ainda não disponíveis.</p></section>}
+      {activeTab === "Troca" && <section className={styles.panel}><header className={styles.simpleHeader}><h2>Troca</h2></header><p>Informação ainda não disponível nesta consulta.</p></section>}
+      {activeTab === "Financeiro" && unresolved("checkout")}
+      {activeTab === "Arquivos" && unresolved("documentRequests")}
+    </div>
+  </main>;
+}
+
+function LegacyOpportunityWorkspace({ initialData }: { initialData: OpportunityWorkspaceData }) {
   const router = useRouter();
   const tabs = ["Resumo", "Cliente", "Demanda", "Veículo", "Troca", "Financeiro", "Arquivos"] as const;
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Resumo");
@@ -232,12 +295,13 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
               <p className={styles.recommendation}>{data.assessment.recommendation.rationale || "Dados insuficientes para uma recomendação específica."}</p>
               <span className={styles.urgencyBadge} data-urgency={recommendation.urgency}>Urgência: {recommendation.urgency}</span>
             </div>
-            <div className={styles.recommendationContextGrid}>
+            <details className={styles.explanation}><summary>Ver explicação</summary><div className={styles.recommendationContextGrid}>
               <article><span>POR QUE AGORA?</span><p>{recommendation.evidence}</p></article>
               <article><span>IMPACTO ESPERADO</span><p>{recommendation.impact}</p></article>
               <article><span>EVIDÊNCIAS</span>{data.assessment.explainability.reasons.length ? data.assessment.explainability.reasons.slice(0, 3).map((reason) => <p key={reason}>✓ {reason}</p>) : <p>Nenhum evento verificável adicional foi identificado.</p>}</article>
               <article><span>PONTOS DE ATENÇÃO</span>{data.assessment.explainability.warnings.length ? data.assessment.explainability.warnings.slice(0, 3).map((warning) => <p key={warning}>! {warning}</p>) : <p>Sem alertas críticos.</p>}</article>
             </div>
+            </details>
           </section>
 
           <section className={styles.metaPanel}>
@@ -259,6 +323,7 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
               </dl>
             </article>
 
+          <details className={styles.editDisclosure}><summary>Editar dados do cliente</summary>
           <section className={styles.actionPanel}>
             <header><span>CLIENTE</span><h2>Corrigir dados e contato</h2></header>
             <input value={clientName} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientName(event.target.value)} placeholder="Nome completo" />
@@ -267,13 +332,13 @@ export function OpportunityWorkspace({ initialData }: { initialData: Opportunity
             <input value={clientCity} onChange={(event: ChangeEvent<HTMLInputElement>) => setClientCity(event.target.value)} placeholder="Cidade" />
             <button disabled={pending !== null || !clientName.trim() || !clientCity.trim() || (!clientPhoneNational.trim() && !clientEmail.trim())} onClick={() => mutate("edit_client", { action: "edit_client", name: clientName, whatsapp: clientPhoneNational, whatsappDdi: clientPhoneDdi, email: clientEmail, city: clientCity })}>{pending === "edit_client" ? "Salvando..." : "Salvar dados do cliente"}</button>
             <small>É obrigatório manter ao menos um canal válido: WhatsApp ou e-mail.</small>
-          </section></div>}
-        {activeTab === "Demanda" && <>          <section className={styles.actionPanel}>
+          </section></details></div>}
+        {activeTab === "Demanda" && <><section className={styles.panel}><header className={styles.simpleHeader}><span>DEMANDA</span><h2>{data.desiredVehicle || "Demanda ainda não definida"}</h2></header></section><details className={styles.editDisclosure}><summary>Editar demanda</summary>          <section className={styles.actionPanel}>
             <header><span>DEMANDA</span><h2>Veículo desejado</h2></header>
             {data.desiredVehicleProfile.searchScope === "legacy" && <small>Cadastro legado: selecione a demanda no catálogo FIPE para eliminar o texto livre.</small>}
             <DesiredVehicleSelector value={desiredVehicleProfile} onChange={setDesiredVehicleProfile} disabled={pending !== null} compact idPrefix={`workspace-demand-${data.id}`} />
             <button disabled={pending !== null || !desiredVehicleProfile.brandCode || !desiredVehicleProfile.yearMin || !desiredVehicleProfile.yearMax || !desiredVehicleProfile.priceMax} onClick={() => mutate("edit_demand", { action: "edit_demand", desiredVehicle: desiredVehicleProfile })}>{pending === "edit_demand" ? "Validando FIPE..." : "Salvar demanda"}</button>
-          </section></>}
+          </section></details></>}
         {activeTab === "Veículo" && <section className={styles.panel}><header className={styles.simpleHeader}><span>VEÍCULO / DEMANDA</span><h2>{data.desiredVehicle || "Veículo desejado ainda não definido"}</h2></header><p>Esta oportunidade contém a demanda do cliente. Nenhum veículo de oferta está disponível nos dados atuais.</p><button className={styles.inlineButton} onClick={() => setActiveTab("Demanda")}>Consultar demanda</button></section>}
         {activeTab === "Troca" && <>            <article className={styles.panel}>
               <header className={styles.simpleHeader}><span>TROCA</span><h2>{data.tradeIn.brand && data.tradeIn.model ? `${data.tradeIn.brand} ${data.tradeIn.model}` : "Sem veículo de troca"}</h2></header>
